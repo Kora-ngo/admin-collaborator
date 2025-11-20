@@ -23,3 +23,30 @@
   }
 
 }
+
+
+/* globals.css (or wherever you keep global styles) */
+@keyframes popup-fade-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes popup-fade-out {
+  from { opacity: 1; transform: translateY(0)    scale(1); }
+  to   { opacity: 0; transform: translateY(8px) scale(0.98); }
+}
+
+@keyframes backdrop-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes backdrop-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* helper classes used by component */
+.animate-popup-in  { animation: popup-fade-in  220ms cubic-bezier(.16,.84,.54,1) forwards; }
+.animate-popup-out { animation: popup-fade-out 180ms cubic-bezier(.4,.0,.2,1) forwards; }
+
+.animate-backdrop-in  { animation: backdrop-fade-in  220ms linear forwards; }
+.animate-backdrop-out { animation: backdrop-fade-out 180ms linear forwards; }
