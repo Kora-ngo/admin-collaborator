@@ -71,7 +71,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             "transition-all duration-150",
 
             // Focus states
-            "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20",
+            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20",
             "dark:focus-visible:ring-primary/30",
 
             // Error states

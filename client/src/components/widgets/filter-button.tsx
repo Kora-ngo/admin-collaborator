@@ -50,7 +50,7 @@ export const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
       onClick={onToggle}
       className={`flex items-center gap-2 px-3  border rounded-md transition-colors
         ${isOpen ? "bg-gray-400 text-white border-gray-400" : "bg-white text-gray-700 border-gray-300"}
-        hover:${isOpen ? "bg-gray-600" : "bg-gray-50"} focus:outline-none focus:ring-2 focus:ring-blue-400
+        hover:${isOpen ? "bg-gray-600" : "bg-gray-50"} focus:outline-none
         ${className}`}
     >
       {isOpen ? closeIcon : filterIcon}

@@ -1,11 +1,6 @@
-import { Link } from "react-router-dom";
-import LoginForm from "../features/auth/components/login-form";
-import { useTranslation } from "../context/translationContext";
+import ForgotPasswordForm from "../features/auth/components/forgot-password-form";
 
-const Login = () => {
-
-    const {t} = useTranslation();
-
+const ForgotPassword = () => {
     return ( 
             <div className="grid min-h-screen lg:grid-cols-2">
                 <div className="flex bg-accent/10 relative lg:block w-full h-full place-items-center-safe place-content-center-safe ">
@@ -21,26 +16,19 @@ const Login = () => {
                         <div className="w-full max-w-sm">
                             <form className="flex flex-col gap-6">
                                   <div className="flex flex-col items-start gap-2 text-start">
-                                        <h1 className="text-2xl font-bold">{t("login_title")}</h1>
+                                        <h1 className="text-2xl font-bold">Forgot your password ?</h1>
                                         <p className="text-muted-foreground text-sm text-balance">
-                                        Log in to manage your team, projects, and field data
+                                            Enter your email, and we'll send a reset link.
                                         </p>
                                   </div>
 
-                                  <LoginForm />
-
-                                  <div className="text-start text-sm">
-                                        Not yet have an account ? {" "}
-                                        <Link to="/register" className="text-accent underline underline-offset-4">
-                                        Sign up
-                                        </Link>
-                                  </div>
+                                  <ForgotPasswordForm />
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-     );
+ );
 }
  
-export default Login;
+export default ForgotPassword;
