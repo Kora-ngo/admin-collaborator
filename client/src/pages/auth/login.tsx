@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import LoginForm from "../features/auth/components/login-form";
-import { useTranslation } from "../context/translationContext";
+import LoginForm from "../../features/auth/components/login-form";
+import { useTranslation } from "../../context/translationContext";
 
 const Login = () => {
 

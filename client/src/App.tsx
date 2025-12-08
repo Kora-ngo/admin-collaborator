@@ -1,17 +1,42 @@
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.css'
-import Login from './pages/login'
-import ForgotPassword from './pages/forgot-password'
-import ResetPassword from './pages/reset-password'
+import Login from './pages/auth/login'
+import ProtectedRoute from './routes/protectedRoute'
+import AdminRoute from './pages/admin/adminRoute'
+
 
 function App() {
+  const user = {
+    role: "admin"
+  }
+
   return (
     <BrowserRouter>
-    <>
-      {/* <Login /> */}
-      {/* <ForgotPassword /> */}
-      <ResetPassword />
-    </>
+      <Routes>
+        <Route path="/" element={<Login />} />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRole="admin" user={user}>
+                <AdminRoute />
+            </ProtectedRoute>
+          }
+          />
+
+
+        <Route
+          path="/collaborator"
+          element={
+            <ProtectedRoute allowedRole="collaborator" user={user}>
+                <AdminRoute />
+            </ProtectedRoute>
+          }
+          />
+
+
+
+      </Routes>
     </BrowserRouter>
   )
 }
