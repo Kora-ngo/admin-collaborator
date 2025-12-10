@@ -33,7 +33,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-2 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50  ${className}`}
+      className={`flex items-center w-11 gap-2 px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50  ${className}`}
     >
       {icon}
       {text && <span className="text-sm font-medium">{text}</span>}

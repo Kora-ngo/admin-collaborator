@@ -9,6 +9,7 @@ type IconProps = {
     | "check" 
     | "file";
   className?: string;
+  onClick?: () => void;
 };
 
 const icons = {
@@ -55,6 +56,6 @@ const icons = {
   ),
 };
 
-export default function ActionIcon({ name }: IconProps) {
-  return icons[name];
+export default function ActionIcon({ name, onClick, className }: IconProps) {
+  return (<span className={onClick ? "cursor-pointer" : className} onClick={onClick}>{icons[name]}</span>);
 }

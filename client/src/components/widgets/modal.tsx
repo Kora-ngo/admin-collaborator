@@ -16,7 +16,7 @@ const Modal: React.FC<ModalProps> = ({
   title,
   children,
   footer,
-  widthClass = "sm:w-[450px] lg:w-[500px] w-full",
+  widthClass = "sm:w-[450px] lg:w-[500px] w-full rounded-xl",
   className = "",
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -73,7 +73,7 @@ const Modal: React.FC<ModalProps> = ({
         <div className="flex flex-col h-full">
           {/* Header */}
           {title && (
-            <div className="p-4 sm:p-6 border-b border-gray-200 flex items-start justify-between">
+            <div className="p-4 sm:p-6  flex items-start justify-between">
               <div className="text-xl sm:text-2xl font-semibold text-gray-900">{title}</div>
               <button
                 aria-label="Close modal"
@@ -86,7 +86,7 @@ const Modal: React.FC<ModalProps> = ({
           )}
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</div>
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6">{children}</div>
 
           {/* Footer */}
           {footer && (

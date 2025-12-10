@@ -56,7 +56,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 dark:focus-visible:ring-primary/40 aria-invalid:ring-4 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40";
+      "inline-flex items-center h-10 justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 dark:focus-visible:ring-primary/40 aria-invalid:ring-4 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40";
 
     const variants: Record<ButtonVariant, string> = {
       default:

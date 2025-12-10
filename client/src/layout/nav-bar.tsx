@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
 interface NavbarProps {
@@ -12,8 +12,8 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
 
         const titles: Record<string, string> = {
         "/admin": "Dashboard",
-        "/books": "Books",
-        "/subscription": "Subscription",
+        "/admin/projects": "Projects",
+        "/admin/users": "Users",
         "/members": "Members",
         "/borrow": "Loans/Returns",
         "/report": "Report",
@@ -22,14 +22,14 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
 
     const title = titles[location.pathname] || "Not Found"; 
 
-    const [open, setOpen] = useState(false);
+    // const [open, setOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
       // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
         if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-            setOpen(false);
+            // setOpen(false);
         }
         };
         document.addEventListener("mousedown", handleClickOutside);

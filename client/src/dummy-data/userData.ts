@@ -1,0 +1,42 @@
+export const usersData = [
+  {
+    id: "U001",
+    name: "John Doe",
+    email: "john.doe@example.com",
+    role: "Admin",
+    createdAt: "2024-12-01",
+    status: "true",
+  },
+  {
+    id: "U002",
+    name: "Jane Smith",
+    email: "jane.smith@example.com",
+    role: "Manager",
+    createdAt: "2024-12-05",
+    status: "true",
+  },
+  {
+    id: "U003",
+    name: "Michael Brown",
+    email: "michael.brown@example.com",
+    role: "User",
+    createdAt: "2024-12-10",
+    status: "true",
+  },
+  {
+    id: "U004",
+    name: "Sarah Wilson",
+    email: "sarah.wilson@example.com",
+    role: "User",
+    createdAt: "2024-12-15",
+    status: "true",
+  },
+  {
+    id: "U005",
+    name: "David Johnson",
+    email: "david.johnson@example.com",
+    role: "Moderator",
+    createdAt: "2024-12-20",
+    status: "true",
+  },
+];
