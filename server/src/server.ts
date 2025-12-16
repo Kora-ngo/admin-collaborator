@@ -1,20 +1,10 @@
-import  express, {Request, Response, NextFunction} from "express";
 import cors from 'cors';
 import dotenv from 'dotenv';
+import app  from "./app";
 
 // Loading the environment variable from .env 
 dotenv.config();
-
-const app = express();
 const port = process.env.PORT;
-
-// Middleware 
-app.use(express.json());
-
-app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(req.path, req.method);
-    next();
-})
 
 app.use(cors());
 
