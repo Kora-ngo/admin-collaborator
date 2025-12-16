@@ -8,6 +8,7 @@ import { usersData } from "../../dummy-data/userData";
 import ActionIcon from "../../components/widgets/action-icon";
 import Modal from "../../components/widgets/modal";
 import Popup from "../../components/widgets/popup";
+import StatusBadge from "../../components/widgets/status-badge";
 
 const User = () => {
 
@@ -23,7 +24,15 @@ const User = () => {
     { key: "email", label: "Email", visibleOn: "md" },
     { key: "role", label: "Role", visibleOn: "sm" },
     { key: "createdAt", label: "Created At", visibleOn: "lg" },
-    { key: "status", label: "Status", visibleOn: "always" },
+    { key: "status", label: "Status", visibleOn: "always", render: (row) => {
+        if(row.status === "false"){
+            return (
+              <StatusBadge text="Deleted" color="red" />
+            );
+          }else if(row.status === "true"){
+            return <StatusBadge text="Active" color="purple" />
+          }
+    } },
     { key: "status", label: "Status", visibleOn: "always", render: (row) => {
           return(
              <div className="flex items-center space-x-3">
