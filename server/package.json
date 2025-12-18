@@ -1,10 +1,10 @@
 {
   "type": "module",
   "scripts": {
-  "dev": "ts-node-dev --respawn src/server.ts",
-  "build": "tsc",
-  "start": "node dist/server.js"
-},
+    "dev": "concurrently \"tsc -w\" \"nodemon dist/server.js\"",
+    "build": "rimraf dist && tsc",
+    "prestart": "npm run build"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -12,13 +12,15 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.15.0",
-    "nodemon": "^3.1.10",
     "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.2",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.11",
+    "rimraf": "^6.1.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   }

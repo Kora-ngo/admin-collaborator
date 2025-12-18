@@ -18,3 +18,4 @@ router.post('/refresh-token', AuthController.refreshToken);
 // GET /api/auth/me
 router.get('/me', AuthController.getCurrentUser);
 export default router;
+//# sourceMappingURL=auth.routes.js.map

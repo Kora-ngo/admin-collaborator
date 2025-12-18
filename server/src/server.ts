@@ -1,6 +1,7 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
-import app  from "./app";
+import app from './app.js';
+
 
 // Loading the environment variable from .env 
 dotenv.config();
@@ -10,5 +11,5 @@ app.use(cors());
 
 // Start the server 
 app.listen(port, () => {
-    console.log('Server is running on port', port)
+    console.log('Hello', port)
 });

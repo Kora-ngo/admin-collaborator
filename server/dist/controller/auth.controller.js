@@ -1,3 +1,4 @@
+import {} from 'express';
 const AuthController = {
     // Login handler
     login: async (req, res) => {
@@ -30,3 +31,4 @@ const AuthController = {
     }
 };
 export default AuthController;
+//# sourceMappingURL=auth.controller.js.map
