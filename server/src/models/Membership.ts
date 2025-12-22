@@ -1,7 +1,19 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database.js";
+import type { MembershipAttributes, MembershipCreationAttributes } from "../types/memebership.js";
 
-const Membership = sequelize.define("Membership", {
+
+
+class Membership extends Model<MembershipAttributes, MembershipCreationAttributes> implements MembershipAttributes {
+  public id!: number;
+  public user_id!: number;
+  public organization_id!: number;
+  public role!: string;
+  public date_of!: Date;
+}
+
+
+const MembershipModel = Membership.init( {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -15,8 +27,7 @@ const Membership = sequelize.define("Membership", {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    
-    roles: {
+    role: {
         type: DataTypes.ENUM('admin', 'collaborator', 'enumerator'),
         allowNull: false,
         defaultValue: 'admin'
@@ -27,9 +38,13 @@ const Membership = sequelize.define("Membership", {
         allowNull: false,
         defaultValue: DataTypes.NOW
     }
-}, {
+}, 
+{
+    sequelize,
+    modelName: 'Membership',
+    tableName: 'Membership', // or whatever your table name is
     timestamps: false,
-    tableName: "membership"
-});
+  }
+);
 
 export default Membership;

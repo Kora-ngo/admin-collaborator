@@ -3,7 +3,6 @@ import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Membership from '../models/Membership.js';
-import Organisation from '../models/Organisation.js';
 import Subscription from '../models/Subscription.js';
 
 
@@ -27,14 +26,14 @@ login: async (req: Request, res: Response) => {
         }
 
         // check if the user is active
-        if(userExist?.getDataValue('status') !== 'true'){
+        if(userExist?.status !== 'true'){
            return res.status(403).json({ type: 'error', message: "user_inactive" });
         }
 
         
         // Fetch user's memebership details (role + organization)
         const membership = await Membership.findOne({ 
-            where: { user_id: userExist?.getDataValue('id') },
+            where: { user_id: userExist?.id },
             });
 
         if(!membership){
@@ -42,8 +41,8 @@ login: async (req: Request, res: Response) => {
         }
 
         // Extract organization ID and role from membership
-        const organizationId = membership?.getDataValue('organization_id');
-        const role = membership?.getDataValue('role');
+        const organizationId = membership?.organization_id
+        const role = membership?.role;
 
         // Fetch active subscription to get expiry date
         const subscription = await Subscription.findOne({
@@ -54,13 +53,13 @@ login: async (req: Request, res: Response) => {
             order: [['ends_at', 'DESC']],
         });
 
-        const expiresAt = subscription ? subscription.getDataValue('ends_at') : null;
+        const expiresAt = subscription ? subscription.ends_at : null;
 
         // Generate JWT token
         const tokenPayload = {
-            userId: userExist?.getDataValue('id'),
-            userUid: userExist?.getDataValue('uid'),
-            email: userExist?.getDataValue('email') || email,
+            userId: userExist?.id,
+            userUid: userExist?.uid,
+            email: userExist?.email || email,
             organizationId: organizationId,
             role: role,
             subscriptionExpiresAt: expiresAt
@@ -73,9 +72,9 @@ login: async (req: Request, res: Response) => {
             type: 'success',
             token,
             user: {
-                id: userExist.getDataValue('id'),
-                uid: userExist.getDataValue('uid'),
-                email: userExist.getDataValue('email')|| email,
+                id: userExist.id,
+                uid: userExist.uid,
+                email: userExist.email|| email,
                 role,
                 organization: {
                     id: organizationId,

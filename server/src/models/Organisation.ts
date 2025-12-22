@@ -1,7 +1,29 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database.js";
+import type { OrganisationAttributes, OrganisationCreationAttributes } from "../types/organisation.js";
 
-const Organisation = sequelize.define("Organisation", {
+
+class Organisation extends Model<OrganisationAttributes, OrganisationCreationAttributes>
+  implements OrganisationAttributes {
+
+  // Declare all fields for TypeScript intellisense and safety
+  public id!: number;
+  public uid!: number;
+  public name!: string;
+  public access_code!: number;
+  public description!: string | null;
+  public founded_at!: Date;
+  public country!: string | null;
+  public region!: string | null;
+  public email!: string;
+  public phone!: string | null;
+  public status!: string;
+  public date_of!: Date;
+  public update_of!: Date;
+}
+
+
+const OrganisationModel = Organisation.init({
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -64,8 +86,10 @@ const Organisation = sequelize.define("Organisation", {
         defaultValue: DataTypes.NOW
     }
 }, {
+    sequelize,
+    modelName: 'Organisation',
+    tableName: 'Organisation', // adjust if your actual table name is different
     timestamps: false,
-    tableName: "organisation"
 });
 
 export default Organisation;

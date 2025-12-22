@@ -1,7 +1,19 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database.js";
+import type { SubscriptionAttributes, SubscriptionCreationAttributes } from "../types/subscriptions .js";
 
-const Subscription = sequelize.define("Subscription", {
+
+class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAttributes> implements SubscriptionAttributes {
+  public id!: number;
+  public uid!: number;
+  public organization_id!: number;
+  public plan!: string;
+  public started_at!: Date;
+  public ends_at!: Date;
+  public status!: string;
+}
+
+const SubscriptionModel = Subscription.init({
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -33,8 +45,10 @@ const Subscription = sequelize.define("Subscription", {
         allowNull: false
     }
 }, {
+    sequelize,
+    modelName: 'Subscription',
+    tableName: 'Subscription',
     timestamps: false,
-    tableName: "subscription"
 });
 
 export default Subscription;

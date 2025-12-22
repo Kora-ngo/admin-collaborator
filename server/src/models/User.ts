@@ -64,8 +64,7 @@ const UserModel = User.init(
     sequelize,
     modelName: 'User',
     tableName: 'user',
-    timestamps: true, // createdAt & updatedAt will be added automatically
-    // If you want to disable them, set timestamps: false
+    timestamps: true, 
   }
 );
 
