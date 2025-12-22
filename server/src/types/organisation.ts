@@ -10,8 +10,8 @@ export interface OrganisationAttributes {
   email: string;
   phone: string | null;
   status: string;
-  date_of: Date;
-  update_of: Date;
+  date_of?: Date;
+  update_of?: Date;
 }
 
 

@@ -11,8 +11,19 @@ const AuthController = {
 // Login handler
 login: async (req: Request, res: Response) => {
     const { email, password } = req.body;
-
     try{
+
+        // Validate input
+        if(!email || !password){
+              return res.status(400).json({ type: 'error', message: "missing_credentials" });
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(!emailRegex.test(email)){
+           return  res.status(400).json({ type: 'error', message: "invalid_email_format" });
+        }
+
         // Check if the user exists
         const userExist = await User.findOne({ where: { email } });
         if(!userExist){
@@ -26,8 +37,13 @@ login: async (req: Request, res: Response) => {
         }
 
         // check if the user is active
-        if(userExist?.status !== 'true'){
-           return res.status(403).json({ type: 'error', message: "user_inactive" });
+        if(userExist?.status === 'blocked' || userExist?.status === 'false'){
+           return res.status(403).json({ type: 'error', message: userExist?.status === 'blocked' ? "user_blocked" : "user_inactive"  });
+        }
+
+        // check if the user is pending
+        if(userExist?.status === 'pending'){
+           return res.status(403).json({ type: 'success', message: "user_pending" });
         }
 
         
@@ -52,6 +68,12 @@ login: async (req: Request, res: Response) => {
             },
             order: [['ends_at', 'DESC']],
         });
+
+
+        // Check if subscription exists and get expiry date
+        if(!subscription){
+            return res.status(403).json({ type: 'error', message: "no_active_subscription" });
+        }
 
         const expiresAt = subscription ? subscription.ends_at : null;
 
@@ -91,8 +113,10 @@ login: async (req: Request, res: Response) => {
 
 // Register admin handler
 registerAdmin: async (req: Request, res: Response): Promise<void> => {
-    res.status(200).json({ message: 'The admin has been registered' });
+    
 },
+
+
 
 // Invite user handler
 inviteUser: async (req: Request, res: Response): Promise<void> => {

@@ -47,4 +47,4 @@ const MembershipModel = Membership.init( {
   }
 );
 
-export default Membership;
+export default MembershipModel;

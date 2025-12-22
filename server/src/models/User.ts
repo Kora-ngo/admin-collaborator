@@ -9,10 +9,11 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public uid!: number;
   public name!: string;
   public email!: string;
+  public phone!: string;
   public password!: string;
   public status!: string;
-  public date_of!: Date;
-  public update_of!: Date;
+  public date_of?: Date;
+  public update_of?: Date;
 
 }
 
@@ -39,6 +40,10 @@ const UserModel = User.init(
       validate: {
         isEmail: true,
       },
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     password: {
       type: DataTypes.STRING,

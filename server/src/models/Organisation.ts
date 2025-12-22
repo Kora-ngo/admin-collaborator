@@ -92,4 +92,4 @@ const OrganisationModel = Organisation.init({
     timestamps: false,
 });
 
-export default Organisation;
+export default OrganisationModel;

@@ -3,8 +3,8 @@ export interface SubscriptionAttributes {
   uid: number;
   organization_id: number;
   plan: string;
-  started_at: Date;
-  ends_at: Date;
+  started_at?: Date;
+  ends_at?: Date;
   status: string;
 }
 

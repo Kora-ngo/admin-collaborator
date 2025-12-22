@@ -6,10 +6,11 @@ export interface UserAttributes {
   uid: number;
   name: string;
   email: string;
+  phone: string;
   password: string;
   status: string;      // you used STRING, not BOOLEAN
-  date_of: Date;       // Sequelize DATE -> JS Date
-  update_of: Date;
+  date_of?: Date;       // Sequelize DATE -> JS Date
+  update_of?: Date;
 }
 
 // Optional: for create() calls where id is not required

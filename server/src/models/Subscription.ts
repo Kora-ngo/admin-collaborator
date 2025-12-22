@@ -51,4 +51,4 @@ const SubscriptionModel = Subscription.init({
     timestamps: false,
 });
 
-export default Subscription;
+export default SubscriptionModel;
