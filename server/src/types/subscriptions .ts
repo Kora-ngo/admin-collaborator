@@ -1,4 +1,4 @@
-export interface Subscription {
+export type Subscription = {
   id: number;
   uid: number;
   organization_id: number;

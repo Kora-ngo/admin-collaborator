@@ -1,10 +1,16 @@
-export interface User {
-  id?: number;
+import { Model } from 'sequelize';
+
+// This is the shape of the user instance
+export interface UserAttributes {
+  id: number;
   uid: number;
   name: string;
   email: string;
-  password_hash: string | null;
-  status: number;
-  date_of: string;
-  update_of: string | null;
+  password: string;
+  status: string;      // you used STRING, not BOOLEAN
+  date_of: Date;       // Sequelize DATE -> JS Date
+  update_of: Date;
 }
+
+// Optional: for create() calls where id is not required
+export type UserCreationAttributes = Omit<UserAttributes, 'id'> & { id?: number };
