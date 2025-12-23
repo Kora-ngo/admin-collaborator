@@ -37,59 +37,100 @@ const AuthController = {
             if (userExist?.status === 'blocked' || userExist?.status === 'false') {
                 return res.status(403).json({ type: 'error', message: userExist?.status === 'blocked' ? "user_blocked" : "user_inactive" });
             }
-            // Fetch user's memebership details (role + organization)
-            const membershipData = await MembershipModel.findOne({
-                where: { user_id: userExist?.id },
+            // Fetch ALL memberships
+            const membershipsData = await MembershipModel.findAll({
+                where: { user_id: userExist.id },
             });
-            const membership = membershipData?.dataValues;
-            if (!membership) {
+            const memberships = membershipsData.map(m => m.dataValues);
+            if (memberships.length === 0) {
                 return res.status(403).json({ type: 'error', message: "no_organization_membership" });
             }
-            // check if the user is pending
-            if (userExist?.status === 'pending') {
-                return res.status(403).json({ type: 'success', message: "user_pending", data: membership });
+            const membershipCount = memberships.length;
+            // CASE 1: Only one membership → issue token
+            if (membershipCount === 1) {
+                const membership = memberships[0];
+                const organizationId = membership.organization_id;
+                const role = membership.role;
+                // Check if membership is pending
+                if (membership.status === 'pending') {
+                    return res.status(403).json({
+                        type: 'success',
+                        message: 'membership_pending',
+                        data: {
+                            membershipCount,
+                            memberships: [{
+                                    id: membership.id,
+                                    organization_id: membership.organization_id,
+                                    role: membership.role,
+                                    status: membership.status,
+                                    date_of: membership.date_of,
+                                }]
+                        }
+                    });
+                }
+                // Fetch active subscription
+                const subscriptionData = await SubscriptionModel.findOne({
+                    where: {
+                        organization_id: organizationId,
+                        status: 'true'
+                    },
+                    order: [['ends_at', 'DESC']],
+                });
+                const subscription = subscriptionData?.dataValues;
+                if (!subscription) {
+                    return res.status(403).json({ type: 'error', message: "no_active_subscription" });
+                }
+                const expiresAt = subscription.ends_at;
+                const token = jwt.sign({
+                    userId: userExist.id,
+                    userUid: userExist.uid,
+                    email: userExist.email || email,
+                    organizationId,
+                    membershipId: membership.id,
+                    role,
+                    subscriptionExpiresAt: expiresAt
+                }, process.env.JWT_SECRET, { expiresIn: '30d' });
+                return res.status(200).json({
+                    type: 'success',
+                    token,
+                    user: {
+                        id: userExist.id,
+                        uid: userExist.uid,
+                        name: userExist.name,
+                        email: userExist.email || email,
+                        role,
+                        organization: {
+                            id: organizationId,
+                        },
+                        subscriptionExpiresAt: expiresAt,
+                    },
+                    membershipCount,
+                    memberships: [{
+                            id: membership.id,
+                            organization_id: membership.organization_id,
+                            role: membership.role,
+                            status: membership.status,
+                            date_of: membership.date_of,
+                        }]
+                });
             }
-            // Extract organization ID and role from membership
-            const organizationId = membership?.organization_id;
-            const role = membership?.role;
-            // Fetch active subscription to get expiry date
-            const subscriptionData = await SubscriptionModel.findOne({
-                where: {
-                    organization_id: organizationId,
-                    status: 'true'
-                },
-                order: [['ends_at', 'DESC']],
-            });
-            const subscription = subscriptionData?.dataValues;
-            // Check if subscription exists and get expiry date
-            if (!subscription) {
-                return res.status(403).json({ type: 'error', message: "no_active_subscription" });
-            }
-            const expiresAt = subscription ? subscription.ends_at : null;
-            // Generate JWT token
-            const tokenPayload = {
-                userId: userExist?.id,
-                userUid: userExist?.uid,
-                email: userExist?.email || email,
-                organizationId: organizationId,
-                membershipId: membership?.id,
-                role: role,
-                subscriptionExpiresAt: expiresAt
-            };
-            const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '30d' });
+            // CASE 2: Multiple memberships → return list, no token
             return res.status(200).json({
                 type: 'success',
-                token,
+                message: 'multiple_memberships',
+                membershipCount,
+                memberships: memberships.map(m => ({
+                    id: m.id,
+                    organization_id: m.organization_id,
+                    role: m.role,
+                    status: m.status,
+                    date_of: m.date_of,
+                })),
                 user: {
                     id: userExist.id,
                     uid: userExist.uid,
                     name: userExist.name,
                     email: userExist.email || email,
-                    role,
-                    organization: {
-                        id: organizationId,
-                    },
-                    subscriptionExpiresAt: expiresAt,
                 }
             });
         }
@@ -146,6 +187,7 @@ const AuthController = {
                 user_id: newUser.id,
                 organization_id: newOrganisation.id,
                 role: 'admin',
+                status: 'true',
             }, { transaction });
             // This is the created membership ID
             const membershipId = newMembership.id;
@@ -212,10 +254,6 @@ const AuthController = {
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
-    // Invite user handler
-    inviteUser: async (req, res) => {
-        res.status(200).json({ message: 'Invitation sent successfully' });
-    },
     // Additional handlers
     acceptInvitation: async (req, res) => {
         const { token } = req.body;
@@ -238,6 +276,7 @@ const AuthController = {
                 user_id: payload.userId,
                 organization_id: payload.organisationId,
                 role: payload.role,
+                status: 'true',
             });
             return res.status(200).json({ type: 'success', message: 'invitation_accepted', data: {
                     organizationId: payload.organisationId,
@@ -304,6 +343,75 @@ const AuthController = {
             console.error('Get current user error:', error);
             return res.status(500).json({ type: 'error', message: 'server_error' });
         }
+    },
+    // Select membership handler
+    selectMembership: async (req, res) => {
+        const { membershipId, userId, uid, email } = req.body;
+        const authUser = req.user;
+        if (!membershipId) {
+            return res.status(400).json({ type: 'error', message: 'membership_id_required' });
+        }
+        try {
+            const membershipData = await MembershipModel.findOne({
+                where: {
+                    id: membershipId,
+                    user_id: userId, // Ensure it belongs to the logged-in user
+                },
+            });
+            const membership = membershipData?.dataValues;
+            if (!membership) {
+                return res.status(404).json({ type: 'error', message: 'membership_not_found_or_not_owned' });
+            }
+            if (membership.status === 'pending') {
+                return res.status(403).json({ type: 'error', message: 'membership_pending' });
+            }
+            if (membership.status === 'blocked' || membership.status === 'false') {
+                return res.status(403).json({ type: 'error', message: 'membership_inactive' });
+            }
+            const organizationId = membership.organization_id;
+            const role = membership.role;
+            // Fetch active subscription for this organization
+            const subscriptionData = await SubscriptionModel.findOne({
+                where: {
+                    organization_id: organizationId,
+                    status: 'true'
+                },
+                order: [['ends_at', 'DESC']],
+            });
+            const subscription = subscriptionData?.dataValues;
+            if (!subscription) {
+                return res.status(403).json({ type: 'error', message: 'no_active_subscription_for_organization' });
+            }
+            const expiresAt = subscription.ends_at;
+            const token = jwt.sign({
+                userId: userId,
+                userUid: uid,
+                email: email,
+                organizationId,
+                membershipId: membership.id,
+                role,
+                subscriptionExpiresAt: expiresAt
+            }, process.env.JWT_SECRET, { expiresIn: '30d' });
+            return res.status(200).json({
+                type: 'success',
+                message: 'organization_selected_successfully',
+                token,
+                membership: {
+                    organizationId,
+                    membershipId: membership.id,
+                    role,
+                    subscriptionExpiresAt: expiresAt,
+                }
+            });
+        }
+        catch (error) {
+            console.error('Select organization error:', error);
+            return res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+    // Invite user handler
+    inviteUser: async (req, res) => {
+        res.status(200).json({ message: 'Invitation sent successfully' });
     },
     forgotPassword: async (req, res) => {
         res.status(200).json({ message: 'Password reset email sent' });

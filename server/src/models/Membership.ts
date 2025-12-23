@@ -9,6 +9,7 @@ class Membership extends Model<MembershipAttributes, MembershipCreationAttribute
   public user_id!: number;
   public organization_id!: number;
   public role!: string;
+  public status!: string;
   public date_of!: Date;
 }
 
@@ -31,6 +32,12 @@ const MembershipModel = Membership.init( {
         type: DataTypes.ENUM('admin', 'collaborator', 'enumerator'),
         allowNull: false,
         defaultValue: 'admin'
+    },
+
+    status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'true'
     },
 
     date_of: {

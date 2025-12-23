@@ -13,6 +13,9 @@ router.post('/register-admin', AuthController.registerAdmin);
 // POST /api/auth/invite
 router.post('/invite', AuthController.inviteUser);
 
+// POST /api/auth/select-membership
+router.post('/select-membership', AuthController.selectMembership);
+
 // POST /api/auth/accept-invitation
 router.post('/accept-invitation', AuthController.acceptInvitation);
 
