@@ -1,15 +1,18 @@
 import { type Request, type Response } from 'express';
-import User from '../models/User.js';
+import UserModel from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import Membership from '../models/Membership.js';
-import Subscription from '../models/Subscription.js';
+import SubscriptionModel from '../models/Subscription.js';
+import { generateUniqueUid } from '../utils/generateUniqueUid.js';
+import OrganisationModel from '../models/Organisation.js';
+import sequelize from '../config/database.js';
+import MembershipModel from '../models/Membership.js';
 
 
 const AuthController = {
 
 // Login handler
-login: async (req: Request, res: Response) => {
+    login: async (req: Request, res: Response) => {
     const { email, password } = req.body;
     try{
 
@@ -25,7 +28,7 @@ login: async (req: Request, res: Response) => {
         }
 
         // Check if the user exists
-        const userExist = await User.findOne({ where: { email } });
+        const userExist = await UserModel.findOne({ where: { email } });
         if(!userExist){
            return res.status(404).json({ type: 'error', message: "user_not_found" });
         }
@@ -41,14 +44,8 @@ login: async (req: Request, res: Response) => {
            return res.status(403).json({ type: 'error', message: userExist?.status === 'blocked' ? "user_blocked" : "user_inactive"  });
         }
 
-        // check if the user is pending
-        if(userExist?.status === 'pending'){
-           return res.status(403).json({ type: 'success', message: "user_pending" });
-        }
-
-        
         // Fetch user's memebership details (role + organization)
-        const membership = await Membership.findOne({ 
+        const membership = await MembershipModel.findOne({ 
             where: { user_id: userExist?.id },
             });
 
@@ -56,12 +53,18 @@ login: async (req: Request, res: Response) => {
            return res.status(403).json({ type: 'error', message: "no_organization_membership" });
         }
 
+        // check if the user is pending
+        if(userExist?.status === 'pending'){
+           return res.status(403).json({ type: 'success', message: "user_pending", data: membership });
+        }
+
+
         // Extract organization ID and role from membership
         const organizationId = membership?.organization_id
         const role = membership?.role;
 
         // Fetch active subscription to get expiry date
-        const subscription = await Subscription.findOne({
+        const subscription = await SubscriptionModel.findOne({
             where: {
                 organization_id: organizationId,
                 status: 'true'
@@ -83,6 +86,7 @@ login: async (req: Request, res: Response) => {
             userUid: userExist?.uid,
             email: userExist?.email || email,
             organizationId: organizationId,
+            membershipId: membership?.id,
             role: role,
             subscriptionExpiresAt: expiresAt
         };
@@ -96,6 +100,7 @@ login: async (req: Request, res: Response) => {
             user: {
                 id: userExist.id,
                 uid: userExist.uid,
+                name: userExist.name,
                 email: userExist.email|| email,
                 role,
                 organization: {
@@ -112,31 +117,259 @@ login: async (req: Request, res: Response) => {
 },
 
 // Register admin handler
-registerAdmin: async (req: Request, res: Response): Promise<void> => {
-    
+    registerAdmin: async (req: Request, res: Response) => {
+    const { user, organization, subscription } = req.body;
+
+    // validate using the picked feilds
+    if(!user.name || !user.email || !user.password){
+        return res.status(400).json({ type: 'error', message: 'missing_users_credentials' });
+    }
+    if(!organization.name || !organization.access_code || !organization.email) {
+        return res.status(400).json({ type: 'error', message: 'missing_organisation_fields' });
+    }
+
+    const transaction = await sequelize.transaction();
+    try {
+        // Create user
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        const userUid = await generateUniqueUid('user');
+
+        const newUser = await UserModel.create({
+            uid: userUid,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || null,
+            password: hashedPassword,
+            status: 'true',
+        }, { transaction });
+
+
+        // Create Organisation
+        const orgUid = await generateUniqueUid('organization');
+        const newOrganisation = await OrganisationModel.create({
+            uid: orgUid,
+            name: organization.name,
+            access_code: organization.access_code,
+            description: organization.description || null,
+            founded_at: organization.founded_at ? new Date(organization.founded_at) : new Date(),
+            country: organization.country || null,
+            region: organization.region || null,
+            email: organization.email,
+            phone: organization.phone || null,
+            status: 'true',
+        }, { transaction });
+
+
+        // Membership
+      const newMembership =  await MembershipModel.create({
+            user_id: newUser.id,
+            organization_id: newOrganisation.id,
+            role: 'admin',
+        }, { transaction });
+
+        // This is the created membership ID
+        const membershipId = newMembership.id;
+
+
+        // Subscription
+        const plan = subscription.plan || 'free';
+        const trialDays = 30;
+        const startedAt = new Date();
+        const endsAt = new Date();
+        endsAt.setDate(endsAt.getDate() + trialDays);
+
+        await SubscriptionModel.create({
+            uid: Date.now() + 2,
+            organization_id: newOrganisation.id,
+            plan,
+            started_at: startedAt,
+            ends_at: endsAt,
+            status: 'true',
+        }, { transaction });
+
+        // JWT 
+        const token = jwt.sign(
+            {
+                userId: newUser.id,
+                userUid: newUser.uid,
+                email: newUser.email,
+                organizationId: newOrganisation.id,
+                membershipId: membershipId,
+                role: 'admin',
+                subscriptionExpiresAt: endsAt.toISOString(),
+            },
+            process.env.JWT_SECRET as string,
+            { expiresIn: '30d' }
+        );
+
+        await transaction.commit();
+
+        res.status(201).json({
+            type: 'success',
+            message: 'admin_registered_successfully',
+            token,
+            data: {
+                user: {
+                id: newUser.id,
+                uid: newUser.uid,
+                name: newUser.name,
+                email: newUser.email,
+                },
+                organisation: {
+                id: newOrganisation.id,
+                uid: newOrganisation.uid,
+                name: newOrganisation.name,
+                email: newOrganisation.email,
+                },
+                role: 'admin',
+                subscription: {
+                plan,
+                expiresAt: endsAt.toISOString(),
+                },
+            },
+        });
+        }catch (error: any) {
+            if (transaction) await transaction.rollback();
+            console.error('Register error:', error);
+
+            if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(409).json({
+                type: 'error',
+                message: 'email_or_uid_already_exists',
+            });
+            }
+
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+
 },
 
-
-
-// Invite user handler
-inviteUser: async (req: Request, res: Response): Promise<void> => {
-    res.status(200).json({ message: 'Invitation sent successfully' });
-},
+    // Invite user handler
+    inviteUser: async (req: Request, res: Response): Promise<void> => {
+        res.status(200).json({ message: 'Invitation sent successfully' });
+    },
 
 // Additional handlers
-acceptInvitation: async (req: Request, res: Response): Promise<void> => {
-    res.status(200).json({ message: 'Invitation accepted' });
+    acceptInvitation: async (req: Request, res: Response) => {
+    const { token } = req.body;
+
+    if(!token){
+        return res.status(400).json({ type: 'error', message: 'token_required' });
+    }
+
+    try{
+        const payload = jwt.verify(token, process.env.JWT_SECRET as string) as {
+            userId: number;
+            organizationId: number;
+            role: string;
+            exp: number;
+        };
+
+        const user = await UserModel.findByPk(payload.userId);
+        if(!user){
+            return res.status(404).json({ type: 'error', message: 'user_not_found' });
+        }
+
+        if(user.status === 'blocked' || user.status === 'false'){
+            return res.status(403).json({ type: 'error', message: user.status === 'blocked' ? "user_blocked" : "user_inactive"  });
+        }
+
+        if(user.status === "true"){
+            return res.status(400).json({ type: 'error', message: 'user_already_active' });
+        }
+
+        await MembershipModel.create({
+            user_id: payload.userId,
+            organization_id: payload.organizationId,
+            role: payload.role,
+        }); 
+
+        return res.status(200).json({ type: 'success', message: 'invitation_accepted', data: {
+            organizationId: payload.organizationId,
+            role: payload.role,
+        } });
+    }catch (error: any) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ type: 'error', message: 'invalid_or_expired_token' });
+    }
+
+    console.error('Accept invitation error:', error);
+    return res.status(500).json({ type: 'error', message: 'server_error' });
+  }
 },
 
 
-refreshToken: async (req: Request, res: Response): Promise<void> => {
-    res.status(200).json({ message: 'Token refreshed' });
+getCurrentUser: async (req: Request, res: Response) => {
+    const authUser = req.user;
+
+    if (!authUser || !authUser.userId) {
+        return res.status(401).json({ type: 'error', message: 'unauthorized' });
+    }
+
+    try{
+        const user = await UserModel.findByPk(authUser.userId, {
+        attributes: ['id', 'uid', 'name', 'email', 'phone', 'status'],
+        });
+
+        if (!user || user.status !== 'true') {
+            return res.status(403).json({ type: 'error', message: 'user_inactive_or_not_found' });
+        }
+
+
+        const membership = await MembershipModel.findOne({
+        where: { id: authUser.membershipId },
+        include: [
+            {
+            model: OrganisationModel,
+            attributes: ['id', 'uid', 'name', 'email', 'country', 'region'],
+            },
+        ],
+        });
+
+
+        if (!membership) {
+            return res.status(403).json({ type: 'error', message: 'no_memebership_created' });
+        }
+
+
+        // Get active subscription
+        const subscription = await SubscriptionModel.findOne({
+        where: {
+            organization_id: authUser.organizationId,
+            status: 'true',
+        },
+        order: [['ends_at', 'DESC']],
+        });
+
+        const isSubscriptionActive = subscription && subscription.ends_at > new Date();
+
+        return res.status(200).json({
+            type: 'success',
+            user: {
+                id: user.id,
+                uid: user.uid,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+            },
+            role: membership.role,
+            organization: membership.organization_id,
+            subscription: {
+                plan: subscription?.plan || 'none',
+                status: isSubscriptionActive ? 'active' : 'expired',
+                expiresAt: subscription?.ends_at || null,
+                isActive: isSubscriptionActive,
+            },
+            });
+
+    }catch (error) {
+    console.error('Get current user error:', error);
+    return res.status(500).json({ type: 'error', message: 'server_error' });
+  }
+
 },
 
-getCurrentUser: async (req: Request, res: Response): Promise<void> => {
-    // Assuming you have user attached to req (via auth middleware)
-    res.status(200).json({ message: 'Current user data' });
-},
+
 
 forgotPassword: async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({ message: 'Password reset email sent' });
