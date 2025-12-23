@@ -10,8 +10,25 @@ const port = process.env.PORT;
 
 app.use(cors());
 
+const startServer = async () => {
+    try{
+        await sequelize.authenticate();
+        console.log('Database connected successfully.');
+
+        // if(process.env.NODE_ENV === 'development'){
+        //     await sequelize.sync({ alter: true });
+        //     console.log('Database synced with alter: true (development mode)');
+        // }
+
+        // Then: start server
+        app.listen(port, () => {
+            console.log(`Server is running on http://localhost:${port}`);
+        });
+    }catch (error) {
+    console.error('Unable to start server:', error);
+    process.exit(1); // Stop the app if DB fails
+  }
+};
+
 // Start the server 
-app.listen(port, async () => {
-    await sequelize.sync({force: true});
-    console.log(`Server is running on http://localhost:${port}`);
-});
+startServer();

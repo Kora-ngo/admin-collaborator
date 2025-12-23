@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import AuthController from '../controller/auth.controller.js';
+import { verifyToken } from '../middleware/verifyToken.js';
 const router = Router();
 // POST /api/auth/login
 router.post('/login', AuthController.login);
@@ -14,8 +15,8 @@ router.post('/forgot-password', AuthController.forgotPassword);
 // POST /api/auth/reset-password
 router.post('/reset-password', AuthController.resetPassword);
 // POST /api/auth/refresh-token
-router.post('/refresh-token', AuthController.refreshToken);
+// router.post('/refresh-token', AuthController.refreshToken);
 // GET /api/auth/me
-router.get('/me', AuthController.getCurrentUser);
+router.get('/me', verifyToken, AuthController.getCurrentUser);
 export default router;
 //# sourceMappingURL=auth.routes.js.map

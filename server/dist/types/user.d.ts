@@ -1,11 +1,15 @@
-export interface User {
-    id?: number;
+export interface UserAttributes {
+    id: number;
     uid: number;
     name: string;
     email: string;
-    password_hash: string | null;
-    status: number;
-    date_of: string;
-    update_of: string | null;
+    phone: string;
+    password: string;
+    status: string;
+    date_of?: Date;
+    update_of?: Date;
 }
+export type UserCreationAttributes = Omit<UserAttributes, 'id'> & {
+    id?: number;
+};
 //# sourceMappingURL=user.d.ts.map

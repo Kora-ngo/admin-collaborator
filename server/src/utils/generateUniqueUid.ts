@@ -2,49 +2,31 @@
 import sequelize from '../config/database.js';
 import { QueryTypes } from 'sequelize';
 
-interface TableUidMap {
-  [key: string]: string;
-}
-
-const TABLE_UID_COLUMN_MAP: TableUidMap = {
-  user: 'uid',
-  organization: 'uid',
-  subscription: 'uid',
-  member: 'uid',
-  // add more tables as needed
-};
-
-const VALID_TABLES = Object.keys(TABLE_UID_COLUMN_MAP);
+const VALID_TABLES = ['users', 'organisation', 'subscription', 'membership'];
 
 export async function generateUniqueUid(tableName: string): Promise<number> {
   if (!VALID_TABLES.includes(tableName)) {
-    throw new Error(`Invalid table name: ${tableName}. Allowed: ${VALID_TABLES.join(', ')}`);
+    throw new Error(`Invalid table: ${tableName}`);
   }
 
-  const uidColumn = TABLE_UID_COLUMN_MAP[tableName];
-  const maxAttempts = 20; // Increased slightly — numeric collisions are more likely than UUIDs
+  const maxAttempts = 20;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    // Generate a large random number: 1_000_000_000 to 9_999_999_999 (10 digits)
-    // This gives ~9 billion possible values — plenty for most apps
-    const rawUid = Math.floor(1000000000 + Math.random() * 9000000000);
+    // Generate a 10-digit random number
+    const uid = Math.floor(1000000000 + Math.random() * 9000000000);
 
-    // Check if it already exists
-    const [result]: any[] = await sequelize.query(
-      `SELECT 1 FROM "${tableName}" WHERE "${uidColumn}" = ? LIMIT 1`,
-      {
-        replacements: [rawUid],
-        type: QueryTypes.SELECT,
-      }
-    );
+    // Use backticks manually — simple and reliable for MariaDB/MySQL
+    const sql = `SELECT 1 FROM \`${tableName}\` WHERE uid = ? LIMIT 1`;
 
-    if (!result) {
-      // Unique! Return as number
-      return rawUid;
+    const result: any[] = await sequelize.query(sql, {
+      replacements: [uid],
+      type: QueryTypes.SELECT,
+    });
+
+    if (result.length === 0) {
+      return uid; // Unique!
     }
-
-    // Collision → try again
   }
 
-  throw new Error(`Failed to generate unique numeric UID for table "${tableName}" after ${maxAttempts} attempts`);
+  throw new Error(`Could not generate unique UID for ${tableName} after ${maxAttempts} tries`);
 }

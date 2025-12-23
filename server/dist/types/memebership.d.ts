@@ -1,9 +1,9 @@
-export interface Membership {
+export interface MembershipAttributes {
     id: number;
     user_id: number;
     organization_id: number;
-    role: "admin" | "collaborator" | "enumerator";
-    status: "pending" | "active" | "suspended" | "deleted" | "invited";
-    date_of: string;
+    role: string;
+    date_of?: Date;
 }
+export type MembershipCreationAttributes = Omit<MembershipAttributes, 'id'>;
 //# sourceMappingURL=memebership.d.ts.map

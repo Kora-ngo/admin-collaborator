@@ -7,6 +7,7 @@ import { generateUniqueUid } from '../utils/generateUniqueUid.js';
 import OrganisationModel from '../models/Organisation.js';
 import sequelize from '../config/database.js';
 import MembershipModel from '../models/Membership.js';
+import User from '../models/User.js';
 
 
 const AuthController = {
@@ -15,11 +16,11 @@ const AuthController = {
     login: async (req: Request, res: Response) => {
     const { email, password } = req.body;
     try{
-
         // Validate input
         if(!email || !password){
               return res.status(400).json({ type: 'error', message: "missing_credentials" });
         }
+
 
         // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,10 +29,12 @@ const AuthController = {
         }
 
         // Check if the user exists
-        const userExist = await UserModel.findOne({ where: { email } });
+        const userExistData = await UserModel.findOne({ where: { email } });
+        const userExist = userExistData?.dataValues;
         if(!userExist){
            return res.status(404).json({ type: 'error', message: "user_not_found" });
         }
+
 
         // Check if the password is correct
         const isPasswordValid = await bcrypt.compare(password, userExist.password);
@@ -45,9 +48,10 @@ const AuthController = {
         }
 
         // Fetch user's memebership details (role + organization)
-        const membership = await MembershipModel.findOne({ 
+        const membershipData = await MembershipModel.findOne({ 
             where: { user_id: userExist?.id },
             });
+        const membership = membershipData?.dataValues;
 
         if(!membership){
            return res.status(403).json({ type: 'error', message: "no_organization_membership" });
@@ -64,13 +68,14 @@ const AuthController = {
         const role = membership?.role;
 
         // Fetch active subscription to get expiry date
-        const subscription = await SubscriptionModel.findOne({
+        const subscriptionData = await SubscriptionModel.findOne({
             where: {
                 organization_id: organizationId,
                 status: 'true'
             },
             order: [['ends_at', 'DESC']],
         });
+        const subscription = subscriptionData?.dataValues;
 
 
         // Check if subscription exists and get expiry date
@@ -118,44 +123,52 @@ const AuthController = {
 
 // Register admin handler
     registerAdmin: async (req: Request, res: Response) => {
-    const { user, organization, subscription } = req.body;
+    const { users, organisation, subscription } = req.body;
+    
+    console.log("Users --> ", users);
+    console.log("Organization --> ", organisation);
+    console.log("Subscription --> ", subscription);
+
+    if(!users || !organisation || !subscription){
+        return res.status(400).json({ type: 'error', message: 'missing_user_or_organisation_data' });
+    }
 
     // validate using the picked feilds
-    if(!user.name || !user.email || !user.password){
+    if(!users.name || !users.email || !users.password){
         return res.status(400).json({ type: 'error', message: 'missing_users_credentials' });
     }
-    if(!organization.name || !organization.access_code || !organization.email) {
+    if(!organisation.name || !organisation.access_code || !organisation.email) {
         return res.status(400).json({ type: 'error', message: 'missing_organisation_fields' });
     }
 
     const transaction = await sequelize.transaction();
     try {
         // Create user
-        const hashedPassword = await bcrypt.hash(user.password, 10);
-        const userUid = await generateUniqueUid('user');
+        const hashedPassword = await bcrypt.hash(users.password, 10);
+        const userUid = await generateUniqueUid('users');
 
         const newUser = await UserModel.create({
             uid: userUid,
-            name: user.name,
-            email: user.email,
-            phone: user.phone || null,
+            name: users.name,
+            email: users.email,
+            phone: users.phone || null,
             password: hashedPassword,
             status: 'true',
         }, { transaction });
 
 
         // Create Organisation
-        const orgUid = await generateUniqueUid('organization');
+        const orgUid = await generateUniqueUid('organisation');
         const newOrganisation = await OrganisationModel.create({
             uid: orgUid,
-            name: organization.name,
-            access_code: organization.access_code,
-            description: organization.description || null,
-            founded_at: organization.founded_at ? new Date(organization.founded_at) : new Date(),
-            country: organization.country || null,
-            region: organization.region || null,
-            email: organization.email,
-            phone: organization.phone || null,
+            name: organisation.name,
+            access_code: organisation.access_code,
+            description: organisation.description || null,
+            founded_at: organisation.founded_at ? new Date(organisation.founded_at) : new Date(),
+            country: organisation.country || null,
+            region: organisation.region || null,
+            email: organisation.email,
+            phone: organisation.phone || null,
             status: 'true',
         }, { transaction });
 
@@ -193,7 +206,7 @@ const AuthController = {
                 userId: newUser.id,
                 userUid: newUser.uid,
                 email: newUser.email,
-                organizationId: newOrganisation.id,
+                organisationId: newOrganisation.id,
                 membershipId: membershipId,
                 role: 'admin',
                 subscriptionExpiresAt: endsAt.toISOString(),
@@ -250,124 +263,123 @@ const AuthController = {
     },
 
 // Additional handlers
-    acceptInvitation: async (req: Request, res: Response) => {
-    const { token } = req.body;
+        acceptInvitation: async (req: Request, res: Response) => {
+        const { token } = req.body;
 
-    if(!token){
-        return res.status(400).json({ type: 'error', message: 'token_required' });
+        if(!token){
+            return res.status(400).json({ type: 'error', message: 'token_required' });
+        }
+
+        try{
+            const payload = jwt.verify(token, process.env.JWT_SECRET as string) as {
+                userId: number;
+                organisationId: number;
+                role: string;
+                exp: number;
+            };
+
+            const user = await UserModel.findByPk(payload.userId);
+            if(!user){
+                return res.status(404).json({ type: 'error', message: 'user_not_found' });
+            }
+
+            if(user.status === 'blocked' || user.status === 'false'){
+                return res.status(403).json({ type: 'error', message: user.status === 'blocked' ? "user_blocked" : "user_inactive"  });
+            }
+
+            if(user.status === "true"){
+                return res.status(400).json({ type: 'error', message: 'user_already_active' });
+            }
+
+            await MembershipModel.create({
+                user_id: payload.userId,
+                organization_id: payload.organisationId,
+                role: payload.role,
+            }); 
+
+            return res.status(200).json({ type: 'success', message: 'invitation_accepted', data: {
+                organizationId: payload.organisationId,
+                role: payload.role,
+            } });
+        }catch (error: any) {
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+        return res.status(401).json({ type: 'error', message: 'invalid_or_expired_token' });
+        }
+
+        console.error('Accept invitation error:', error);
+        return res.status(500).json({ type: 'error', message: 'server_error' });
     }
+    },
 
-    try{
-        const payload = jwt.verify(token, process.env.JWT_SECRET as string) as {
-            userId: number;
-            organizationId: number;
-            role: string;
-            exp: number;
-        };
 
-        const user = await UserModel.findByPk(payload.userId);
-        if(!user){
-            return res.status(404).json({ type: 'error', message: 'user_not_found' });
+    getCurrentUser: async (req: Request, res: Response) => {
+        const authUser = req.user;
+
+        console.log("Auth User --> ", authUser);
+
+        if (!authUser || !authUser.userId) {
+            return res.status(401).json({ type: 'error', message: 'unauthorized' });
         }
 
-        if(user.status === 'blocked' || user.status === 'false'){
-            return res.status(403).json({ type: 'error', message: user.status === 'blocked' ? "user_blocked" : "user_inactive"  });
-        }
-
-        if(user.status === "true"){
-            return res.status(400).json({ type: 'error', message: 'user_already_active' });
-        }
-
-        await MembershipModel.create({
-            user_id: payload.userId,
-            organization_id: payload.organizationId,
-            role: payload.role,
-        }); 
-
-        return res.status(200).json({ type: 'success', message: 'invitation_accepted', data: {
-            organizationId: payload.organizationId,
-            role: payload.role,
-        } });
-    }catch (error: any) {
-    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      return res.status(401).json({ type: 'error', message: 'invalid_or_expired_token' });
-    }
-
-    console.error('Accept invitation error:', error);
-    return res.status(500).json({ type: 'error', message: 'server_error' });
-  }
-},
+        try{
+            const userData = await User.findByPk(authUser.userId);
+            const user = userData?.dataValues;
 
 
-getCurrentUser: async (req: Request, res: Response) => {
-    const authUser = req.user;
-
-    if (!authUser || !authUser.userId) {
-        return res.status(401).json({ type: 'error', message: 'unauthorized' });
-    }
-
-    try{
-        const user = await UserModel.findByPk(authUser.userId, {
-        attributes: ['id', 'uid', 'name', 'email', 'phone', 'status'],
-        });
-
-        if (!user || user.status !== 'true') {
-            return res.status(403).json({ type: 'error', message: 'user_inactive_or_not_found' });
-        }
+            if (!user || user.status !== 'true') {
+                return res.status(403).json({ type: 'error', message: 'user_inactive_or_not_found' });
+            }
 
 
-        const membership = await MembershipModel.findOne({
-        where: { id: authUser.membershipId },
-        include: [
-            {
-            model: OrganisationModel,
-            attributes: ['id', 'uid', 'name', 'email', 'country', 'region'],
-            },
-        ],
-        });
-
-
-        if (!membership) {
-            return res.status(403).json({ type: 'error', message: 'no_memebership_created' });
-        }
-
-
-        // Get active subscription
-        const subscription = await SubscriptionModel.findOne({
-        where: {
-            organization_id: authUser.organizationId,
-            status: 'true',
-        },
-        order: [['ends_at', 'DESC']],
-        });
-
-        const isSubscriptionActive = subscription && subscription.ends_at > new Date();
-
-        return res.status(200).json({
-            type: 'success',
-            user: {
-                id: user.id,
-                uid: user.uid,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-            },
-            role: membership.role,
-            organization: membership.organization_id,
-            subscription: {
-                plan: subscription?.plan || 'none',
-                status: isSubscriptionActive ? 'active' : 'expired',
-                expiresAt: subscription?.ends_at || null,
-                isActive: isSubscriptionActive,
-            },
+            const membershipData = await MembershipModel.findOne({
+            where: { id: authUser.membershipId },
             });
+            const membership = membershipData?.dataValues;
 
-    }catch (error) {
-    console.error('Get current user error:', error);
-    return res.status(500).json({ type: 'error', message: 'server_error' });
-  }
 
-},
+            if (!membership) {
+                return res.status(403).json({ type: 'error', message: 'no_memebership_created' });
+            }
+
+
+            // Get active subscription
+            const subscriptionData = await SubscriptionModel.findOne({
+            where: {
+                organization_id: authUser.organizationId,
+                status: 'true',
+            },
+            order: [['ends_at', 'DESC']],
+            });
+            const subscription = subscriptionData!.dataValues;
+
+
+            const isSubscriptionActive = subscription && subscription.ends_at! > new Date();
+
+            return res.status(200).json({
+                type: 'success',
+                user: {
+                    id: user.id,
+                    uid: user.uid,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                },
+                role: membership.role,
+                organization: membership.organization_id,
+                subscription: {
+                    plan: subscription?.plan || 'none',
+                    status: isSubscriptionActive ? 'active' : 'expired',
+                    expiresAt: subscription?.ends_at || null,
+                    isActive: isSubscriptionActive,
+                },
+                });
+
+        }catch (error) {
+        console.error('Get current user error:', error);
+        return res.status(500).json({ type: 'error', message: 'server_error' });
+    }
+
+    },
 
 
 

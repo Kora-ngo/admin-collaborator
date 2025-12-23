@@ -4,18 +4,24 @@ import jwt from 'jsonwebtoken';
 export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 
+
     if(!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ type: 'error', message: 'access_token_required' });
     }
 
     const token = authHeader.split(' ')[1];
 
+    console.log("Split:", token);
+
     try {
 
         const payload = jwt.verify(token!, process.env.JWT_SECRET as string) as any;
 
+        console.log("Payload:", payload);
+
+
         // valided required fields in payload
-        if (!payload.userId || !payload.organizationId || !payload.role) {
+        if (!payload.userId || !payload.organisationId || !payload.role) {
            return res.status(401).json({ type: 'error', message: 'invalid_token_payload' });
         }
 
@@ -24,7 +30,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
             userId: payload.userId,
             userUid: payload.userUid,
             email: payload.email,
-            organizationId: payload.organizationId,
+            organizationId: payload.organisationId,
             membershipId: payload.membershipId,
             role: payload.role,
             subscriptionExpiresAt: payload.subscriptionExpiresAt || null,
