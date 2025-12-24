@@ -6,6 +6,8 @@ import Home from './layout/home'
 import Dasbaord from './pages/admin/dashbaord'
 import Projects from './pages/admin/project'
 import User from './pages/admin/users'
+import Register from './pages/auth/register'
+import Invitation from './pages/auth/invitation'
 
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
         {/* The authentication  */}
 
         <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/invitation" element={<Invitation />} />
 
 
 

@@ -28,13 +28,13 @@ const Login = () => {
                                   </div>
 
                                   <LoginForm />
-
+{/* 
                                   <div className="text-start text-sm">
                                         Not yet have an account ? {" "}
                                         <Link to="/register" className="text-accent underline underline-offset-4">
                                         Sign up
                                         </Link>
-                                  </div>
+                                  </div> */}
                             </form>
                         </div>
                     </div>
