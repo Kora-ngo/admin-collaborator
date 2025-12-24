@@ -2,7 +2,21 @@ import { Button } from "../../../components/widgets/button";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
 
-const ResgiterUser = () => {
+
+interface RegisterUserProps {
+  userForm: any;
+  errors: any;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onNext: () => void;
+}
+
+const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
+  errors,
+  handleChange,
+  onNext, }) => {
+
+
+
     return ( 
         <div className="flex flex-col justify-between p-6 md:p-10 bg-background">
           {/* Form Content - Takes available space */}
@@ -22,6 +36,9 @@ const ResgiterUser = () => {
                   name="fname"
                   type="text"
                   placeholder="E.g Frank"
+                  value={userForm.fname}
+                  hasError={errors.fname}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -33,6 +50,9 @@ const ResgiterUser = () => {
                   name="lname"
                   type="text"
                   placeholder="E.g Junior"
+                  value={userForm.lname}
+                  hasError={errors.lname}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -45,6 +65,9 @@ const ResgiterUser = () => {
                   name="email"
                   type="email"
                   placeholder="example@gmail.com"
+                  value={userForm.email}
+                  hasError={errors.email}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -59,6 +82,10 @@ const ResgiterUser = () => {
                     type="tel"
                     placeholder="Your phone number"
                     prefixElement={<label className="text-primary">(+237) |</label>}
+                    value={userForm.phone}
+                    hasError={errors.phone}
+                    onChange={handleChange}
+
                   />
                 </div>
               </div>
@@ -73,6 +100,10 @@ const ResgiterUser = () => {
                   name="password"
                   type="password"
                   placeholder="At least 4 characters"
+                  value={userForm.password}
+                  hasError={errors.password}
+                  onChange={handleChange}
+
                 />
               </div>
 
@@ -85,6 +116,9 @@ const ResgiterUser = () => {
                   name="confirmPassword"
                   type="password"
                   placeholder="Repeat your password"
+                  value={userForm.confirmPassword}
+                  hasError={errors.confirmPassword}
+                  onChange={handleChange}
                 />
               </div>
             </form>
@@ -93,7 +127,7 @@ const ResgiterUser = () => {
           {/* Next Button - Pushed to the bottom of the right column */}
           <div className="max-w-2xl w-full mx-auto mt-12">
             <div className="flex justify-end">
-                <Button type="button">
+                <Button onClick={onNext}>
                       Next
                 </Button>
             </div>
