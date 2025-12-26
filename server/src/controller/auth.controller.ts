@@ -15,6 +15,10 @@ const AuthController = {
 // Login handler
     login: async (req: Request, res: Response) => {
     const { email, password } = req.body;
+
+    console.log("Email --> ", email);
+    console.log("Password --> ", password);
+    
     try{
         // Validate input
         if(!email || !password){
@@ -172,9 +176,7 @@ const AuthController = {
 // Register admin handler
     registerAdmin: async (req: Request, res: Response) => {
     const { users, organisation } = req.body;
-    
-    console.log("Users --> ", users);
-    console.log("Organization --> ", organisation);
+
     // console.log("Subscription --> ", subscription);
 
     if(!users || !organisation){
@@ -372,58 +374,110 @@ const AuthController = {
             return res.status(401).json({ type: 'error', message: 'unauthorized' });
         }
 
+        console.log("Authriszed User");
+
         try{
-            const userData = await User.findByPk(authUser.userId);
-            const user = userData?.dataValues;
+
+            console.log("Trying to find user");
+
+
+            // 1. Fetch user (exclude password)
+            const userModel = await UserModel.findByPk(authUser.userId);
+            const user = userModel?.dataValues;
+
+            console.log("User find --> ", user);
 
 
             if (!user || user.status !== 'true') {
-                return res.status(403).json({ type: 'error', message: 'user_inactive_or_not_found' });
+            return res.status(403).json({
+                type: 'error',
+                message: 'user_inactive_or_not_found',
+            });
             }
 
 
-            const membershipData = await MembershipModel.findOne({
-            where: { id: authUser.membershipId },
-            });
-            const membership = membershipData?.dataValues;
+
+            // 2. Fetch the single membership (using the one from JWT)
+                const membershipData = await MembershipModel.findByPk(authUser.membershipId);
+                const membership = membershipData?.dataValues;
 
 
-            if (!membership) {
-                return res.status(403).json({ type: 'error', message: 'no_memebership_created' });
-            }
+                console.log("membershipData");
 
 
-            // Get active subscription
-            const subscriptionData = await SubscriptionModel.findOne({
-            where: {
-                organization_id: authUser.organizationId,
-                status: 'true',
-            },
-            order: [['ends_at', 'DESC']],
-            });
-            const subscription = subscriptionData!.dataValues;
-
-
-            const isSubscriptionActive = subscription && subscription.ends_at! > new Date();
-
-            return res.status(200).json({
-                type: 'success',
-                user: {
-                    id: user.id,
-                    uid: user.uid,
-                    name: user.name,
-                    email: user.email,
-                    phone: user.phone,
-                },
-                role: membership.role,
-                organization: membership.organization_id,
-                subscription: {
-                    plan: subscription?.plan || 'none',
-                    status: isSubscriptionActive ? 'active' : 'expired',
-                    expiresAt: subscription?.ends_at || null,
-                    isActive: isSubscriptionActive,
-                },
+                if (!membership || membership.status !== 'true') {
+                return res.status(403).json({
+                    type: 'error',
+                    message: 'invalid_or_inactive_membership',
                 });
+                }
+
+                const organisationData = await OrganisationModel.findByPk(authUser.organizationId);
+                const organisation = organisationData?.dataValues;
+
+
+                if (!organisation) {
+                return res.status(403).json({
+                    type: 'error',
+                    message: 'organization_not_found',
+                });
+                }
+
+
+                // 3. Fetch active subscription for this organization
+                const subscriptionData = await SubscriptionModel.findOne({
+                where: {
+                    organization_id: organisation.id,
+                    status: 'true',
+                },
+                order: [['ends_at', 'DESC']],
+                });
+
+                const subscriptionValues = subscriptionData?.dataValues;
+
+                const isSubscriptionActive = subscriptionValues
+                ? new Date(subscriptionValues.ends_at!) > new Date()
+                : false;
+
+                const subscription = {
+                plan: subscriptionValues?.plan || 'free',
+                status: subscriptionValues ? 'true' : 'expired',
+                expiresAt: subscriptionValues?.ends_at || null,
+                isActive: isSubscriptionActive,
+                };
+
+
+
+                // 4. Final clean response — all objects, no arrays
+                    return res.status(200).json({
+                    type: 'success',
+                    user: {
+                        id: user.id,
+                        uid: user.uid,
+                        name: user.name,
+                        email: user.email,
+                        phone: user.phone || null,
+                    },
+                    role: membership.role,
+                    membership: {
+                        id: membership.id,
+                        role: membership.role,
+                    },
+                    organisation: {
+                        id: organisation.id,
+                        uid: organisation.uid,
+                        name: organisation.name,
+                        email: organisation.email,
+                        phone: organisation.phone || null,
+                        country: organisation.country || null,
+                        region: organisation.region || null,
+                    },
+                    subscription,
+                    });
+
+
+
+            
 
         }catch (error) {
         console.error('Get current user error:', error);

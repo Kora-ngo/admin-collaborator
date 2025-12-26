@@ -54,3 +54,18 @@ export const validateOrganisation = (orgForm: {
     const hasErrors = Object.values(errors).some(Boolean);
     return {hasErrors, formErrors: errors, trimmedData}
 }
+
+
+export const validateLogin = (userForm: {
+    email: string,
+    password: string;
+}) => {
+    
+    const errors = {
+        email: !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(userForm.email),
+        password: userForm.password.length === 0,
+    }
+
+    const hasErrors = Object.values(errors).some(Boolean);
+    return {hasErrors, formErrors: errors, userData: userForm}
+}

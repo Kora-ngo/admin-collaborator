@@ -21,7 +21,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
 
         // valided required fields in payload
-        if (!payload.userId || !payload.organisationId || !payload.role) {
+        if (!payload.userId || !payload.organizationId || !payload.role) {
            return res.status(401).json({ type: 'error', message: 'invalid_token_payload' });
         }
 
@@ -30,7 +30,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
             userId: payload.userId,
             userUid: payload.userUid,
             email: payload.email,
-            organizationId: payload.organisationId,
+            organizationId: payload.organizationId,
             membershipId: payload.membershipId,
             role: payload.role,
             subscriptionExpiresAt: payload.subscriptionExpiresAt || null,

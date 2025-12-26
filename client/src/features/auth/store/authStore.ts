@@ -9,7 +9,8 @@ interface AuthState {
     token: string | null,
     loading: boolean,
     error: string | null,
-    register: (users: User, organisation: any) => Promise<ToastMessage>
+    register: (users: User, organisation: any) => Promise<ToastMessage>,
+    login: (email: String, password: any) => Promise<ToastMessage>,
 }
 
 
@@ -29,7 +30,42 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     organisation
                 });
 
-                console.log("Response --> ", response);
+                console.log("AuthStore - Resgister - Response --> ", response);
+
+                const toastMessage: ToastMessage = {
+                    type: response.type,
+                    message: response.message,
+                    show: true,
+                    data: response.token
+                };
+
+                return toastMessage;
+
+            }catch(err: any){
+
+                console.log("Error --> ", err);
+
+                const errorToast = handleApiError(err);
+                set({error: errorToast.message});
+                return errorToast;
+
+            }finally{
+                set({loading: false})
+            }
+        },
+
+        login: async (email, password) => {
+            try{
+                set({loading: false});
+                set({error: null});
+
+                console.log("Login --> ", {email, password});
+                const response: any = await axios.post("http://localhost:5000/api/auth/login", {
+                    email,
+                    password
+                });
+
+                console.log("AuthStore - Login - Response --> ", response);
 
                 const toastMessage: ToastMessage = {
                     type: response.type,
