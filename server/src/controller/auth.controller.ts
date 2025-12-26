@@ -51,46 +51,17 @@ const AuthController = {
            return res.status(403).json({ type: 'error', message: userExist?.status === 'blocked' ? "user_blocked" : "user_inactive"  });
         }
 
-        // Fetch ALL memberships
-        const membershipsData = await MembershipModel.findAll({ 
+        // Fetch One memberships
+        const membershipsData = await MembershipModel.findOne({ 
             where: { user_id: userExist.id },
         });
-        const memberships = membershipsData.map(m => m.dataValues);
+        const memberships = membershipsData?.dataValues;
 
-        if (memberships.length === 0) {
-            return res.status(403).json({ type: 'error', message: "no_organization_membership" });
-        }
-
-        const membershipCount = memberships.length;
-
-        // CASE 1: Only one membership → issue token
-        if (membershipCount === 1) {
-            const membership = memberships[0];
-            const organizationId = membership!.organization_id;
-            const role = membership!.role;
-
-            // Check if membership is pending
-            if (membership!.status === 'pending') {
-                return res.status(403).json({
-                    type: 'success',
-                    message: 'membership_pending',
-                    data: {
-                        membershipCount,
-                        memberships: [{
-                            id: membership!.id,
-                            organization_id: membership!.organization_id,
-                            role: membership!.role,
-                            status: membership!.status,
-                            date_of: membership!.date_of,
-                        }]
-                    }
-                });
-            }
 
             // Fetch active subscription
             const subscriptionData = await SubscriptionModel.findOne({
                 where: {
-                    organization_id: organizationId,
+                    organization_id: memberships?.organization_id,
                     status: 'true'
                 },
                 order: [['ends_at', 'DESC']],
@@ -108,9 +79,9 @@ const AuthController = {
                     userId: userExist.id,
                     userUid: userExist.uid,
                     email: userExist.email || email,
-                    organizationId,
-                    membershipId: membership!.id,
-                    role,
+                    organizationId: memberships?.organization_id,
+                    membershipId: memberships?.id,
+                    role: memberships?.role,
                     subscriptionExpiresAt: expiresAt
                 },
                 process.env.JWT_SECRET as string,
@@ -120,49 +91,9 @@ const AuthController = {
             return res.status(200).json({
                 type: 'success',
                 token,
-                user: {
-                    id: userExist.id,
-                    uid: userExist.uid,
-                    name: userExist.name,
-                    email: userExist.email || email,
-                    role,
-                    organization: {
-                        id: organizationId,
-                    },
-                    subscriptionExpiresAt: expiresAt,
-                },
-                membershipCount,
-                memberships: [{
-                    id: membership!.id,
-                    organization_id: membership!.organization_id,
-                    role: membership!.role,
-                    status: membership!.status,
-                    date_of: membership!.date_of,
-                }]
             });
-        }
+    
 
-
-
-        // CASE 2: Multiple memberships → return list, no token
-        return res.status(200).json({
-            type: 'success',
-            message: 'multiple_memberships',
-            membershipCount,
-            memberships: memberships.map(m => ({
-                id: m.id,
-                organization_id: m.organization_id,
-                role: m.role,
-                status: m.status,
-                date_of: m.date_of,
-            })),
-            user: {
-                id: userExist.id,
-                uid: userExist.uid,
-                name: userExist.name,
-                email: userExist.email || email,
-            }
-        });
 
 
      

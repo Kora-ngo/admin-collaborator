@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import type { ToastMessage } from "../../../types/toastMessage";
 import type { User } from "../../../types/user";
 import axios from "axios";
 import { handleApiError } from "../../../utils/handleApiError";
@@ -9,8 +8,9 @@ interface AuthState {
     token: string | null,
     loading: boolean,
     error: string | null,
-    register: (users: User, organisation: any) => Promise<ToastMessage>,
-    login: (email: String, password: any) => Promise<ToastMessage>,
+    register: (users: User, organisation: any) => Promise<any>,
+    login: (email: String, password: any) => Promise<any>,
+    getCurrentUser: () => Promise<any>
 }
 
 
@@ -29,17 +29,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     users,
                     organisation
                 });
+                const fetchData = response.data;
 
                 console.log("AuthStore - Resgister - Response --> ", response);
 
-                const toastMessage: ToastMessage = {
-                    type: response.type,
-                    message: response.message,
-                    show: true,
-                    data: response.token
-                };
-
-                return toastMessage;
+                if(fetchData.token){
+                    localStorage.setItem('token', fetchData.token);
+                    set({token: fetchData.token});
+                    await get().getCurrentUser();
+                }
 
             }catch(err: any){
 
@@ -65,16 +63,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     password
                 });
 
-                console.log("AuthStore - Login - Response --> ", response);
+                console.log("AuthStore - Login - Response --> ", response.data);
 
-                const toastMessage: ToastMessage = {
-                    type: response.type,
-                    message: response.message,
-                    show: true,
-                    data: response.token
-                };
+                const fetchData = response.data;
 
-                return toastMessage;
+                if(fetchData.token){
+                    localStorage.setItem('token', fetchData.token);
+                    set({token: fetchData.token});
+                    await get().getCurrentUser();
+                }
+                
 
             }catch(err: any){
 
@@ -86,6 +84,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
             }finally{
                 set({loading: false})
+            }
+        },
+
+        getCurrentUser: async () => {
+            const token = get().token;
+
+            console.log('Fetch token --> ', token);
+
+            if (!token) return;
+
+            try {
+                set({loading: true, error: null});
+                const {data} = await axios.get("http://localhost:5000/api/auth/me", {
+                    headers: {Authorization: `Bearer ${token}`}
+                });
+
+                console.log("AuthStore - Current user - Response --> ", data);
+
+
+                set({user: data});
+            }catch(err: any){
+
+                console.log("Error --> ", err);
+                const errorToast = handleApiError(err);
+                set({error: errorToast.message});
+                return errorToast;
+
+            }finally {
+                set({loading: false});
             }
         }
 
