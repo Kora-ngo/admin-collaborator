@@ -1,7 +1,12 @@
 import { useState } from "react"
 import { validateOrganisation, validateUser } from "../utils/validateUser";
+import { useAuthStore } from "../store/authStore";
+import { useToastStore } from "../../../store/toastStore";
 
 export const useAdminResgister = () => {
+
+    const resgister = useAuthStore((state) => state.register);
+    const showToast = useToastStore((state) => state.showToast);
 
     const [userForm, setUserForm] = useState({
         fname: "",
@@ -71,30 +76,32 @@ export const useAdminResgister = () => {
 
 
     const handleUserData = (): Boolean => {
-        const {hasErrors, formErrors, trimmedData} = validateUser(userForm);
+        const {hasErrors, formErrors} = validateUser(userForm);
         setError(formErrors);
         if(!hasErrors){
-            console.log("Data --> ", trimmedData);
             return true;
         }
-
-        console.log('Form Errors --> ', formErrors);
         return false;
         
     } 
 
 
-    const handleOrgData = (): Boolean => {
+    const handleOrgData = async (): Promise<Boolean> => {
+
+        const {userData} = validateUser(userForm);
+
         const {hasErrors, formErrors, trimmedData} = validateOrganisation(orgForm);
         setOrgErrors(formErrors);
 
-        if(!hasErrors){
-            console.log("Organisation --> ", trimmedData);
-            return true;
+        if (hasErrors) {
+            return false;
         }
 
-        console.log('Form Error --> ', formErrors);
-        return false;
+        const toastMessage = await resgister(userData, trimmedData);
+        showToast(toastMessage);
+
+        return toastMessage.type === "success";
+        
     }
 
 

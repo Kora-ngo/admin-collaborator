@@ -1,8 +1,9 @@
 import { Button } from "../../../components/widgets/button";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
-import { Textarea } from "../../../components/widgets/textarea";
-import { useAdminResgister } from "../hooks/useAdminResgister";
+import { useAuthStore } from "../store/authStore";
+// import { Textarea } from "../../../components/widgets/textarea";
+// import { useAdminResgister } from "../hooks/useAdminResgister";
 
 interface RegisterOrgProps {
   orgForm: any;
@@ -14,6 +15,8 @@ interface RegisterOrgProps {
 
 
 const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrgChange, onNext, onBack })=> {
+
+    const loading = useAuthStore((state) => state.loading);
 
 
 
@@ -119,8 +122,8 @@ const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrg
                     <Button  variant="ghost" onClick={(e: any) => {e.preventDefault(); onBack();}}>
                         Previous
                     </Button>
-                    <Button  onClick={onNext}>
-                        Next
+                    <Button  onClick={onNext} loading={loading}>
+                        Register
                     </Button>
                 </div>
             </div>

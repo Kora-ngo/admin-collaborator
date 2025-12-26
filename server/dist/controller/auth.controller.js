@@ -141,22 +141,44 @@ const AuthController = {
     },
     // Register admin handler
     registerAdmin: async (req, res) => {
-        const { users, organisation, subscription } = req.body;
+        const { users, organisation } = req.body;
         console.log("Users --> ", users);
         console.log("Organization --> ", organisation);
-        console.log("Subscription --> ", subscription);
-        if (!users || !organisation || !subscription) {
+        // console.log("Subscription --> ", subscription);
+        if (!users || !organisation) {
             return res.status(400).json({ type: 'error', message: 'missing_user_or_organisation_data' });
         }
         // validate using the picked feilds
         if (!users.name || !users.email || !users.password) {
             return res.status(400).json({ type: 'error', message: 'missing_users_credentials' });
         }
-        if (!organisation.name || !organisation.access_code || !organisation.email) {
+        if (!organisation.name || !organisation.email) {
             return res.status(400).json({ type: 'error', message: 'missing_organisation_fields' });
         }
         const transaction = await sequelize.transaction();
         try {
+            // Check if user with this email already exists ===
+            const existingUser = await UserModel.findOne({
+                where: { email: users.email.toLowerCase().trim() }, // Normalize email
+            });
+            if (existingUser) {
+                await transaction.rollback();
+                return res.status(409).json({
+                    type: 'error',
+                    message: 'email_already_in_use',
+                });
+            }
+            // Check if organisation email is already used ===
+            const existingOrgEmail = await OrganisationModel.findOne({
+                where: { email: organisation.email.toLowerCase().trim() },
+            });
+            if (existingOrgEmail) {
+                await transaction.rollback();
+                return res.status(409).json({
+                    type: 'error',
+                    message: 'organisation_email_already_in_use',
+                });
+            }
             // Create user
             const hashedPassword = await bcrypt.hash(users.password, 10);
             const userUid = await generateUniqueUid('users');
@@ -173,9 +195,7 @@ const AuthController = {
             const newOrganisation = await OrganisationModel.create({
                 uid: orgUid,
                 name: organisation.name,
-                access_code: organisation.access_code,
                 description: organisation.description || null,
-                founded_at: organisation.founded_at ? new Date(organisation.founded_at) : new Date(),
                 country: organisation.country || null,
                 region: organisation.region || null,
                 email: organisation.email,
@@ -192,7 +212,7 @@ const AuthController = {
             // This is the created membership ID
             const membershipId = newMembership.id;
             // Subscription
-            const plan = subscription.plan || 'free';
+            const plan = 'free';
             const trialDays = 30;
             const startedAt = new Date();
             const endsAt = new Date();
@@ -220,25 +240,6 @@ const AuthController = {
                 type: 'success',
                 message: 'admin_registered_successfully',
                 token,
-                data: {
-                    user: {
-                        id: newUser.id,
-                        uid: newUser.uid,
-                        name: newUser.name,
-                        email: newUser.email,
-                    },
-                    organisation: {
-                        id: newOrganisation.id,
-                        uid: newOrganisation.uid,
-                        name: newOrganisation.name,
-                        email: newOrganisation.email,
-                    },
-                    role: 'admin',
-                    subscription: {
-                        plan,
-                        expiresAt: endsAt.toISOString(),
-                    },
-                },
             });
         }
         catch (error) {

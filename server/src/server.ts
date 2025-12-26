@@ -8,8 +8,6 @@ import sequelize from './config/database.js';
 dotenv.config();
 const port = process.env.PORT;
 
-app.use(cors());
-
 const startServer = async () => {
     try{
         await sequelize.authenticate();

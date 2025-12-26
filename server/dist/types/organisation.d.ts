@@ -2,9 +2,7 @@ export interface OrganisationAttributes {
     id: number;
     uid: number;
     name: string;
-    access_code: number;
     description: string | null;
-    founded_at: Date;
     country: string | null;
     region: string | null;
     email: string;

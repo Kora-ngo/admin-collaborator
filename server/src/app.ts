@@ -1,7 +1,12 @@
 import  express, {type Request, type Response, type NextFunction} from "express";
 import routes from "./routes/index.js";
+import cors from 'cors';
 
 const app = express();
+
+// Allow my frontend dureing dev
+app.use(cors());
+
 
 // Middleware 
 app.use(express.json());

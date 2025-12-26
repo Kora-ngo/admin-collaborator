@@ -3,6 +3,7 @@ import logo from "../../assets/logo.svg";
 import RegisterUser from '../../features/auth/components/register-user';
 import RegisterOrg from '../../features/auth/components/register-org';
 import { useAdminResgister } from '../../features/auth/hooks/useAdminResgister'; // Adjust path
+import Toast from '../../components/widgets/toast';
 
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(1);

@@ -25,7 +25,7 @@ export const validateUser = (userForm: {
 
     
     const hasErrors = Object.values(errors).some(Boolean);
-    return {hasErrors, formErrors: errors, trimmedData};
+    return {hasErrors, formErrors: errors, userData: trimmedData};
 }
 
 
@@ -44,6 +44,7 @@ export const validateOrganisation = (orgForm: {
 
     const trimmedData = {
         name: orgForm.name.trim(),
+        email: orgForm.email,
         description: orgForm.description ? orgForm.description.trim() : "",
         country: orgForm.country ? orgForm.country.trim() : "",
         region: orgForm.region ? orgForm.region.trim() : "",

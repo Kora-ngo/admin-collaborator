@@ -8,6 +8,7 @@ import Projects from './pages/admin/project'
 import User from './pages/admin/users'
 import Register from './pages/auth/register'
 import Invitation from './pages/auth/invitation'
+import GlobalToast from './utils/globalToast'
 
 
 function App() {
@@ -56,6 +57,7 @@ function App() {
 
 
       </Routes>
+      <GlobalToast />
     </BrowserRouter>
   )
 }

@@ -10,9 +10,7 @@ class Organisation extends Model<OrganisationAttributes, OrganisationCreationAtt
   public id!: number;
   public uid!: number;
   public name!: string;
-  public access_code!: number;
   public description!: string | null;
-  public founded_at!: Date;
   public country!: string | null;
   public region!: string | null;
   public email!: string;
@@ -38,19 +36,10 @@ const OrganisationModel = Organisation.init({
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    access_code: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
     description: {
         type: DataTypes.STRING(255),
         allowNull: true,
         defaultValue: null
-    },
-    founded_at: {
-        type: DataTypes.DATE(6),
-        allowNull: false,
-        defaultValue: DataTypes.NOW
     },
     country: {
         type: DataTypes.STRING(255),
