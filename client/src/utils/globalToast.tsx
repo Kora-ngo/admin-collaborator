@@ -1,4 +1,3 @@
-// components/GlobalToast.tsx
 import React, { useEffect } from 'react';
 import Toast from '../components/widgets/toast';
 import { useToastStore } from '../store/toastStore';
@@ -20,12 +19,19 @@ const GlobalToast: React.FC = () => {
   // If no toast or not shown → render nothing
   if (!toast || !toast.show) return null;
 
+  // ← Safely get title
+  const title = toast.title || 
+    (toast.type 
+      ? toast.type.charAt(0).toUpperCase() + toast.type.slice(1) 
+      : "Notification"
+    );
+
   return (
     <Toast
-      title={toast.title || toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}
-      message={toast.message}
-      variant={toast.type}
-      isOpen={toast.show}
+      title={title}
+      message={toast.message || "No message"}
+      variant={toast.type || "info"}
+      isOpen={true}
       onClose={hideToast}
       autoClose={toast.autoClose || 4000} // Optional: let individual toasts override duration
     />

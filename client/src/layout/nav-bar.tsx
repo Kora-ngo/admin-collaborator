@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { useAuthStore } from "../features/auth/store/authStore";
 
 interface NavbarProps {
     toggleSidebar: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
+        const {user} = useAuthStore();
 
         const location = useLocation();
 
@@ -70,13 +72,13 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
                         <div className="relative flex items-center gap-3" ref={dropdownRef}>
                         {/* Profile Circle */}
                         <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-lg uppercase cursor-pointer">
-                            A
+                            {user.user.name ? user.user.name.charAt(0) : "A"}
                         </div>
 
                         {/* User Info */}
                         <div className="hidden sm:flex flex-col leading-tight">
-                            <span className="text-sm font-semibold text-gray-900">Administartor User</span>
-                            <span className="text-xs text-gray-500">Admin</span>
+                            <span className="text-sm font-semibold text-gray-900">{user.user.name || "Admin User"}</span>
+                            <span className="text-xs text-gray-500">{user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "User"}</span>
                         </div>
                         </div>
 

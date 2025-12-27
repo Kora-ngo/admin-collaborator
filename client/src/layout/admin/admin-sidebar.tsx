@@ -1,6 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 
-const AdminSideBar = () => {
+
+interface AdminSideBarProp {
+    onLogoutClick: () => void;
+}
+
+const AdminSideBar: React.FC<AdminSideBarProp> = ({onLogoutClick}) => {
     
     const location = useLocation();
      const endpoint = location.pathname;
@@ -91,7 +96,7 @@ const AdminSideBar = () => {
                 </li>
 
                 <li>
-                    <Link to="/" className={endpoint === '/' ? activeMenu : unActiveMenu}>
+                    <Link to="/" onClick={(e: any) => {e.preventDefault(); onLogoutClick()}} className={endpoint === '/' ? activeMenu : unActiveMenu}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-secondary-foreground">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
                         </svg>
@@ -99,6 +104,7 @@ const AdminSideBar = () => {
                     </Link>
                 </li>
             </ul>
+
         </>
      );
 }

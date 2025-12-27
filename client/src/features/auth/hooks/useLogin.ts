@@ -2,6 +2,7 @@ import { useState } from "react"
 import { validateLogin } from "../utils/validateUser";
 import { useAuthStore } from "../store/authStore";
 import { useToastStore } from "../../../store/toastStore";
+import type { ToastMessage } from "../../../types/toastMessage";
 
 export const useLogin = () => {
 
@@ -38,8 +39,12 @@ export const useLogin = () => {
             return;
         }
 
-        const toastMessage = await login(userData.email, userData.password);
-        showToast(toastMessage);
+        const toastMessage: ToastMessage = await login(userData.email, userData.password);
+        if(toastMessage.type === "error")
+        {
+            showToast(toastMessage);
+            return;
+        }
     }
 
 

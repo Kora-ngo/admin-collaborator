@@ -4,9 +4,10 @@ import logo from "../assets/logo.svg";
 interface SideBarProps {
     isOpen: boolean;
     toggleSideBar: () => void;
+    onLogoutClick: () => void;
 }
 
-const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar}) => {
+const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar, onLogoutClick}) => {
     return ( 
         <aside id="default-sidebar"
             className={`border-r-1 border-gray-200 fixed top-0 left-0 z-40 w-64 h-screen transition-transform duration-300 ${
@@ -25,7 +26,7 @@ const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar}) => {
                         <span className="ms-3 font-semibold text-3xl text-primary">Kora</span>
                     </div>
                     <div className="mx-2">
-                        <AdminSideBar />
+                        <AdminSideBar onLogoutClick={onLogoutClick} />
                     </div>
                 </div>
         </aside>

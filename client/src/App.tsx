@@ -6,10 +6,10 @@ import Dasbaord from './pages/admin/dashbaord'
 import Projects from './pages/admin/project'
 import Register from './pages/auth/register'
 import Invitation from './pages/auth/invitation'
-import GlobalToast from './utils/globalToast'
 import { useAuthStore } from './features/auth/store/authStore'
 import { useEffect } from 'react'
 import Users from './pages/admin/users'
+import GlobalToast from './utils/globalToast'
 
 function App() {
   const token = localStorage.getItem('token');
@@ -21,6 +21,7 @@ function App() {
       getCurrentUser();
     }
   }, [token, getCurrentUser, user]);
+
 
   // Step 2: While fetching user → show simple loading
   if (token && loading) {
@@ -41,7 +42,7 @@ function App() {
           <Route path="/invitation" element={<Invitation />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        {/* <GlobalToast /> */}
+        <GlobalToast />
       </BrowserRouter>
     );
   }
@@ -60,7 +61,7 @@ function App() {
             {/* Redirect everything else to admin dashboard */}
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
-          {/* <GlobalToast /> */}
+          <GlobalToast />
         </BrowserRouter>
       );
     }
@@ -72,7 +73,7 @@ function App() {
             <Route path="/collaborator/dashboard" element={<div>Collaborator Dashboard (MVP)</div>} />
             <Route path="*" element={<Navigate to="/collaborator/dashboard" replace />} />
           </Routes>
-          {/* <GlobalToast /> */}
+          <GlobalToast />
         </BrowserRouter>
       );
     }

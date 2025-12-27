@@ -2,6 +2,7 @@ import { useState } from "react"
 import { validateOrganisation, validateUser } from "../utils/validateUser";
 import { useAuthStore } from "../store/authStore";
 import { useToastStore } from "../../../store/toastStore";
+import type { ToastMessage } from "../../../types/toastMessage";
 
 export const useAdminResgister = () => {
 
@@ -97,8 +98,10 @@ export const useAdminResgister = () => {
             return false;
         }
 
-        const toastMessage = await resgister(userData, trimmedData);
-        showToast(toastMessage);
+        const toastMessage: ToastMessage = await resgister(userData, trimmedData);
+        if(toastMessage.type === "error"){
+            showToast(toastMessage);
+        }
 
         return toastMessage.type === "success";
         
