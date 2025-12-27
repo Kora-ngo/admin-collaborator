@@ -1,65 +1,85 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import Login from './pages/auth/login'
-import ProtectedRoute from './routes/protectedRoute'
 import Home from './layout/home'
 import Dasbaord from './pages/admin/dashbaord'
 import Projects from './pages/admin/project'
-import User from './pages/admin/users'
 import Register from './pages/auth/register'
 import Invitation from './pages/auth/invitation'
 import GlobalToast from './utils/globalToast'
-
+import { useAuthStore } from './features/auth/store/authStore'
+import { useEffect } from 'react'
+import Users from './pages/admin/users'
 
 function App() {
-  const user = {
-    role: "admin"
+  const token = localStorage.getItem('token');
+  const { user, loading, getCurrentUser } = useAuthStore();
+
+  // Step 1: On app start — if token exists, fetch user
+  useEffect(() => {
+    if (token && !user) {
+      getCurrentUser();
+    }
+  }, [token, getCurrentUser, user]);
+
+  // Step 2: While fetching user → show simple loading
+  if (token && loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
-  return (
-    <BrowserRouter>
-      <Routes>
+  // No token → only show login/register pages
+  if (!token) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/invitation" element={<Invitation />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        {/* <GlobalToast /> */}
+      </BrowserRouter>
+    );
+  }
 
-        {/* The authentication  */}
-
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/invitation" element={<Invitation />} />
-
-
-
-        {/* For the admin  */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedRole="admin" user={user}>
-                <Home />
-            </ProtectedRoute>
-          }
-          >
+  // Token exists + user loaded → decide once where to go
+  if (user) {
+    if (user.role === 'admin') {
+      return (
+        <BrowserRouter>
+          <Routes>
+            <Route path="/admin" element={<Home />}>
               <Route index element={<Dasbaord />} />
               <Route path="projects" element={<Projects />} />
-              <Route path="users" element={<User />} />
-          </Route>
+              <Route path="users" element={<Users />} />
+            </Route>
+            {/* Redirect everything else to admin dashboard */}
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Routes>
+          {/* <GlobalToast /> */}
+        </BrowserRouter>
+      );
+    }
 
+    if (user.role === 'collaborator') {
+      return (
+        <BrowserRouter>
+          <Routes>
+            <Route path="/collaborator/dashboard" element={<div>Collaborator Dashboard (MVP)</div>} />
+            <Route path="*" element={<Navigate to="/collaborator/dashboard" replace />} />
+          </Routes>
+          {/* <GlobalToast /> */}
+        </BrowserRouter>
+      );
+    }
+  }
 
-        {/* For the collaborator  */}
-
-        <Route
-          path="/collaborator"
-          element={
-            <ProtectedRoute allowedRole="collaborator" user={user}>
-                <div></div>
-            </ProtectedRoute>
-          }
-          />
-
-
-
-      </Routes>
-      <GlobalToast />
-    </BrowserRouter>
-  )
+  // Fallback (should not reach here)
+  return null;
 }
 
-export default App
+export default App;

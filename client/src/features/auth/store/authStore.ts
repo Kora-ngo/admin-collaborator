@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import type { User } from "../../../types/user";
-import axios from "axios";
 import { handleApiError } from "../../../utils/handleApiError";
+import axiosInstance from "../../../utils/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 interface AuthState {
-    user: User | null,
+    user: any,
     token: string | null,
     loading: boolean,
     error: string | null,
@@ -13,25 +14,28 @@ interface AuthState {
     getCurrentUser: () => Promise<any>
 }
 
+const endpoint = "/auth";
+
 
 export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     token: localStorage.getItem('token'),
     loading: false,
     error: null,
+    role: "",
 
         register: async (users, organisation) => {
 
             try{
                 set({loading: true, error: null});
                 console.log("Registering:", { users, organisation });
-                const response: any = await axios.post("http://localhost:5000/api/auth/register-admin", {
+                const response: any = await axiosInstance.post(`${endpoint}/register-admin`, {
                     users,
                     organisation
                 });
                 const fetchData = response.data;
 
-                console.log("AuthStore - Resgister - Response --> ", response);
+                // console.log("AuthStore - Resgister - Response --> ", response);
 
                 if(fetchData.token){
                     localStorage.setItem('token', fetchData.token);
@@ -58,12 +62,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 set({error: null});
 
                 console.log("Login --> ", {email, password});
-                const response: any = await axios.post("http://localhost:5000/api/auth/login", {
+                const response: any = await axiosInstance.post(`${endpoint}/login`, {
                     email,
                     password
                 });
 
-                console.log("AuthStore - Login - Response --> ", response.data);
+                // console.log("AuthStore - Login - Response --> ", response.data);
 
                 const fetchData = response.data;
 
@@ -90,29 +94,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         getCurrentUser: async () => {
             const token = get().token;
 
-            console.log('Fetch token --> ', token);
-
-            if (!token) return;
+           if (!token) {
+                set({ user: null });
+                return;
+            }
 
             try {
                 set({loading: true, error: null});
-                const {data} = await axios.get("http://localhost:5000/api/auth/me", {
-                    headers: {Authorization: `Bearer ${token}`}
-                });
-
+                const {data} = await axiosInstance.get(`${endpoint}/me`);
                 console.log("AuthStore - Current user - Response --> ", data);
-
-
-                set({user: data});
+                set({user: data, loading: false});
             }catch(err: any){
-
                 console.log("Error --> ", err);
+                localStorage.removeItem('token');
+                set({ user: null, token: null, loading: false });
                 const errorToast = handleApiError(err);
                 set({error: errorToast.message});
                 return errorToast;
 
-            }finally {
-                set({loading: false});
             }
         }
 
