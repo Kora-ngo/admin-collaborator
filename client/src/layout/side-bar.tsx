@@ -5,9 +5,10 @@ interface SideBarProps {
     isOpen: boolean;
     toggleSideBar: () => void;
     onLogoutClick: () => void;
+    onSettingClick: () => void;
 }
 
-const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar, onLogoutClick}) => {
+const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar, onLogoutClick, onSettingClick}) => {
     return ( 
         <aside id="default-sidebar"
             className={`border-r-1 border-gray-200 fixed top-0 left-0 z-40 w-64 h-screen transition-transform duration-300 ${
@@ -26,7 +27,7 @@ const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar, onLogoutClick})
                         <span className="ms-3 font-semibold text-3xl text-primary">Kora</span>
                     </div>
                     <div className="mx-2">
-                        <AdminSideBar onLogoutClick={onLogoutClick} />
+                        <AdminSideBar onSettingClick={onSettingClick} onLogoutClick={onLogoutClick} />
                     </div>
                 </div>
         </aside>
