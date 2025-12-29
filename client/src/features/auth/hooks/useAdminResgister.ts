@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { validateOrganisation, validateUser } from "../utils/validateUser";
 import { useAuthStore } from "../store/authStore";
 import { useToastStore } from "../../../store/toastStore";
@@ -7,7 +7,9 @@ import type { ToastMessage } from "../../../types/toastMessage";
 export const useAdminResgister = () => {
 
     const resgister = useAuthStore((state) => state.register);
+    const {user} = useAuthStore();
     const showToast = useToastStore((state) => state.showToast);
+
 
     const [userForm, setUserForm] = useState({
         fname: "",
@@ -41,6 +43,29 @@ export const useAdminResgister = () => {
         name: false,
         email: false
     });
+
+
+    // Update user info ........................
+
+    const userData = user.user;
+    // const organisationData = user.organisation;
+
+    const fullname = userData.name;
+    const [firstName, lastName] = fullname.split(" ");
+
+
+    useEffect(() => {
+        if(userData.id){
+            setUserForm({
+                fname: firstName,
+                lname: lastName,
+                email: userData.email,
+                phone: userData.phone,
+                password: "",
+                confirmPassword: ""
+            })
+        }
+    }, [user])
 
 
 
@@ -80,6 +105,12 @@ export const useAdminResgister = () => {
         const {hasErrors, formErrors} = validateUser(userForm);
         setError(formErrors);
         if(!hasErrors){
+
+            if(userData.id){
+                console.log("Update user --> ", userForm);
+                return true;
+            }
+
             return true;
         }
         return false;
@@ -88,9 +119,7 @@ export const useAdminResgister = () => {
 
 
     const handleOrgData = async (): Promise<Boolean> => {
-
         const {userData} = validateUser(userForm);
-
         const {hasErrors, formErrors, trimmedData} = validateOrganisation(orgForm);
         setOrgErrors(formErrors);
 
@@ -104,8 +133,8 @@ export const useAdminResgister = () => {
         }
 
         return toastMessage.type === "success";
-        
     }
+    
 
 
 

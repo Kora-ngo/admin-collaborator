@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
 import { Button } from "../../../components/widgets/button";
+import { useAdminResgister } from "../hooks/useAdminResgister";
 
 interface AccountFormProps {
     onToggle: () => void;
@@ -10,6 +11,7 @@ interface AccountFormProps {
 const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
 
     const [enablePassword, setEnablePassword] = useState(false);
+    const {userForm, errors, handleChange, handleUserData} = useAdminResgister();
 
     const handleCancel = () => {
         // Reste to the default data
@@ -29,6 +31,9 @@ const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
                         name="fname"
                         type="text"
                         placeholder="E.g Frank"
+                        value={userForm.fname}
+                        hasError={errors.fname}
+                        onChange={handleChange}
                         />
                     </div>
 
@@ -40,6 +45,9 @@ const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
                         name="lname"
                         type="text"
                         placeholder="E.g Junior"
+                        value={userForm.lname}
+                        hasError={errors.lname}
+                        onChange={handleChange}
                         />
                     </div>
 
@@ -52,6 +60,9 @@ const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
                         type="email"
                         placeholder="example@gmail.com"
                         disabled={true}
+                        value={userForm.email}
+                        hasError={errors.email}
+                        onChange={handleChange}
                         />
                     </div>
 
@@ -66,6 +77,9 @@ const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
                             type="tel"
                             placeholder="Your phone number"
                             prefixElement={<label className="text-primary">(+237) |</label>}
+                            value={userForm.phone}
+                            hasError={errors.phone}
+                            onChange={handleChange}
                         />
                         </div>
                     </div>
@@ -82,7 +96,8 @@ const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
                                 name="password"
                                 type="password"
                                 placeholder="At least 4 characters"
-
+                                hasError={errors.password}
+                                onChange={handleChange}
                                 />
                             </div>
                         )
@@ -101,6 +116,8 @@ const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
                                 name="confirmPassword"
                                 type="password"
                                 placeholder="Repeat your password"
+                                hasError={errors.confirmPassword}
+                                onChange={handleChange}
                                 />
                             </div>
                         )
@@ -114,7 +131,7 @@ const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
                 <div className="flex justify-end space-x-4 mt-auto pt-6">
                     <Button variant="outline" onClick={() => setEnablePassword(!enablePassword)}>{enablePassword ? "Reset Password" : "Change Password"}</Button>
                     <Button variant="ghost" onClick={handleCancel}>Cancel</Button>
-                    <Button>Update Profile</Button>
+                    <Button onClick={handleUserData}>Update Profile</Button>
                 </div>
         
         </div>
