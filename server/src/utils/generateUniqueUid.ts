@@ -2,7 +2,14 @@
 import sequelize from '../config/database.js';
 import { QueryTypes } from 'sequelize';
 
-const VALID_TABLES = ['users', 'organisation', 'subscription', 'membership'];
+const VALID_TABLES = [
+  'users', 
+  'organisation', 
+  'subscription', 
+  'membership', 
+  'assistance_type', 
+  'assistance'
+];
 
 export async function generateUniqueUid(tableName: string): Promise<number> {
   if (!VALID_TABLES.includes(tableName)) {

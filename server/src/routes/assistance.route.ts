@@ -16,19 +16,7 @@ router.put('/:id', verifyToken, AssistanceController.update);
 
 router.put('/delete/:id', verifyToken, AssistanceController.delete);
 
-
-
-// ASSISTANCE TYPE ROUTE -------------------------->
-
-router.get('/type', verifyToken, AssistanceController.fetchAllType);
-
-router.get('/type/:id', verifyToken, AssistanceController.fetchOneType);
-
-router.post('/type', verifyToken, AssistanceController.createType);
-
-router.put('/type/:id', verifyToken, AssistanceController.updateType);
-
-router.put('/type/delete/:id', verifyToken, AssistanceController.deleteType);
-
-
 export default router;
+
+
+

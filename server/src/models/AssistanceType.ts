@@ -41,7 +41,7 @@ const AssistanceTypeModel = AssistanceType.init(
     {
         sequelize,
         modelName: 'AssistanceType', 
-        tableName: 'assistance_types',
+        tableName: 'assistance_type',
         timestamps: false,
     }
 );
