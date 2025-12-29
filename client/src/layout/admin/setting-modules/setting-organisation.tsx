@@ -1,6 +1,6 @@
 import { useState } from "react";
-import OrganisationView from "../features/components/organisation-view";
-import OrganisationForm from "../features/components/organisation-form";
+import OrganisationView from "../../../features/auth/components/organisation-view";
+import OrganisationForm from "../../../features/auth/components/organisation-form";
 
 const SettingOrganisation = () => {
 

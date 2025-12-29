@@ -1,6 +1,6 @@
 import { useState } from "react";
-import AccountView from "../features/components/account-view";
-import AccountForm from "../features/components/account-form";
+import AccountView from "../../../features/auth/components/account-view";
+import AccountForm from "../../../features/auth/components/account-form";
 
 const SettingAccount = () => {
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Input } from "../../../../components/widgets/input";
-import { Label } from "../../../../components/widgets/label";
-import { Button } from "../../../../components/widgets/button";
+import { Input } from "../../../components/widgets/input";
+import { Label } from "../../../components/widgets/label";
+import { Button } from "../../../components/widgets/button";
 
 interface AccountFormProps {
     onToggle: () => void;

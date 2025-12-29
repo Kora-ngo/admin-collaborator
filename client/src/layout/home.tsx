@@ -5,7 +5,7 @@ import { useState } from "react";
 import Popup from "../components/widgets/popup";
 import { useAuthStore } from "../features/auth/store/authStore";
 import SettingModal from "../components/widgets/setting-modal";
-import Settings from "./admin/widgets/settings";
+import Settings from "../layout/admin/settings";
 
 const Home = () => {
 

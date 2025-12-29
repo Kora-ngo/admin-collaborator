@@ -1,6 +1,6 @@
-import { Button } from "../../../../components/widgets/button";
-import { Input } from "../../../../components/widgets/input";
-import { Label } from "../../../../components/widgets/label";
+import { Button } from "../../../components/widgets/button";
+import { Input } from "../../../components/widgets/input";
+import { Label } from "../../../components/widgets/label";
 
 interface OrganisationFormProps {
     onToggle: () => void;

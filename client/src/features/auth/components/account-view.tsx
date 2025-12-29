@@ -1,4 +1,4 @@
-import { Button } from "../../../../components/widgets/button";
+import { Button } from "../../../components/widgets/button";
 
 interface AccountViewProps {
     onToggle: () => void;
