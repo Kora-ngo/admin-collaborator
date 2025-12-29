@@ -2,10 +2,15 @@ import { create } from "zustand";
 import type { User } from "../../../types/user";
 import { handleApiError } from "../../../utils/handleApiError";
 import axiosInstance from "../../../utils/axiosInstance";
+import type { Subscription } from "../../../types/subscription";
+import type { Organisation } from "../../../types/organisation";
 
 interface AuthState {
-    user: any,
+    user: User | null,
     token: string | null,
+    role: "admin" | "collaborator" | "",
+    subscription: Subscription | null,
+    organisation: Organisation | null,
     loading: boolean,
     showToastMessage: boolean,
     register: (users: User, organisation: any) => Promise<any>,
@@ -20,8 +25,9 @@ const endpoint = "/auth";
 export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     token: localStorage.getItem('token'),
+    subscription: null,
+    organisation: null,
     loading: false,
-    error: null,
     role: "",
     showToastMessage: false,
 
@@ -101,7 +107,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         getCurrentUser: async () => {
             const token = get().token;
            if (!token) {
-                set({ user: null });
+                set({ 
+                    user: null,
+                    role: "",
+                    organisation: null,
+                    subscription: null, 
+                 });
                 return;
             }
 
@@ -109,11 +120,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 set({loading: true, showToastMessage: false});
                 const {data} = await axiosInstance.get(`${endpoint}/me`);
                 console.log("AuthStore - Current user - Response --> ", data);
-                set({user: data, loading: false});
+                set({
+                    user: data.user,
+                    role: data.role,
+                    organisation: data.organisation,
+                    subscription: data.subscription, 
+                    loading: false
+                });
             }catch(err: any){
                 console.log("Error --> ", err);
                 localStorage.removeItem('token');
-                set({ user: null, token: null, loading: false });
+
+                set({ 
+                    user: null,
+                    token: null,
+                    role: "",
+                    organisation: null,
+                    subscription: null, 
+                    loading: false
+                 });
                 const errorToast = handleApiError(err);
                 return errorToast;
 

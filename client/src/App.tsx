@@ -2,18 +2,18 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import Login from './pages/auth/login'
 import Home from './layout/home'
-import Dasbaord from './pages/admin/dashbaord'
-import Projects from './pages/admin/project'
+import Dasbaord from './pages/dashbaord/dashbaord'
+import Projects from './pages/dashbaord/project'
 import Register from './pages/auth/register'
 import Invitation from './pages/auth/invitation'
 import { useAuthStore } from './features/auth/store/authStore'
 import { useEffect } from 'react'
-import Users from './pages/admin/users'
+import Users from './pages/dashbaord/users'
 import GlobalToast from './utils/globalToast'
 
 function App() {
   const token = localStorage.getItem('token');
-  const { user, loading, getCurrentUser } = useAuthStore();
+  const { user, role, loading, getCurrentUser } = useAuthStore();
 
   // Step 1: On app start — if token exists, fetch user
   useEffect(() => {
@@ -49,29 +49,17 @@ function App() {
 
   // Token exists + user loaded → decide once where to go
   if (user) {
-    if (user.role === 'admin') {
+    if (role != '') {
       return (
         <BrowserRouter>
           <Routes>
-            <Route path="/admin" element={<Home />}>
+            <Route path="/dashbaord" element={<Home />}>
               <Route index element={<Dasbaord />} />
               <Route path="projects" element={<Projects />} />
               <Route path="users" element={<Users />} />
             </Route>
             {/* Redirect everything else to admin dashboard */}
-            <Route path="*" element={<Navigate to="/admin" replace />} />
-          </Routes>
-          <GlobalToast />
-        </BrowserRouter>
-      );
-    }
-
-    if (user.role === 'collaborator') {
-      return (
-        <BrowserRouter>
-          <Routes>
-            <Route path="/collaborator/dashboard" element={<div>Collaborator Dashboard (MVP)</div>} />
-            <Route path="*" element={<Navigate to="/collaborator/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/dashbaord" replace />} />
           </Routes>
           <GlobalToast />
         </BrowserRouter>

@@ -9,15 +9,14 @@ interface AccountViewProps {
 
 const AccountView: React.FC<AccountViewProps> = ({onToggle}) => {
 
-    const {user} = useAuthStore();
-    const userData = user.user;
+    const {user, role} = useAuthStore();
 
     useEffect(() => {
-        console.log("This is the user -->", userData);
+        console.log("This is the user -->", user);
     }, [user])
 
 
-    const fullname = userData.name;
+    const fullname = user!.name;
     const [firstName, lastName] = fullname.split(" ");
 
 
@@ -43,17 +42,17 @@ const AccountView: React.FC<AccountViewProps> = ({onToggle}) => {
 
             <div>
                 <p className="text-sm font-semibold text-gray-400">Email</p>
-                <p className="text-md font-medium">{userData.email}</p>
+                <p className="text-md font-medium">{user!.email}</p>
             </div>
 
             <div>
                 <p className="text-sm font-semibold text-gray-400">Phone Number</p>
-                <p className="text-md font-medium">{userData.phone ? userData.phone : "--"}</p>
+                <p className="text-md font-medium">{user!.phone ? user!.phone : "--"}</p>
             </div>
 
             <div>
                 <p className="text-sm font-semibold text-gray-400">Role</p>
-                <p className="text-md font-medium">{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
+                <p className="text-md font-medium">{role.charAt(0).toUpperCase() + role.slice(1)}</p>
             </div>
             </div>
         </div>

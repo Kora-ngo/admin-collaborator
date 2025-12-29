@@ -47,20 +47,19 @@ export const useAdminResgister = () => {
 
     // Update user info ........................
 
-    const userData = user.user;
     // const organisationData = user.organisation;
 
-    const fullname = userData.name;
+    const fullname = user!.name;
     const [firstName, lastName] = fullname.split(" ");
 
 
     useEffect(() => {
-        if(userData.id){
+        if(user!.id){
             setUserForm({
                 fname: firstName,
                 lname: lastName,
-                email: userData.email,
-                phone: userData.phone,
+                email: user!.email,
+                phone: user!.phone,
                 password: "",
                 confirmPassword: ""
             })
@@ -106,7 +105,7 @@ export const useAdminResgister = () => {
         setError(formErrors);
         if(!hasErrors){
 
-            if(userData.id){
+            if(user!.id){
                 console.log("Update user --> ", userForm);
                 return true;
             }
