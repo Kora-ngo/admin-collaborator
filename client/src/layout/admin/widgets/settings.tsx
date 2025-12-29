@@ -1,6 +1,6 @@
 import { useState } from "react";
 import SettingAccount from "./setting-account";
-import SettingOrganisation from "./setting.organisation";
+import SettingOrganisation from "./setting-organisation";
 
 type SettingsTab = "account" | "organisation";
 
