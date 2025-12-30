@@ -14,7 +14,7 @@ router.post('/', verifyToken, AssistanceController.createType);
 
 router.put('/:id', verifyToken, AssistanceController.updateType);
 
-router.put('/delete/:id', verifyToken, AssistanceController.deleteType);
+router.delete('/delete/:id', verifyToken, AssistanceController.deleteType);
 
 
 export default router;

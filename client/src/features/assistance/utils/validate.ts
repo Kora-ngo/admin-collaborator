@@ -21,7 +21,7 @@ export const validateAssistanceType = (
 
 
     // Cleaned data: trim values and remved 'id' entirely
-    const cleanedData = types.map((t) => ({
+    const cleanedData: AssistanceType[] = types.map((t) => ({
         name: t.name.trim(),
         unit: t.unit.trim()
     }));

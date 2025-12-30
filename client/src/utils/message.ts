@@ -22,7 +22,22 @@ export const messages: MessageItem[] = [
     { key: "user_inactive", message: "This account is inactive." },
     { key: "no_organization_membership", message: "No organization linked to this account." },
     { key: "no_active_subscription", message: "No active subscription found." },
-    { key: "server_error", message: "Something went wrong. Please try again." }
+
+
+    // Assistance Type ----------------------------------------------->
+    { key: "no_data_provided", message: "No data provided." },
+    { key: "validation_failed", message: "Validation failed." },
+    { key: "record_already_exists", message: "This assistance type already exists." },
+    { key: "duplicate_in_batch", message: "Duplicate entry in the list." },
+    { key: "done", message: "Operation completed successfully." },
+    { key: "foreign_key_constraint", message: "Cannot delete: Assistance type is in use." },
+
+
+    // GENERAL ----------------------------------------------------------->
+    { key: "server_error", message: "Something went wrong. Please try again." },
+    { key: "record_not_found", message: "Record not found." }, 
+    { key: "fields_required", message: "Required fields are missing." },
+    { key: "duplicate_records", message: "Duplicate records detected." },
 
 
 

@@ -35,7 +35,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
             try{
                 set({loading: true});
-                console.log("Registering:", { users, organisation });
                 const response: any = await axiosInstance.post(`${endpoint}/register-admin`, {
                     users,
                     organisation

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Toast from '../components/widgets/toast';
 import { useToastStore } from '../store/toastStore';
+import { getMessage } from './getMessage';
 
 const GlobalToast: React.FC = () => {
   const { toast, hideToast } = useToastStore();
@@ -29,7 +30,7 @@ const GlobalToast: React.FC = () => {
   return (
     <Toast
       title={title}
-      message={toast.message || "No message"}
+      message={getMessage(toast.message) || "No message"}
       variant={toast.type || "info"}
       isOpen={true}
       onClose={hideToast}

@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react"
 import type { AssistanceType } from "../../../types/assistance"
 import { validateAssistanceType } from "../utils/validate";
+import type { ToastMessage } from "../../../types/toastMessage";
+import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
+import { useToastStore } from "../../../store/toastStore";
 
 export const useAssistance = () => {
+
+    const {creatData, deletData, fetchData} = useAssistanceTypeStore();
+    const showToast = useToastStore((state) => state.showToast);
 
     const [types, setTypes] = useState<AssistanceType[]>([
         { id: "1", name: "", unit: "" }
@@ -49,8 +55,7 @@ export const useAssistance = () => {
     };
 
 
-    const handleTypeSubmit = () => {
-    console.log("Before validation:", types);
+    const handleTypeSubmit = async (): Promise<boolean> => {
 
         const {hasErrors, formErrors, typeData} = validateAssistanceType(types);
 
@@ -58,10 +63,25 @@ export const useAssistance = () => {
 
         if(hasErrors){
             console.log("Errors --> ", formErrors.types);
-            return;
+            return false;
         }
 
         console.log("Submitting:", typeData);
+        const toatMessage: ToastMessage = await creatData(typeData);
+        showToast(toatMessage);
+        if(toatMessage.type === "success"){
+            return true;
+        }
+
+        return false;
+    }
+
+    const handleDelete = async (id: number) => {
+        const toatMessage: ToastMessage = await deletData(id);
+        showToast(toatMessage);
+        if(toatMessage.type === 'success'){
+            await fetchData();
+        }
     }
 
 
@@ -72,7 +92,8 @@ export const useAssistance = () => {
         addNewType,
         removeType,
         handleTypeChange,
-        handleTypeSubmit
+        handleTypeSubmit,
+        handleDelete
     }
 
 

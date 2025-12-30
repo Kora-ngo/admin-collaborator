@@ -3,6 +3,7 @@ import { Button } from "../../../components/widgets/button";
 import TypeView from "./type-view";
 import TypeForm from "./type-form";
 import { useAssistance } from "../hooks/useAssistance";
+import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 
 const Type = () => {
         const [toggle, setToggle] = useState<'view' | 'add'>('view');
@@ -15,14 +16,21 @@ const Type = () => {
     handleTypeSubmit,
   } = useAssistance();
 
+  const {fetchData} = useAssistanceTypeStore();
 
-    const handleSubmit = (e: any) => {
+
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         if(toggle === 'view'){
             setToggle('add');
             return;
         }else{
-            handleTypeSubmit();
+            const isDone = await handleTypeSubmit();
+            if(isDone){
+                setToggle('view');
+                console.log("Refersh...")
+                await fetchData();
+            }
             return;
         }
     }

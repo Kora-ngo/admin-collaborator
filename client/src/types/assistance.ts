@@ -2,6 +2,8 @@ export interface AssistanceType {
     id?: number | any;
     name: string;
     unit: string;
+    date_of?: any;
+    update_of?: any;
 }
 
 export interface Assistance {

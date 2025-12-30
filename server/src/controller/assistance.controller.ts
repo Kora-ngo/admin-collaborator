@@ -414,6 +414,8 @@ const AssistanceController = {
         try {
             const { id } = req.params;
 
+            console.log("backend delete type ID:", id);
+
             const type = await AssistanceTypeModel.findByPk(id);
 
             if(!type){
