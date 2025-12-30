@@ -11,11 +11,11 @@ export interface AssistanceAttributes {
 }
 
 export interface AssistanceTypeAttributes {
-    id: number;
+    id?: number;
     name: string;
     unit: string;
-    date_of: Date;
-    update_of: Date;
+    date_of?: Date;
+    update_of?: Date;
 }
 
 

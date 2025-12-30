@@ -1,9 +1,8 @@
 import { type Request, type Response } from 'express';
-import AssistanceModel from '../models/Assistance.js';
-import { json } from 'sequelize';
-import AssistanceTypeModel from '../models/AssistanceType.js';
+import { json, Op } from 'sequelize';
 import type { AssistanceCreationAttributes, AssistanceTypeAttributes, AssistanceTypeCreationAttributes } from '../types/assistance.js';
 import { generateUniqueUid } from '../utils/generateUniqueUid.js';
+import { AssistanceModel, AssistanceTypeModel } from '../models/index.js';
 
 const AssistanceController = {
     
@@ -15,6 +14,14 @@ const AssistanceController = {
         const assistances = await AssistanceModel.findAll({
             where: { status: 'true' },
             order: [['name', 'ASC']],
+            include: [
+                {
+                    model: AssistanceTypeModel,
+                    as: 'assistanceType',
+                    attributes: ['id', 'name', 'unit'],
+                    required: true
+                }
+            ]
         });
          res.status(200).json({
                 type: 'success',
@@ -34,6 +41,13 @@ const AssistanceController = {
                         id,
                         status: 'true',
                     },
+                    include: [
+                        {
+                            model: AssistanceTypeModel,
+                            as: 'assistanceType',
+                            attributes: ['id', 'name', 'unit'],
+                        },
+                    ],
                 });
                 
                 if(!assistance) {
@@ -230,37 +244,115 @@ const AssistanceController = {
 
     createType: async (req: Request, res: Response) => {
         try {
-            const body: AssistanceTypeCreationAttributes = req.body;
+            const input = req.body;
 
-            // Basic Validation
-            if(!body.name || !body.unit){
-                res.status(400).json({
+            // Normalize input:
+            const typesToCreate: AssistanceTypeCreationAttributes[] = Array.isArray(input)
+            ? input
+            : [input];
+
+            if (typesToCreate.length === 0) {
+                return res.status(400).json({
                     type: 'error',
-                    message: 'feilds_required',
+                    message: 'no_data_provided',
                 });
-
-                return;
             }
 
 
-            const exististingType = await AssistanceTypeModel.findOne({
-                where: {name: body.name, unit: body.unit}
+            const getKey = (name: any, unit: any) => 
+                `${(name ?? '').toString().toLowerCase().trim()}|${(unit ?? '').toString().toLowerCase().trim()}`;
+
+
+            // Validate all entries
+                const validationErrors: { index: number; message: string }[] = [];
+                const validTypes: AssistanceTypeCreationAttributes[] = [];
+
+                typesToCreate.forEach((body, index) => {
+                    // Safely extract and trim strings
+                    const name = typeof body.name === 'string' ? body.name.trim() : '';
+                    const unit = typeof body.unit === 'string' ? body.unit.trim() : '';
+
+                    if (name === '' || unit === '') {
+                        validationErrors.push({
+                            index,
+                            message: 'fields_required',
+                        });
+                    } else {
+                        validTypes.push({ name, unit });
+                    }
+                });
+
+
+            if (validationErrors.length > 0) {
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'validation_failed',
+                    details: validationErrors, // optional: helps frontend show per-row errors
+                });
+            }
+
+            // Check for duplicates (existing in DB or duplicates within the batch)
+            const namesUnits = validTypes.map(t => getKey(t.name, t.unit));
+
+            
+            // Check against existing records
+            const existingTypes = await AssistanceTypeModel.findAll({
+                where: {
+                    [Op.or]: validTypes.map(t => ({
+                        name: t.name,
+                        unit: t.unit,
+                    })),
+                },
+                attributes: ['name', 'unit'],
+            });
+
+            const existingKeys = new Set(
+                existingTypes.map(t => getKey(t.get('name'), t.get('unit'))) // safer if using DataValues
+            );
+
+
+            // Also detect duplicates within the current batch
+            const seen = new Set<string>();
+            const duplicatesInBatch: number[] = [];
+            namesUnits.forEach((key, idx) => {
+                if (seen.has(key)) {
+                    duplicatesInBatch.push(idx);
+                } else {
+                    seen.add(key);
+                }
+            });
+
+            const conflicts: { index: number; message: string }[] = [];
+
+            validTypes.forEach((type, idx) => {
+                const key = getKey(type.name, type.unit);
+                if (existingKeys.has(key)) {
+                    conflicts.push({ index: idx, message: 'record_already_exists' });
+                }
             });
 
 
-            if (exististingType) {
-                res.status(409).json({
+            duplicatesInBatch.forEach(idx => {
+                conflicts.push({ index: idx, message: 'duplicate_in_batch' });
+            });
+
+
+            if (conflicts.length > 0) {
+                return res.status(409).json({
                     type: 'error',
-                    message: 'record_already_exists',
+                    message: 'duplicate_records',
+                    details: conflicts,
                 });
-                return;
             }
 
-            const newType = await AssistanceTypeModel.create(body);
+
+            const newTypes = await AssistanceTypeModel.bulkCreate(validTypes);
+
             res.status(201).json({
                 type: 'success',
                 message: 'done',
-                data: newType,
+                data: newTypes,
+                count: newTypes.length,
             });
 
         }catch (error){
