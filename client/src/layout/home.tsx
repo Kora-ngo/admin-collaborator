@@ -38,13 +38,13 @@ const Home = () => {
             <Outlet />
           </div>
         </div>
-
+{/* 
         <SettingModal
           isOpen={isSettingModalOpen}
           onClose={() => setIsSettingModalOpen(false)}
           title="Settings"
           children={<Settings />}
-        />
+        /> */}
 
         <Popup
           open={showLogoutPopup} 

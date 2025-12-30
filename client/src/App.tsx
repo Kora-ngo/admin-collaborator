@@ -10,6 +10,7 @@ import { useAuthStore } from './features/auth/store/authStore'
 import { useEffect } from 'react'
 import Users from './pages/dashbaord/users'
 import GlobalToast from './utils/globalToast'
+import Assistance from './pages/dashbaord/assistance'
 
 function App() {
   const token = localStorage.getItem('token');
@@ -57,6 +58,7 @@ function App() {
               <Route index element={<Dasbaord />} />
               <Route path="projects" element={<Projects />} />
               <Route path="users" element={<Users />} />
+              <Route path="assistance" element={<Assistance />} />
             </Route>
             {/* Redirect everything else to admin dashboard */}
             <Route path="*" element={<Navigate to="/dashbaord" replace />} />
