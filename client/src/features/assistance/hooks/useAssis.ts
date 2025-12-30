@@ -1,12 +1,22 @@
 import { useState } from "react"
 import type { Assistance } from "../../../types/assistance"
 import { validateAssistance } from "../utils/validate";
+import { useToastStore } from "../../../store/toastStore";
+import type { ToastMessage } from "../../../types/toastMessage";
+import { useAssistanceStore } from "../store/assistanceStore";
+import { useAuthStore } from "../../auth/store/authStore";
 
 export const useAssis = () => {
+
+    const {createData, fetchData} = useAssistanceStore();
+    const showToast = useToastStore((state) => state.showToast);
+    const {membership} = useAuthStore();
+
     const [form, setForm] = useState<Assistance>({
         name: "",
         assistance_id: 0,
-        description: ""
+        description: "",
+        created_by: membership?.id
     });
 
     const [errors, setErrors] = useState({
@@ -15,7 +25,7 @@ export const useAssis = () => {
     });
 
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
         setForm((prev) => ({
             ...prev,
@@ -24,19 +34,28 @@ export const useAssis = () => {
     }
 
 
-    const handleSubmit = async (): Promise<void> => {
+    const handleSubmit = async (): Promise<boolean> => {
+
         const {hasErrors, formErrors, data} = validateAssistance(form);
         setErrors(formErrors);
 
         if(hasErrors){
-            return;
+            return false;
         }
 
-        console.log("Assiantnce --> ", data);
+        const toatMessage: ToastMessage = await createData(data);
+        showToast(toatMessage);
+        if(toatMessage.type === "success"){
+            return true;
+            // await fetchData();
+        }
+        
+        return false;
     }
 
     return{
         form,
+        setForm,
         errors,
 
         handleChange,

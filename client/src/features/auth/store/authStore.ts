@@ -4,6 +4,7 @@ import { handleApiError } from "../../../utils/handleApiError";
 import axiosInstance from "../../../utils/axiosInstance";
 import type { Subscription } from "../../../types/subscription";
 import type { Organisation } from "../../../types/organisation";
+import type { Membership } from "../../../types/membership";
 
 interface AuthState {
     user: User | null,
@@ -11,6 +12,7 @@ interface AuthState {
     role: "admin" | "collaborator" | "",
     subscription: Subscription | null,
     organisation: Organisation | null,
+    membership: Membership | null,
     loading: boolean,
     showToastMessage: boolean,
     register: (users: User, organisation: any) => Promise<any>,
@@ -27,6 +29,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     token: localStorage.getItem('token'),
     subscription: null,
     organisation: null,
+    membership: null,
     loading: false,
     role: "",
     showToastMessage: false,
@@ -111,6 +114,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     role: "",
                     organisation: null,
                     subscription: null, 
+                    membership: null,
                  });
                 return;
             }
@@ -124,6 +128,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     role: data.role,
                     organisation: data.organisation,
                     subscription: data.subscription, 
+                    membership: data.membership,
                     loading: false
                 });
             }catch(err: any){

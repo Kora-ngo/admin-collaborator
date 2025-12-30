@@ -72,7 +72,9 @@ const AssistanceController = {
         try{
             const body: AssistanceCreationAttributes = req.body;
 
-            if(!body.name || !body.assistance_id || body.created_by) {
+            console.log("Assistnace - creation - body --> ", body);
+
+            if(!body.name || !body.assistance_id || !body.created_by) {
                 res.status(400).json({
                     type: 'error',
                     message: 'feilds_required',

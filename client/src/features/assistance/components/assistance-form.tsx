@@ -1,13 +1,29 @@
+import { useState } from "react";
 import { Button } from "../../../components/widgets/button";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
 import { SelectInput } from "../../../components/widgets/select-input";
 import { Textarea } from "../../../components/widgets/textarea";
 import { useAssis } from "../hooks/useAssis";
+import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 
-const AssistanceForm = () => {
+interface AssistanceFormProps {
+    onClose: () => void
+}
 
-    const {form, errors, handleChange, handleSubmit} = useAssis();
+const AssistanceForm = ({onClose}: AssistanceFormProps) => {
+
+    const {form, setForm, errors, handleChange, handleSubmit} = useAssis();
+    const {data} = useAssistanceTypeStore();
+    const [selectedType, setSelectedType] = useState<number>(0);
+
+    const handleValide = async () => {
+        const isDone = await handleSubmit();
+        if(isDone){
+            onClose();
+        }
+    }
+
 
     return ( 
         <div className="flex flex-col justify-between w-full h-full">
@@ -22,6 +38,7 @@ const AssistanceForm = () => {
                         placeholder="Enter the assiantce name"
                         value={form.name}
                         onChange={handleChange}
+                        hasError={errors.name}
                     />
                 </div>
 
@@ -31,13 +48,20 @@ const AssistanceForm = () => {
                         id="type"
                         name="type"
                         options={[
-                            { label: "Monetary", value: "monetary" },
-                            { label: "In-Kind", value: "inkind" },
+                            {label: "Select a type...", value: 0},
+                            ...data.map((t) => ({ label: `${t.name} (${t.unit})`, value: t.id} )),
                         ]}
                         // prefixElement={<DollarIcon className="w-4 h-4" />}
                         hasError={errors.assistance_id}
-                        value={form.assistance_id}
-                        // onChange={handleChange}
+                        value={selectedType}
+                        onChange={(e) => {
+                            const selectedValue = e.target.value;
+                            setSelectedType(parseInt(selectedValue));
+                            setForm({
+                                ...form,
+                                assistance_id: parseInt(selectedValue)
+                            });
+                        }}
                     />
                 </div>
 
@@ -47,17 +71,21 @@ const AssistanceForm = () => {
                     id="description"
                     name="description"
                     value={form.description}
-                    // onChange={handleChange}
-                    rows={2}  />
+                    onChange={handleChange}
+                      />
                 </div>
             </div>   
 
 
             <div className="border-t-1 border-gray-200">
                 <div className="my-4 flex gap-4 justify-end">
-                    <Button>
+                    <Button onClick={handleValide}>
                         Save
                     </Button>
+
+                    {/* <Button variant="ghost" onClick={onClose}>
+                        Cancel
+                    </Button> */}
 
                 </div>
             </div>     

@@ -11,13 +11,9 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
     const token = authHeader.split(' ')[1];
 
-    console.log("Split:", token);
-
     try {
 
         const payload = jwt.verify(token!, process.env.JWT_SECRET as string) as any;
-
-        console.log("Payload:", payload);
 
 
         // valided required fields in payload

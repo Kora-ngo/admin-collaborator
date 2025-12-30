@@ -85,7 +85,7 @@ const Assistance = () => {
                 isOpen={assistanceModal}
                 onClose={() => setAsssitanceModal(false)}
                 title="New Assistance"
-                children={<AssistanceForm />}
+                children={<AssistanceForm onClose={() => setAsssitanceModal(false)} />}
             />
         </div>
      );

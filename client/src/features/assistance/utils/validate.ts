@@ -46,7 +46,8 @@ export const validateAssistance = ( assisForm: Assistance) => {
     const trimmedData = {
         name: assisForm.name.trim(),
         assistance_id: assisForm.assistance_id,
-        description: assisForm.description!.trim()
+        description: assisForm.description!.trim(),
+        created_by: assisForm.created_by
     };
 
     const hasErrors = Object.values(errors).some(Boolean);

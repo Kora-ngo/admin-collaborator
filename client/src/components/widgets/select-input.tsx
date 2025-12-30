@@ -44,7 +44,7 @@ function SelectInput({
           bg-transparent outline-none appearance-none
           border 
           ${hasError 
-            ? "border-red-500 border-2 focus:border-red-500 focus:ring-4 focus:ring-red-200" 
+            ? "border-gray-300 focus-visible:ring-primary/30 focus:ring-4 focus:ring-blue-100" 
             : "border-gray-300 focus-visible:ring-primary/30 focus:ring-4 focus:ring-blue-100"
           }
           transition-all duration-200

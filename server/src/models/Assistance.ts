@@ -67,9 +67,9 @@ const AssistanceModel = Assistance.init({
 },
   {
     sequelize,
-    modelName: 'User',
-    tableName: 'users',
-    timestamps: true, 
+    modelName: 'Assistance',
+    tableName: 'assistance',
+    timestamps: false, 
   }
 
 );
