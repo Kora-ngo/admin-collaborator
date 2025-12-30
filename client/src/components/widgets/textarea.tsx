@@ -27,7 +27,7 @@ function Textarea({
   }, [prefixElement]);
 
   return (
-    <div className="relative w-full flex items-start">
+    <div className="relative w-full flex items-start mt-3">
       {prefixElement && (
         <span
           ref={prefixRef}

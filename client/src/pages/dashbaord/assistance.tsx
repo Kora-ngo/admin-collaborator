@@ -11,11 +11,13 @@ import { assistanceTypesData } from "../../dummy-data/assiatnceData";
 import Modal from "../../components/widgets/modal";
 import TypeView from "../../features/assistance/components/type-view";
 import Type from "../../features/assistance/components/type";
+import AssistanceForm from "../../features/assistance/components/assistance-form";
 
 const Assistance = () => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [typeModal, setTypeModal] = useState(false);
+    const [assistanceModal, setAsssitanceModal] = useState(false);
 
     const assistanceColumns: TableColumn[] = [
     { key: "id", label: "User ID", visibleOn: "md" },
@@ -60,7 +62,7 @@ const Assistance = () => {
                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 
                         <ActionButton  />
-                        <Button className="w-full">
+                        <Button className="w-full" onClick={() => setAsssitanceModal(true) }>
                             New Assistance
                         </Button>
                         <Button className="w-full" variant="ghost" onClick={() => setTypeModal(true)}>
@@ -77,7 +79,13 @@ const Assistance = () => {
                 onClose={() => setTypeModal(false)}
                 title="New Type"
                 children={<Type />}
-            
+            />
+
+            <Modal
+                isOpen={assistanceModal}
+                onClose={() => setAsssitanceModal(false)}
+                title="New Assistance"
+                children={<AssistanceForm />}
             />
         </div>
      );
