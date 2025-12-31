@@ -11,9 +11,15 @@ const AssistanceController = {
 
     fetchAll: async (req: Request, res: Response) => {
        try {
-        const assistances = await AssistanceModel.findAll({
+
+        // Get Query Params with defaults----------------------->
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 5;
+        const offset = (page - 1) * limit;
+
+        const {count, rows} = await AssistanceModel.findAndCountAll({
             where: { status: 'true' },
-            order: [['name', 'ASC']],
+            order: [['date_of', 'DESC']],
             include: [
                 {
                     model: AssistanceTypeModel,
@@ -21,12 +27,27 @@ const AssistanceController = {
                     attributes: ['id', 'name', 'unit'],
                     required: true
                 }
-            ]
+            ],
+            limit,
+            offset
         });
+
+        const totalPages = Math.ceil(count / limit);
+
          res.status(200).json({
                 type: 'success',
-                data: assistances,
+                data: rows,
+                pagination: {
+                    total: count,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNext: page < totalPages,
+                    hasPrev: page > 1
+                }
             });
+
+
        }catch (error) {
             console.error("Assistance: Fetch_All error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });

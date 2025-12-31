@@ -23,7 +23,7 @@ type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Assistance = () => {
 
-    const {data, loading, fetchData} = useAssistanceStore();
+    const {data, pagination, loading, fetchData} = useAssistanceStore();
     const {handleDelete} = useAssis();
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -50,6 +50,9 @@ const Assistance = () => {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+
+    
 
 
 
@@ -118,27 +121,122 @@ const Assistance = () => {
                 </div>
 
                 
-                {loading ?
-                    (
-                        <div className="w-[75vw] mt-20">
-                            <Loading text="Please wait..." />
-                        </div>
-                    ) :
-                    
+                {loading ? (
+                    <div className="w-[75vw] mt-20">
+                        <Loading text="Please wait..." />
+                    </div>
+                    ) : (
                     <>
-                        {
-                            data.length === 0 ?
-                            <div className="w-full bg-gray-50 rounded-md">
-                                <EmptyState 
-                                    title="No Record Found"
-                                    /> 
-                            </div>
-                            :
-                            <Table columns={assistanceColumns} data={data} className="" page={currentPage} pageSize={4} />
+                        {data.length === 0 ? (
+                        <div className="w-full bg-gray-50 rounded-md">
+                            <EmptyState title="No Record Found" />
+                        </div>
+                        ) : (
+                        <>
+                            <Table
+                            columns={assistanceColumns}
+                            data={data}
+                            className=""
+                            />
 
-                        }
+                            {/* === PAGINATION FROM YOUR ANCIENT RECORD === */}
+                            <div className="flex flex-col sm:flex-row justify-between w-full gap-4 mt-1">
+                                <div>
+                                    <p className="text-gray-500">
+                                    Total Records: <span className="font-bold text-black">{pagination?.total || 0}</span>
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <nav aria-label="Page navigation">
+                                    <ul className="inline-flex -space-x-px text-sm">
+                                        {/* Previous */}
+                                        <li>
+                                        <button
+                                            disabled={!pagination?.hasPrev}
+                                            onClick={() => fetchData(pagination!.page - 1)}
+                                            className={`flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 rounded-s-lg ${
+                                            !pagination?.hasPrev
+                                                ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                                                : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700"
+                                            }`}
+                                        >
+                                            Previous
+                                        </button>
+                                        </li>
+
+
+                                        {(() => {
+                                        const total = pagination?.totalPages || 1;
+                                        const current = pagination?.page || 1;
+                                        const pages: (number | string)[] = [];
+
+                                        pages.push(1);
+
+                                        if (current > 3) {
+                                            pages.push("...");
+                                        }
+
+                                        for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+                                            if (!pages.includes(i)) {
+                                            pages.push(i);
+                                            }
+                                        }
+
+                                        if (current < total - 2) {
+                                            pages.push("...");
+                                        }
+
+                                        if (total > 1) {
+                                            pages.push(total);
+                                        }
+
+                                        return pages.map((page, index) =>
+                                            page === "..." ? (
+                                            <li key={`ellipsis-${index}`}>
+                                                <span className="flex items-center justify-center px-3 h-8 border border-gray-300 text-gray-500">
+                                                ...
+                                                </span>
+                                            </li>
+                                            ) : (
+                                            <li key={page}>
+                                                <button
+                                                onClick={() => fetchData(page as number)}
+                                                className={`flex items-center justify-center px-3 h-8 border border-gray-300 ${
+                                                    page === current
+                                                    ? "text-primary bg-primary/10 font-medium"
+                                                    : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700"
+                                                }`}
+                                                >
+                                                {page}
+                                                </button>
+                                            </li>
+                                            )
+                                        );
+                                        })()}
+
+                                        {/* Next */}
+                                        <li>
+                                        <button
+                                            disabled={!pagination?.hasNext}
+                                            onClick={() => fetchData(pagination!.page + 1)}
+                                            className={`flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 rounded-e-lg ${
+                                            !pagination?.hasNext
+                                                ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                                                : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700"
+                                            }`}
+                                        >
+                                            Next
+                                        </button>
+                                        </li>
+                                    </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </>
+                        )}
                     </>
-                }
+                )}
                 
                
 

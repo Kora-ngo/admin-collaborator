@@ -2,12 +2,14 @@ import { create } from "zustand";
 import type { Assistance } from "../../../types/assistance";
 import axiosInstance from "../../../utils/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
+import type { Pagination } from "../../../types/pagination";
 
 interface AssiantnceState {
     data: Assistance[],
     loading: boolean,
+    pagination: Pagination | null,
     createData: (data: Assistance) => Promise<any>,
-    fetchData: () => Promise<any>,
+    fetchData: (page?: number) => Promise<any>,
     fetchOneData: (id: number) => Promise<Assistance>,
     updateData: (id: number, data: Assistance) => Promise<any>
     deleteData: (id: number) => Promise<any>
@@ -18,16 +20,22 @@ const endpoint = "/assistance";
 export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
     data: [],
     loading: false,
+    pagination: null,
 
-    fetchData: async () => {
+    fetchData: async (page) => {
         try{
             set({loading: true, data: []});
 
-            const {data} = await axiosInstance.get(endpoint);
+            const {data} = await axiosInstance.get(endpoint, {
+                params: {page, limit: 5}
+            });
 
-            set({data: data.data});
+            set({
+                data: data.data,
+                pagination: data.pagination
+            });
 
-            // console.log("Assis - Fetch type response --> ", data.data);
+            console.log("Assis - Fetch type response --> ", data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
