@@ -8,7 +8,8 @@ interface AssiantnceState {
     loading: boolean,
     createData: (data: Assistance) => Promise<any>,
     fetchData: () => Promise<any>,
-    fetchOneData: (id: number) => Promise<Assistance>
+    fetchOneData: (id: number) => Promise<Assistance>,
+    updateData: (id: number, data: Assistance) => Promise<any>
 }
 
 const endpoint = "/assistance";
@@ -33,7 +34,6 @@ export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
             set({loading: false})
         }
     },
-
 
     createData: async (data) => {
         try{
@@ -66,5 +66,22 @@ export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
             return errorToast;
         }
     },
+
+    updateData: async (id, data) => {
+        try{
+            set({loading: true});
+
+            const response = await axiosInstance.put(`${endpoint}/${id}`, data);
+            console.log("Assistance update --> ", response.data);
+            return response.data;
+
+            
+        }catch(error: any){
+            const errorToast = handleApiError(error);
+            return errorToast;
+        }finally{
+            set({loading: false})
+        }
+    }
 
 }))

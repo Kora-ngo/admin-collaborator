@@ -8,7 +8,7 @@ import { useAuthStore } from "../../auth/store/authStore";
 
 export const useAssis = () => {
 
-    const {createData, fetchData, fetchOneData} = useAssistanceStore();
+    const {createData, fetchData, fetchOneData, updateData} = useAssistanceStore();
     const showToast = useToastStore((state) => state.showToast);
     const {membership} = useAuthStore();
 
@@ -24,6 +24,14 @@ export const useAssis = () => {
         assistance_id: false,
     });
 
+    const handleClearForm = () => {
+        setForm({
+            name: "",
+            assistance_id: 0,
+            description: "",
+            created_by: membership?.id
+        })
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
@@ -34,30 +42,55 @@ export const useAssis = () => {
     }
 
 
-    const handleSubmit = async (): Promise<boolean> => {
+const handleSubmit = async (id?: number): Promise<boolean> => {
+  // 1. Validate
+  const { hasErrors, formErrors, data } = validateAssistance(form);
+  setErrors(formErrors);
 
-        const {hasErrors, formErrors, data} = validateAssistance(form);
-        setErrors(formErrors);
+  if (hasErrors) {
+    return false;
+  }
 
-        if(hasErrors){
-            return false;
-        }
+  try {
+    let result: ToastMessage;
 
-        const toatMessage: ToastMessage = await createData(data);
-        showToast(toatMessage);
-        if(toatMessage.type === "success"){
-            await fetchData();
-            setForm({
-                name: "",
-                assistance_id: 0,
-                description: "",
-                created_by: membership?.id
-            })
-            return true;
-        }
-        
-        return false;
+    // 2. Separate Create vs Update clearly
+    if (id) {
+      // Update existing
+      result = await updateData(id, data);
+    } else {
+      // Create new
+      result = await createData(data);
     }
+
+    // 3. Show toast
+    showToast(result);
+
+    // 4. On success: refresh list + reset form
+    if (result.type === "success") {
+      await fetchData();
+
+      // Reset form (only if create or after successful update)
+      setForm({
+        name: "",
+        description: "",
+        assistance_id: 0,
+        created_by: membership?.id ?? 0, // keep current user if exists
+      });
+
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Submit error:", error);
+    showToast({
+      type: "error",
+      message: "An unexpected error occurred",
+    });
+    return false;
+  }
+};
 
     const handleView = async (id: number): Promise<any> => {
 
@@ -79,7 +112,8 @@ export const useAssis = () => {
 
         handleChange,
         handleSubmit,
-        handleView
+        handleView,
+        handleClearForm
     }
 
 }

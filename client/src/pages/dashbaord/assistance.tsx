@@ -140,7 +140,7 @@ const Assistance = () => {
                 title={modalSate === 'add' ? "New Assistance" : modalSate === 'view' ? "View Assistance" : "Edit"}
                 children={
                     modalSate === 'add' || modalSate === 'edit' ?
-                    <AssistanceForm id={dataID} onClose={() => setAsssitanceModal(false)} />:
+                    <AssistanceForm id={dataID} isOpen={assistanceModal} onClose={() => setAsssitanceModal(false)}  />:
                     <AssistanceView isOpen={assistanceModal} id={dataID} />
                     
                 }

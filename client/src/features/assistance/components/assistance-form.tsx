@@ -8,13 +8,14 @@ import { useAssis } from "../hooks/useAssis";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 
 interface AssistanceFormProps {
-    id: number
+    id: number,
+    isOpen: boolean,
     onClose: () => void
 }
 
-const AssistanceForm = ({onClose, id}: AssistanceFormProps) => {
+const AssistanceForm = ({onClose, isOpen, id}: AssistanceFormProps) => {
 
-    const {form, setForm, errors, handleChange, handleSubmit, handleView} = useAssis();
+    const {form, setForm, errors, handleChange, handleSubmit, handleView, handleClearForm} = useAssis();
     const {data} = useAssistanceTypeStore();
     const [selectedType, setSelectedType] = useState<number>(0);
 
@@ -27,8 +28,16 @@ const AssistanceForm = ({onClose, id}: AssistanceFormProps) => {
         handleFetch();
       }, [id]);
 
+
+      useEffect(() => {
+        if(!isOpen){
+            console.log("Clear form");
+            handleClearForm();
+        }
+      }, [isOpen])
+
     const handleValide = async () => {
-        const isDone = await handleSubmit();
+        let isDone = await handleSubmit(id);
         if(isDone){
             onClose();
         }
