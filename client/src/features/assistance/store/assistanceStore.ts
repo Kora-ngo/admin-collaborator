@@ -9,26 +9,33 @@ interface AssiantnceState {
     loading: boolean,
     pagination: Pagination | null,
     createData: (data: Assistance) => Promise<any>,
-    fetchData: (page?: number) => Promise<any>,
+    getData: (page?: number, searchTerm?: string) => Promise<any>,
     fetchOneData: (id: number) => Promise<Assistance>,
     updateData: (id: number, data: Assistance) => Promise<any>
     deleteData: (id: number) => Promise<any>
 }
 
-const endpoint = "/assistance";
+const endpoint = "assistance";
 
 export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
     data: [],
     loading: false,
     pagination: null,
 
-    fetchData: async (page) => {
+    getData: async (page, searchTerm = "") => {
+        console.log("Assistnace GetData Search --> ", searchTerm);
         try{
             set({loading: true, data: []});
+            const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
+            const params: any = { page, limit: 5 };
 
-            const {data} = await axiosInstance.get(endpoint, {
-                params: {page, limit: 5}
-            });
+            if (searchTerm.trim()) params.q = searchTerm.trim();
+
+            console.log("Assistnace GetData params Search --> ", params);
+
+            const {data} = await axiosInstance.get(getEndpoint, { params });
+
+
 
             set({
                 data: data.data,

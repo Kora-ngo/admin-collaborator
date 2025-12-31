@@ -10,6 +10,8 @@ const AssistanceController = {
 
 
     fetchAll: async (req: Request, res: Response) => {
+        console.log("Backend fetch --> entrance");
+
        try {
 
         // Get Query Params with defaults----------------------->
@@ -55,6 +57,7 @@ const AssistanceController = {
     },
 
     fetchOne: async (req: Request, res: Response) => {
+        console.log("Backend fetchOne --> entrance");
         try{
             const {id} = req.params;
             const assistance = await AssistanceModel.findOne({
@@ -191,8 +194,9 @@ const AssistanceController = {
         }
     },
 
-
     delete: async (req: Request, res: Response) => {
+        console.log("Backend Delete --> entrance");
+
         try {
             const {id} = req.params;
 
@@ -217,6 +221,60 @@ const AssistanceController = {
             });
         }catch (error) {
             console.error("Assistance: Soft_Delete error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
+    search: async (req: Request, res: Response) => {
+        try {
+            const q = (req.query.q as string)?.trim();
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = 5;
+            const offset = (page - 1) * limit;
+
+            if (!q) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'search_query_required',
+            });
+            }
+
+            const where: any = {
+            status: 'true',
+            name: { [Op.like]: `%${q}%` },
+            };
+
+            const { count, rows } = await AssistanceModel.findAndCountAll({
+            where,
+            order: [['date_of', 'DESC']],
+            include: [
+                {
+                model: AssistanceTypeModel,
+                as: 'assistanceType',
+                attributes: ['id', 'name', 'unit'],
+                required: true,
+                },
+            ],
+            limit,
+            offset,
+            });
+
+            const totalPages = Math.ceil(count / limit);
+
+            res.status(200).json({
+            type: 'success',
+            data: rows,
+            pagination: {
+                total: count,
+                page,
+                limit,
+                totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1,
+            },
+            });
+        } catch (error) {
+            console.error("Assistance: Search error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },

@@ -23,10 +23,9 @@ type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Assistance = () => {
 
-    const {data, pagination, loading, fetchData} = useAssistanceStore();
-    const {handleDelete} = useAssis();
+    const {data, getData, pagination, loading} = useAssistanceStore();
+    const {searchTerm, handleSearch, refreshCurrentPage, handleDelete} = useAssis();
 
-    const [currentPage, setCurrentPage] = useState(1);
     const [typeModal, setTypeModal] = useState(false);
     const [deletePopup, setDeletePopUp] = useState(false);
 
@@ -48,8 +47,8 @@ const Assistance = () => {
 
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        getData();
+    }, [getData]);
 
 
     
@@ -102,15 +101,17 @@ const Assistance = () => {
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                         <div className="w-full sm:w-64 lg:w-80">
                             <SearchInput
-                            placeholder="Search for name or type"
-                            className="w-full sm:w-64 lg:w-80"
+                                placeholder="Search for name"
+                                className="w-full sm:w-64 lg:w-80"
+                                    value={searchTerm}
+                                    onChange={(e) => handleSearch(e.target.value)}
                             />
                         </div>
                         <FilterToggleButton isOpen={false} onToggle={() => {}} />
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 
-                        <ActionButton onClick={fetchData} />
+                        <ActionButton onClick={getData} />
                         <Button className="w-full" variant="ghost" onClick={() => setTypeModal(true)}>
                             New Type
                         </Button>
@@ -154,7 +155,7 @@ const Assistance = () => {
                                         <li>
                                         <button
                                             disabled={!pagination?.hasPrev}
-                                            onClick={() => fetchData(pagination!.page - 1)}
+                                            onClick={() => refreshCurrentPage(pagination!.page - 1)}
                                             className={`flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 rounded-s-lg ${
                                             !pagination?.hasPrev
                                                 ? "text-gray-400 bg-gray-100 cursor-not-allowed"
@@ -201,7 +202,7 @@ const Assistance = () => {
                                             ) : (
                                             <li key={page}>
                                                 <button
-                                                onClick={() => fetchData(page as number)}
+                                                onClick={() => refreshCurrentPage(page as number)}
                                                 className={`flex items-center justify-center px-3 h-8 border border-gray-300 ${
                                                     page === current
                                                     ? "text-primary bg-primary/10 font-medium"
@@ -219,7 +220,7 @@ const Assistance = () => {
                                         <li>
                                         <button
                                             disabled={!pagination?.hasNext}
-                                            onClick={() => fetchData(pagination!.page + 1)}
+                                            onClick={() => refreshCurrentPage(pagination!.page + 1)}
                                             className={`flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 rounded-e-lg ${
                                             !pagination?.hasNext
                                                 ? "text-gray-400 bg-gray-100 cursor-not-allowed"
@@ -263,7 +264,7 @@ const Assistance = () => {
                             id={currentAssistanceId ?? undefined}
                             isOpen={assistanceModalMode !== null}
                             onSuccess={() => {
-                                fetchData();
+                                getData();
                                 closeAssistanceModal();
                             }}
                         />
@@ -290,7 +291,7 @@ const Assistance = () => {
                         if (success) {
                         setDeletePopUp(false);
                         // No need to clear ID separately — modal already closed or will stay consistent
-                        await fetchData();
+                        await getData();
                         }
                 }}
             confirmButtonClass="bg-red-500 hover:bg-red-400"

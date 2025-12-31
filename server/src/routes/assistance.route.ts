@@ -6,15 +6,20 @@ const router = Router();
 
 // ASSISTANCE ROUTE ------------------------>
 
-router.get('/', verifyToken, AssistanceController.fetchAll);
+router.get('/search', verifyToken, AssistanceController.search);
 
 router.get('/:id', verifyToken, AssistanceController.fetchOne);
+
+
+router.get('/', verifyToken, AssistanceController.fetchAll);
 
 router.post('/', verifyToken, AssistanceController.create);
 
 router.put('/:id', verifyToken, AssistanceController.update);
 
 router.put('/delete/:id', verifyToken, AssistanceController.delete);
+
+
 
 export default router;
 
