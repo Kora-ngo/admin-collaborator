@@ -14,6 +14,7 @@ export interface Assistance {
     assistance_id: number;
     created_by?: number;
     status?: string;
+    assistanceType?: AssistanceType,
     date_of?: Date;
     update_of?: Date;
 }

@@ -22,7 +22,7 @@ const AssistanceModel = Assistance.init({
     },
 
     uid: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       allowNull: false,
       unique: true,
     },

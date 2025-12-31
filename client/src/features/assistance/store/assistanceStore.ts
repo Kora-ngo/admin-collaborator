@@ -8,6 +8,7 @@ interface AssiantnceState {
     loading: boolean,
     createData: (data: Assistance) => Promise<any>,
     fetchData: () => Promise<any>,
+    fetchOneData: (id: number) => Promise<Assistance>
 }
 
 const endpoint = "/assistance";
@@ -24,7 +25,7 @@ export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
 
             set({data: data.data});
 
-            console.log("Assis - Fetch type response --> ", data);
+            // console.log("Assis - Fetch type response --> ", data.data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -48,6 +49,21 @@ export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
             return errorToast;
         }finally{
             set({loading: false})
+        }
+    },
+
+    fetchOneData: async (id) => {
+        try{
+            console.log("Assistance get one --> ");
+
+            const response = await axiosInstance.get(`${endpoint}/${id}`);
+            console.log("Assistance get one --> ", response.data.data);
+            return response.data.data;
+
+            
+        }catch(error: any){
+            const errorToast = handleApiError(error);
+            return errorToast;
         }
     },
 

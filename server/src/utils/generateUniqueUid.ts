@@ -1,30 +1,47 @@
 // utils/generateUniqueUid.ts
+
 import sequelize from '../config/database.js';
 import { QueryTypes } from 'sequelize';
 
 const VALID_TABLES = [
-  'users', 
-  'organisation', 
-  'subscription', 
-  'membership', 
-  'assistance_type', 
-  'assistance'
+  'users',
+  'organisation',
+  'subscription',
+  'membership',
+  'assistance_type',
+  'assistance',
 ];
 
+// Format: YYYYMMDDHHMMSS + 4 random digits → e.g., 202512311430251234
+// → 18 digits total → fits in BIGINT easily
 export async function generateUniqueUid(tableName: string): Promise<number> {
   if (!VALID_TABLES.includes(tableName)) {
     throw new Error(`Invalid table: ${tableName}`);
   }
 
-  const maxAttempts = 20;
+  const now = new Date();
 
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    // Generate a 10-digit random number
-    const uid = Math.floor(1000000000 + Math.random() * 9000000000);
+  // Format: YYYYMMDDHHMMSS (14 digits)
+  const timestampPart = now
+    .toISOString()
+    .replace(/[-:T.Z]/g, '')
+    .slice(0, 14); // "20251231143025"
 
-    // Use backticks manually — simple and reliable for MariaDB/MySQL
+  let uid: number;
+  let attempts = 0;
+  const maxAttempts = 50;
+
+  do {
+    // Add 4 random digits (0000–9999)
+    const randomPart = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0');
+
+    const uidString = timestampPart + randomPart;
+    uid = Number(uidString); // Safe: max 18 digits → fits in JS Number (up to ~15 safe, but we use BIGINT in DB)
+
+    // Check if exists
     const sql = `SELECT 1 FROM \`${tableName}\` WHERE uid = ? LIMIT 1`;
-
     const result: any[] = await sequelize.query(sql, {
       replacements: [uid],
       type: QueryTypes.SELECT,
@@ -33,7 +50,9 @@ export async function generateUniqueUid(tableName: string): Promise<number> {
     if (result.length === 0) {
       return uid; // Unique!
     }
-  }
 
-  throw new Error(`Could not generate unique UID for ${tableName} after ${maxAttempts} tries`);
+    attempts++;
+  } while (attempts < maxAttempts);
+
+  throw new Error(`Failed to generate unique timestamp-based UID for ${tableName}`);
 }

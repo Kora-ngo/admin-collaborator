@@ -38,6 +38,8 @@ export const messages: MessageItem[] = [
     { key: "record_not_found", message: "Record not found." }, 
     { key: "fields_required", message: "Required fields are missing." },
     { key: "duplicate_records", message: "Duplicate records detected." },
+    { key: "uid_already_exists", message: "Identifier conflict detected. Please try again." }
+
 
 
 

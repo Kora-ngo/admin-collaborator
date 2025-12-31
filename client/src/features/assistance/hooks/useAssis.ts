@@ -8,7 +8,7 @@ import { useAuthStore } from "../../auth/store/authStore";
 
 export const useAssis = () => {
 
-    const {createData, fetchData} = useAssistanceStore();
+    const {createData, fetchData, fetchOneData} = useAssistanceStore();
     const showToast = useToastStore((state) => state.showToast);
     const {membership} = useAuthStore();
 
@@ -46,11 +46,30 @@ export const useAssis = () => {
         const toatMessage: ToastMessage = await createData(data);
         showToast(toatMessage);
         if(toatMessage.type === "success"){
+            await fetchData();
+            setForm({
+                name: "",
+                assistance_id: 0,
+                description: "",
+                created_by: membership?.id
+            })
             return true;
-            // await fetchData();
         }
         
         return false;
+    }
+
+    const handleView = async (id: number): Promise<any> => {
+
+        const response: Assistance = await fetchOneData(id);
+
+        setForm({
+            name: response.name,
+            assistance_id: response.assistance_id,
+            description: response.description,
+            created_by: membership?.id
+        })
+
     }
 
     return{
@@ -59,7 +78,8 @@ export const useAssis = () => {
         errors,
 
         handleChange,
-        handleSubmit
+        handleSubmit,
+        handleView
     }
 
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../../components/widgets/button";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
@@ -8,14 +8,24 @@ import { useAssis } from "../hooks/useAssis";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 
 interface AssistanceFormProps {
+    id: number
     onClose: () => void
 }
 
-const AssistanceForm = ({onClose}: AssistanceFormProps) => {
+const AssistanceForm = ({onClose, id}: AssistanceFormProps) => {
 
-    const {form, setForm, errors, handleChange, handleSubmit} = useAssis();
+    const {form, setForm, errors, handleChange, handleSubmit, handleView} = useAssis();
     const {data} = useAssistanceTypeStore();
     const [selectedType, setSelectedType] = useState<number>(0);
+
+      useEffect(() => {
+        const handleFetch = async () => {
+          if (!id) return;
+          handleView(id);
+        };
+    
+        handleFetch();
+      }, [id]);
 
     const handleValide = async () => {
         const isDone = await handleSubmit();
@@ -53,7 +63,7 @@ const AssistanceForm = ({onClose}: AssistanceFormProps) => {
                         ]}
                         // prefixElement={<DollarIcon className="w-4 h-4" />}
                         hasError={errors.assistance_id}
-                        value={selectedType}
+                        value={id ? form.assistance_id : selectedType}
                         onChange={(e) => {
                             const selectedValue = e.target.value;
                             setSelectedType(parseInt(selectedValue));
@@ -80,7 +90,7 @@ const AssistanceForm = ({onClose}: AssistanceFormProps) => {
             <div className="border-t-1 border-gray-200">
                 <div className="my-4 flex gap-4 justify-end">
                     <Button onClick={handleValide}>
-                        Save
+                        {id ? "Update" : "Save"}
                     </Button>
 
                     {/* <Button variant="ghost" onClick={onClose}>
