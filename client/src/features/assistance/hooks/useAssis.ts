@@ -8,7 +8,7 @@ import { useAuthStore } from "../../auth/store/authStore";
 
 export const useAssis = () => {
 
-    const {createData, fetchData, fetchOneData, updateData} = useAssistanceStore();
+    const {createData, fetchData, fetchOneData, updateData, deleteData} = useAssistanceStore();
     const showToast = useToastStore((state) => state.showToast);
     const {membership} = useAuthStore();
 
@@ -24,22 +24,22 @@ export const useAssis = () => {
         assistance_id: false,
     });
 
-    const handleClearForm = () => {
-        setForm({
-            name: "",
-            assistance_id: 0,
-            description: "",
-            created_by: membership?.id
-        })
-    }
+const handleClearForm = () => {
+    setForm({
+        name: "",
+        assistance_id: 0,
+        description: "",
+        created_by: membership?.id
+    })
+}
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const {name, value} = e.target;
-        setForm((prev) => ({
-            ...prev,
-            [name]: value
-        }));
-    }
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const {name, value} = e.target;
+    setForm((prev) => ({
+        ...prev,
+        [name]: value
+    }));
+}
 
 
 const handleSubmit = async (id?: number): Promise<boolean> => {
@@ -54,9 +54,7 @@ const handleSubmit = async (id?: number): Promise<boolean> => {
   try {
     let result: ToastMessage;
 
-    // 2. Separate Create vs Update clearly
     if (id) {
-      // Update existing
       result = await updateData(id, data);
     } else {
       // Create new
@@ -84,26 +82,36 @@ const handleSubmit = async (id?: number): Promise<boolean> => {
     return false;
   } catch (error) {
     console.error("Submit error:", error);
-    showToast({
-      type: "error",
-      message: "An unexpected error occurred",
-    });
     return false;
   }
 };
 
-    const handleView = async (id: number): Promise<any> => {
+const handleView = async (id: number): Promise<any> => {
 
-        const response: Assistance = await fetchOneData(id);
+    const response: Assistance = await fetchOneData(id);
 
-        setForm({
-            name: response.name,
-            assistance_id: response.assistance_id,
-            description: response.description,
-            created_by: membership?.id
-        })
+    setForm({
+        name: response.name,
+        assistance_id: response.assistance_id,
+        description: response.description,
+        created_by: membership?.id
+    })
 
+}
+
+
+const handleDelete = async (id: number): Promise<boolean> => {
+
+    if (!id || id <= 0) {
+        return false;
     }
+
+    const result = await deleteData(id);
+    showToast(result);
+    await fetchData();
+    return result.type === "success";
+}
+
 
     return{
         form,
@@ -113,7 +121,8 @@ const handleSubmit = async (id?: number): Promise<boolean> => {
         handleChange,
         handleSubmit,
         handleView,
-        handleClearForm
+        handleClearForm,
+        handleDelete
     }
 
 }

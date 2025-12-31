@@ -8,12 +8,12 @@ import { useAssis } from "../hooks/useAssis";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 
 interface AssistanceFormProps {
-    id: number,
+    id: number | any,
     isOpen: boolean,
-    onClose: () => void
+    onSuccess: () => void
 }
 
-const AssistanceForm = ({onClose, isOpen, id}: AssistanceFormProps) => {
+const AssistanceForm = ({onSuccess, isOpen, id}: AssistanceFormProps) => {
 
     const {form, setForm, errors, handleChange, handleSubmit, handleView, handleClearForm} = useAssis();
     const {data} = useAssistanceTypeStore();
@@ -39,7 +39,7 @@ const AssistanceForm = ({onClose, isOpen, id}: AssistanceFormProps) => {
     const handleValide = async () => {
         let isDone = await handleSubmit(id);
         if(isDone){
-            onClose();
+            onSuccess();
         }
     }
 

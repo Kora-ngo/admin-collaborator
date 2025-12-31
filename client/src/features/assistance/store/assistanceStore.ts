@@ -10,6 +10,7 @@ interface AssiantnceState {
     fetchData: () => Promise<any>,
     fetchOneData: (id: number) => Promise<Assistance>,
     updateData: (id: number, data: Assistance) => Promise<any>
+    deleteData: (id: number) => Promise<any>
 }
 
 const endpoint = "/assistance";
@@ -81,6 +82,20 @@ export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
             return errorToast;
         }finally{
             set({loading: false})
+        }
+    },
+
+    deleteData: async (id) => {
+        try{
+
+        const response = await axiosInstance.put(`${endpoint}/delete/${id}`);
+        console.log("Assistance delete one --> ", response.data);
+        return response.data;
+
+            
+        }catch(error: any){
+            const errorToast = handleApiError(error);
+            return errorToast;
         }
     }
 

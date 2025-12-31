@@ -7,9 +7,7 @@ import SearchInput from "../../components/widgets/search-input";
 import StatusBadge from "../../components/widgets/status-badge";
 import type { TableColumn } from "../../components/widgets/table";
 import Table from "../../components/widgets/table";
-import { assistanceTypesData } from "../../dummy-data/assiatnceData";
 import Modal from "../../components/widgets/modal";
-import TypeView from "../../features/assistance/components/type-view";
 import Type from "../../features/assistance/components/type";
 import AssistanceForm from "../../features/assistance/components/assistance-form";
 import { useAssistanceStore } from "../../features/assistance/store/assistanceStore";
@@ -18,23 +16,45 @@ import { formatCode } from "../../utils/formatCode";
 import EmptyState from "../../components/widgets/empty";
 import Loading from "../../components/widgets/loading";
 import AssistanceView from "../../features/assistance/components/assistance-view";
+import Popup from "../../components/widgets/popup";
+import { useAssis } from "../../features/assistance/hooks/useAssis";
+
+type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Assistance = () => {
 
     const {data, loading, fetchData} = useAssistanceStore();
+    const {handleDelete} = useAssis();
 
     const [currentPage, setCurrentPage] = useState(1);
     const [typeModal, setTypeModal] = useState(false);
-    const [assistanceModal, setAsssitanceModal] = useState(false);
+    const [deletePopup, setDeletePopUp] = useState(false);
 
 
-    const [dataID, setDataID] = useState(0);
-    const [modalSate, setModalState] = useState<'add' | 'view' | 'edit'>('add'); 
+    const [assistanceModalMode, setAssistanceModalMode] = useState<ModalMode>(null);
+    const [currentAssistanceId, setCurrentAssistanceId] = useState<number | null>(null);
+
+
+    const openAssistanceModal = (mode: 'add' | 'edit' | 'view', id?: number) => {
+        setAssistanceModalMode(mode);
+        setCurrentAssistanceId(id ?? null);
+    };
+
+    const closeAssistanceModal = () => {
+        setAssistanceModalMode(null);
+        setCurrentAssistanceId(null);
+    };
     
 
+
     useEffect(() => {
-        fetchData()
-    }, [fetchData])
+        fetchData();
+    }, [fetchData]);
+
+
+
+
+    
 
     const assistanceColumns: TableColumn[] = [
     { key: "id", label: "ID", visibleOn: "always",  render: (_, globalIndex) => formatCode("AS", globalIndex) },
@@ -55,20 +75,17 @@ const Assistance = () => {
           return(
              <div className="flex items-center space-x-3">
                 <ActionIcon name="edit"
-                    onClick={() => {
-                        setDataID(row.id);
-                        setModalState('edit');
-                        setAsssitanceModal(true);
-                }}
+                    onClick={() => openAssistanceModal('edit', row.id)}
                 />
                 <ActionIcon name="view"
-                    onClick={() => {
-                        setDataID(row.id);
-                        setModalState('view');
-                        setAsssitanceModal(true);
-                }}
+                    onClick={() => openAssistanceModal('view', row.id)}
                 />
-                <ActionIcon name="trash" />
+                <ActionIcon name="trash"
+                    onClick={() => {
+                        setCurrentAssistanceId(row.id);
+                        setDeletePopUp(true);
+                    }}
+                />
              </div>
           )
     } },
@@ -94,7 +111,7 @@ const Assistance = () => {
                         <Button className="w-full" variant="ghost" onClick={() => setTypeModal(true)}>
                             New Type
                         </Button>
-                        <Button className="w-full" onClick={() => {setModalState('add'); setAsssitanceModal(true)} }>
+                        <Button className="w-full" onClick={() => openAssistanceModal('add')}>
                             New Assistance
                         </Button>
                     </div>
@@ -135,16 +152,53 @@ const Assistance = () => {
             />
 
             <Modal
-                isOpen={assistanceModal}
-                onClose={() => {setDataID(0); setAsssitanceModal(false)}}
-                title={modalSate === 'add' ? "New Assistance" : modalSate === 'view' ? "View Assistance" : "Edit"}
+                isOpen={assistanceModalMode !== null}
+                onClose={closeAssistanceModal}
+                title={
+                    assistanceModalMode === 'add' ? "New Assistance" :
+                    assistanceModalMode === 'view' ? "View Assistance" :
+                    "Edit Assistance"
+                }
                 children={
-                    modalSate === 'add' || modalSate === 'edit' ?
-                    <AssistanceForm id={dataID} isOpen={assistanceModal} onClose={() => setAsssitanceModal(false)}  />:
-                    <AssistanceView isOpen={assistanceModal} id={dataID} />
-                    
+                    assistanceModalMode === 'add' || assistanceModalMode === 'edit' ? (
+                        <AssistanceForm
+                            id={currentAssistanceId ?? undefined}
+                            isOpen={assistanceModalMode !== null}
+                            onSuccess={() => {
+                                fetchData();
+                                closeAssistanceModal();
+                            }}
+                        />
+                        ) : (
+                        <AssistanceView
+                            isOpen={assistanceModalMode === 'view'}
+                            id={currentAssistanceId!}
+                        />
+                        )
                 }
             />
+
+            <Popup
+                open={deletePopup}
+                onClose={() => setDeletePopUp(false)}
+                title="Delete this record"
+                description={<>This record is about to be deleted. Do you want to proceed </>}
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={async () => {
+                    if (!currentAssistanceId) return;
+
+                        const success = await handleDelete(currentAssistanceId);
+                        if (success) {
+                        setDeletePopUp(false);
+                        // No need to clear ID separately — modal already closed or will stay consistent
+                        await fetchData();
+                        }
+                }}
+            confirmButtonClass="bg-red-500 hover:bg-red-400"
+            />
+
+
         </div>
      );
 }
