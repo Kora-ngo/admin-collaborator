@@ -8,7 +8,7 @@ class Membership extends Model<MembershipAttributes, MembershipCreationAttribute
   public id!: number;
   public user_id!: number;
   public organization_id!: number;
-  public role!: string;
+  public role!: 'admin' | 'collaborator' | 'enumerator';
   public status!: string;
   public date_of!: Date;
 }

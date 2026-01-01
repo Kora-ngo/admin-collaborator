@@ -2,7 +2,7 @@ export interface MembershipAttributes {
     id: number;
     user_id: number;
     organization_id: number;
-    role: string;
+    role: 'admin' | 'collaborator' | 'enumerator';
     status: string;
     date_of?: Date;
 }

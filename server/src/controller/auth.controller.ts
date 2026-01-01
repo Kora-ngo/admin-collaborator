@@ -257,7 +257,7 @@ const AuthController = {
             const payload = jwt.verify(token, process.env.JWT_SECRET as string) as {
                 userId: number;
                 organisationId: number;
-                role: string;
+                role: 'admin' | 'collaborator' | 'enumerator';
                 exp: number;
             };
 
