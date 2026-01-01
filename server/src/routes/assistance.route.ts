@@ -8,8 +8,9 @@ const router = Router();
 
 router.get('/search', verifyToken, AssistanceController.search);
 
-router.get('/:id', verifyToken, AssistanceController.fetchOne);
+router.get('/filter', verifyToken, AssistanceController.filter);
 
+router.get('/:id', verifyToken, AssistanceController.fetchOne);
 
 router.get('/', verifyToken, AssistanceController.fetchAll);
 

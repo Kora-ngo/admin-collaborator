@@ -5,11 +5,15 @@ import { useToastStore } from "../../../store/toastStore";
 import type { ToastMessage } from "../../../types/toastMessage";
 import { useAssistanceStore } from "../store/assistanceStore";
 import { useAuthStore } from "../../auth/store/authStore";
+import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 
 export const useAssis = () => {
 
-    const {createData, getData, fetchOneData, updateData, deleteData} = useAssistanceStore();
+    const {createData, getData, fetchOneData, filterData, updateData, deleteData} = useAssistanceStore();
     const showToast = useToastStore((state) => state.showToast);
+    const typeData = useAssistanceTypeStore((state) => state.data);
+
+
     const {membership} = useAuthStore();
 
     const [form, setForm] = useState<Assistance>({
@@ -50,6 +54,49 @@ export const useAssis = () => {
       };
 
 
+        // Add filter state
+        const [filterMode, setFilterMode] = useState(false);
+        const [filters, setFilters] = useState({
+          status: "",
+          typeId: 0,
+          dateFrom: "",
+          dateTo: "",
+        });
+
+        // Toggle filter on/off
+        const toggleFilter = () => {
+          setFilterMode(prev => !prev);
+          if (!filterMode) {
+            setSearchTerm("");
+          }
+        };
+
+        // Apply filters
+        const applyFilters = useCallback(() => {
+          if (!filterMode) {
+            getData(1, searchTerm); // normal list or search
+            return;
+          }
+
+        const activeFilters: any = {};
+        if (filters.status) activeFilters.status = filters.status;
+        if (filters.typeId > 0) activeFilters.typeId = filters.typeId;
+        if (filters.dateFrom) activeFilters.dateFrom = filters.dateFrom;
+        if (filters.dateTo) activeFilters.dateTo = filters.dateTo;
+
+        filterData(1, activeFilters);
+      }, [filterMode, filters, searchTerm, getData, filterData]);
+
+      // Trigger fetch when filter/search changes
+      useEffect(() => {
+      applyFilters();
+      }, [applyFilters]);
+
+      const handleStatusChange = (value: string) => setFilters(prev => ({ ...prev, status: value }));
+      const handleTypeChange = (value: number) => setFilters(prev => ({...prev, typeId: value}))
+
+
+
     const handleClearForm = () => {
         setForm({
             name: "",
@@ -66,18 +113,13 @@ export const useAssis = () => {
             [name]: value
         }));
     }
-
+  
 
     const refreshCurrentPage = (page: number) => {
-      getData(page, searchTerm);
+      filterMode ? filterData(page, filters) : getData(page, searchTerm)
     };
 
 
-
-    
-
-
-  
     const handleSubmit = async (id?: number): Promise<boolean> => {
       // 1. Validate
       const { hasErrors, formErrors, data } = validateAssistance(form);
@@ -152,10 +194,17 @@ export const useAssis = () => {
       handleView,
       handleDelete,
       handleClearForm,
+      handleTypeChange,
 
       handleSearch,
       clearSearch,
       refreshCurrentPage,
+
+      typeData,
+      filterMode,
+      toggleFilter,
+      filters,
+      handleStatusChange
     };
 
 }

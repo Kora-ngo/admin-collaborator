@@ -18,13 +18,25 @@ import Loading from "../../components/widgets/loading";
 import AssistanceView from "../../features/assistance/components/assistance-view";
 import Popup from "../../components/widgets/popup";
 import { useAssis } from "../../features/assistance/hooks/useAssis";
+import { SelectInput } from "../../components/widgets/select-input";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Assistance = () => {
 
     const {data, getData, pagination, loading} = useAssistanceStore();
-    const {searchTerm, handleSearch, refreshCurrentPage, handleDelete} = useAssis();
+    const {
+            filters,
+            filterMode,
+            typeData,
+            toggleFilter,
+            handleStatusChange,
+            handleTypeChange,
+            searchTerm, 
+            handleSearch, 
+            refreshCurrentPage, 
+            handleDelete
+        } = useAssis();
 
     const [typeModal, setTypeModal] = useState(false);
     const [deletePopup, setDeletePopUp] = useState(false);
@@ -107,11 +119,11 @@ const Assistance = () => {
                                     onChange={(e) => handleSearch(e.target.value)}
                             />
                         </div>
-                        <FilterToggleButton isOpen={false} onToggle={() => {}} />
+                        <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 
-                        <ActionButton onClick={getData} />
+                        <ActionButton onClick={() => refreshCurrentPage(pagination?.page!)} />
                         <Button className="w-full" variant="ghost" onClick={() => setTypeModal(true)}>
                             New Type
                         </Button>
@@ -120,6 +132,38 @@ const Assistance = () => {
                         </Button>
                     </div>
                 </div>
+
+                {filterMode && (
+                <div className="flex  gap-4 p-4 bg-gray-50 rounded-lg w-full">
+                    <div className="w-50">
+                        <SelectInput
+                            options={[
+                                { label: "All Status", value: "" },
+                                { label: "Active", value: "true" },
+                                { label: "Deleted", value: "false" },
+                            ]}
+                            value={filters.status}
+                            onChange={(e) => handleStatusChange(e.target.value)}
+                            />
+                    </div>
+
+                    <div className="w-50">
+                        <SelectInput
+                            options={[
+                                { label: "All Types", value: 0 },
+                                ...typeData.map((type) => ({
+                                    label: `${type.name} (${type.unit})`, value: type.id
+                                }))
+                            ]}
+                            value={filters.typeId}
+                            onChange={(e) => handleTypeChange(Number(e.target.value))}
+                        />
+                    </div>
+
+                    {/* <Input type="date" value={filters.dateFrom} onChange={(e) => handleDateFrom(e.target.value)} />
+                    <Input type="date" value={filters.dateTo} onChange={(e) => handleDateTo(e.target.value)} /> */}
+                </div>
+                )}
 
                 
                 {loading ? (

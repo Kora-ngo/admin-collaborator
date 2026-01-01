@@ -11,6 +11,7 @@ interface AssiantnceState {
     createData: (data: Assistance) => Promise<any>,
     getData: (page?: number, searchTerm?: string) => Promise<any>,
     fetchOneData: (id: number) => Promise<Assistance>,
+    filterData: (page: number, filters: any) => Promise<any>
     updateData: (id: number, data: Assistance) => Promise<any>
     deleteData: (id: number) => Promise<any>
 }
@@ -112,6 +113,42 @@ export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
             const errorToast = handleApiError(error);
             return errorToast;
         }
+    },
+
+
+    filterData: async (
+        page = 1,
+        filters: {
+            status?: "true" | "false";
+            typeId?: number;
+            dateFrom?: string;
+            dateTo?: string;
+        }
+    ) => {
+    try {
+        set({ loading: true, data: [] });
+        console.log('Filter --> ', filters);
+
+        const params: any = { page, limit: 5 };
+        if (filters.status) params.status = filters.status;
+        if (filters.typeId) params.typeId = filters.typeId;
+        if (filters.dateFrom) params.dateFrom = filters.dateFrom;
+        if (filters.dateTo) params.dateTo = filters.dateTo;
+
+        const response = await axiosInstance.get("/assistance/filter", { params });
+
+        set({
+        data: response.data.data,
+        pagination: response.data.pagination,
+        });
+    }catch(error: any){
+            const errorToast = handleApiError(error);
+            return errorToast;
+    }finally {
+        set({ loading: false });
     }
+    },
+
+
 
 }))

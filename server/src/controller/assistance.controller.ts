@@ -279,6 +279,77 @@ const AssistanceController = {
         }
     },
 
+    filter: async (req: Request, res: Response) => {
+        try{
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = 5;
+            const offset = (page - 1) * limit;
+
+            // Filters
+            const status = (req.query.status as string)?.trim(); // "true" | "false"
+            const typeId = req.query.typeId ? parseInt(req.query.typeId as string) : undefined;
+            const dateFrom = req.query.dateFrom as string;
+            const dateTo = req.query.dateTo as string;
+
+            const where: any = {};
+
+            if (status === "true" || status === "false") {
+                where.status = status;
+            }
+
+            if (typeId && typeId > 0) {
+                where.assistance_id = typeId;
+            }
+
+
+            if (dateFrom || dateTo) {
+                where.date_of = {};
+                if (dateFrom) where.date_of[Op.gte] = new Date(dateFrom);
+                if (dateTo) {
+                    const end = new Date(dateTo);
+                    end.setHours(23, 59, 59, 999);
+                    where.date_of[Op.lte] = end;
+                }
+            }
+
+
+            const { count, rows } = await AssistanceModel.findAndCountAll({
+            where,
+            order: [['date_of', 'DESC']],
+            include: [
+                {
+                model: AssistanceTypeModel,
+                as: 'assistanceType',
+                attributes: ['id', 'name', 'unit'],
+                required: true,
+                },
+            ],
+            limit,
+            offset,
+            });
+
+            const totalPages = Math.ceil(count / limit);
+
+
+            res.status(200).json({
+            type: 'success',
+            data: rows,
+            pagination: {
+                total: count,
+                page,
+                limit,
+                totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1,
+            },
+            });
+            
+        }   catch (error) {
+            console.error("Assistance: Filter error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
 
 
     // ASSISTANCE TYPE CONTROLLER -------------------------->
