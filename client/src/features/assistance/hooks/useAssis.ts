@@ -59,8 +59,7 @@ export const useAssis = () => {
         const [filters, setFilters] = useState({
           status: "",
           typeId: 0,
-          dateFrom: "",
-          dateTo: "",
+          datePreset: "all"
         });
 
         // Toggle filter on/off
@@ -81,8 +80,7 @@ export const useAssis = () => {
         const activeFilters: any = {};
         if (filters.status) activeFilters.status = filters.status;
         if (filters.typeId > 0) activeFilters.typeId = filters.typeId;
-        if (filters.dateFrom) activeFilters.dateFrom = filters.dateFrom;
-        if (filters.dateTo) activeFilters.dateTo = filters.dateTo;
+        if (filters.datePreset !== "all") activeFilters.datePreset = filters.datePreset;
 
         filterData(1, activeFilters);
       }, [filterMode, filters, searchTerm, getData, filterData]);
@@ -93,7 +91,10 @@ export const useAssis = () => {
       }, [applyFilters]);
 
       const handleStatusChange = (value: string) => setFilters(prev => ({ ...prev, status: value }));
-      const handleTypeChange = (value: number) => setFilters(prev => ({...prev, typeId: value}))
+      const handleTypeChange = (value: number) => setFilters(prev => ({...prev, typeId: value}));
+      const handleDatePresetChange = (value: string) => {
+          setFilters(prev => ({ ...prev, datePreset: value }));
+      };
 
 
 
@@ -204,7 +205,8 @@ export const useAssis = () => {
       filterMode,
       toggleFilter,
       filters,
-      handleStatusChange
+      handleStatusChange,
+      handleDatePresetChange
     };
 
 }

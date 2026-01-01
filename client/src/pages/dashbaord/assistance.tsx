@@ -35,7 +35,8 @@ const Assistance = () => {
             searchTerm, 
             handleSearch, 
             refreshCurrentPage, 
-            handleDelete
+            handleDelete,
+            handleDatePresetChange
         } = useAssis();
 
     const [typeModal, setTypeModal] = useState(false);
@@ -160,8 +161,19 @@ const Assistance = () => {
                         />
                     </div>
 
-                    {/* <Input type="date" value={filters.dateFrom} onChange={(e) => handleDateFrom(e.target.value)} />
-                    <Input type="date" value={filters.dateTo} onChange={(e) => handleDateTo(e.target.value)} /> */}
+                    <div className="w-50">
+                        <SelectInput
+                            options={[
+                                { label: "All Time", value: "all" },
+                                { label: "Today", value: "today" },
+                                { label: "This Week", value: "this_week" },
+                                { label: "This Month", value: "this_month" },
+                                { label: "This Year", value: "this_year" },
+                            ]}
+                            value={filters.datePreset}
+                            onChange={(e) => handleDatePresetChange(e.target.value)}
+                        />
+                    </div>
                 </div>
                 )}
 

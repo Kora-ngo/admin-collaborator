@@ -121,8 +121,7 @@ export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
         filters: {
             status?: "true" | "false";
             typeId?: number;
-            dateFrom?: string;
-            dateTo?: string;
+            datePreset?: string;
         }
     ) => {
     try {
@@ -132,8 +131,8 @@ export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
         const params: any = { page, limit: 5 };
         if (filters.status) params.status = filters.status;
         if (filters.typeId) params.typeId = filters.typeId;
-        if (filters.dateFrom) params.dateFrom = filters.dateFrom;
-        if (filters.dateTo) params.dateTo = filters.dateTo;
+        if (filters.datePreset) params.datePreset = filters.datePreset;
+
 
         const response = await axiosInstance.get("/assistance/filter", { params });
 

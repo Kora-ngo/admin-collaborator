@@ -288,8 +288,7 @@ const AssistanceController = {
             // Filters
             const status = (req.query.status as string)?.trim(); // "true" | "false"
             const typeId = req.query.typeId ? parseInt(req.query.typeId as string) : undefined;
-            const dateFrom = req.query.dateFrom as string;
-            const dateTo = req.query.dateTo as string;
+            const datePreset = (req.query.datePreset as string)?.trim();
 
             const where: any = {};
 
@@ -302,15 +301,35 @@ const AssistanceController = {
             }
 
 
-            if (dateFrom || dateTo) {
+            if (datePreset && datePreset !== "all") {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
                 where.date_of = {};
-                if (dateFrom) where.date_of[Op.gte] = new Date(dateFrom);
-                if (dateTo) {
-                    const end = new Date(dateTo);
-                    end.setHours(23, 59, 59, 999);
-                    where.date_of[Op.lte] = end;
+
+                switch (datePreset) {
+                    case "today":
+                    where.date_of[Op.gte] = today;
+                    where.date_of[Op.lt] = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                    break;
+
+                    case "this_week":
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay()); // Sunday
+                    where.date_of[Op.gte] = weekStart;
+                    break;
+
+                    case "this_month":
+                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    where.date_of[Op.gte] = monthStart;
+                    break;
+
+                    case "this_year":
+                    const yearStart = new Date(now.getFullYear(), 0, 1);
+                    where.date_of[Op.gte] = yearStart;
+                    break;
                 }
-            }
+                }
 
 
             const { count, rows } = await AssistanceModel.findAndCountAll({
