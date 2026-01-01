@@ -36,7 +36,8 @@ const Assistance = () => {
             handleSearch, 
             refreshCurrentPage, 
             handleToggle,
-            handleDatePresetChange
+            handleDatePresetChange,
+            handleView
         } = useAssis();
 
     const [typeModal, setTypeModal] = useState(false);
@@ -51,9 +52,26 @@ const Assistance = () => {
         } | null>(null);
 
 
-    const openAssistanceModal = (mode: 'add' | 'edit' | 'view', id?: number) => {
+    const openAssistanceModal = async (mode: 'add' | 'edit' | 'view', id?: number) => {
+        if (mode === 'add') {
+            setAssistanceModalMode('add');
+            setSelectedRecord(null);
+            return;
+        }
+
+        if (!id) return;
+
+        // Fetch full record
+        const fullRecord = await handleView(id); 
+
+        // Set selected record for popup/toggle
+        setSelectedRecord({
+            id,
+            name: fullRecord.name,
+            status: fullRecord.status,
+        });
+
         setAssistanceModalMode(mode);
-        setSelectedRecord(selectedRecord ?? null);
     };
 
     const closeAssistanceModal = () => {
@@ -113,10 +131,22 @@ const Assistance = () => {
           return(
              <div className="flex items-center space-x-3">
                 <ActionIcon name="edit"
-                    onClick={() => openAssistanceModal('edit', row.id)}
+                    onClick={() =>
+                        {setSelectedRecord({
+                            id: row.id,
+                            name: row.name,
+                            status: row.status
+                        })
+                        openAssistanceModal('edit', row.id)}}
                 />
                 <ActionIcon name="view"
-                    onClick={() => openAssistanceModal('view', row.id)}
+                    onClick={() => {
+                        setSelectedRecord({
+                            id: row.id,
+                            name: row.name,
+                            status: row.status
+                        });
+                        openAssistanceModal('view', row.id)}}
                 />
                 <ActionIcon name="trash"
                     onClick={() => {
@@ -201,7 +231,8 @@ const Assistance = () => {
                             onChange={(e) => handleDatePresetChange(e.target.value)}
                         />
                     </div>
-                </div>
+
+                    </div>
                 )}
 
                 
@@ -319,6 +350,14 @@ const Assistance = () => {
                             </div>
                         </>
                         )}
+
+                    {filters.status === "false" && (
+                        <div className="col-span-1 sm:col-span-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <p className="text-sm text-yellow-800 font-medium">
+                                <span className="font-bold">Notice:</span> Deleted records will be permanently removed after 7 days.
+                            </p>
+                        </div>
+                    )}
                     </>
                 )}
                 
@@ -344,7 +383,7 @@ const Assistance = () => {
                 children={
                     assistanceModalMode === 'add' || assistanceModalMode === 'edit' ? (
                         <AssistanceForm
-                            id={selectedRecord!.id ?? undefined}
+                            id={selectedRecord != null ? selectedRecord!.id : undefined}
                             isOpen={assistanceModalMode !== null}
                             onSuccess={() => {
                                 getData();

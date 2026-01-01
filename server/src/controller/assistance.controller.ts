@@ -3,6 +3,7 @@ import { json, Op } from 'sequelize';
 import type { AssistanceCreationAttributes, AssistanceTypeAttributes, AssistanceTypeCreationAttributes } from '../types/assistance.js';
 import { generateUniqueUid } from '../utils/generateUniqueUid.js';
 import { AssistanceModel, AssistanceTypeModel } from '../models/index.js';
+import { cleanupOldDeleted } from '../utils/cleanupOldDeleted.js';
 
 const AssistanceController = {
     
@@ -13,6 +14,8 @@ const AssistanceController = {
         console.log("Backend fetch --> entrance");
 
        try {
+
+        await cleanupOldDeleted(AssistanceModel, 7)
 
         // Get Query Params with defaults----------------------->
         const page = parseInt(req.query.page as string) || 1;

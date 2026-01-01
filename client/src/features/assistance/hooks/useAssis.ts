@@ -41,10 +41,6 @@ export const useAssis = () => {
           return () => clearTimeout(timer);
         }, [getData]);
 
-      // Initial load (no search)
-      // useEffect(() => {
-      //   getData(1, "");
-      // }, [getData]);
 
       const handleSearch = (value: string) => {
         setSearchTerm(value);
@@ -170,6 +166,7 @@ export const useAssis = () => {
             created_by: membership?.id
         })
 
+        return response;
     }
 
     const handleToggle = async (id: number, status: string): Promise<boolean> => {
