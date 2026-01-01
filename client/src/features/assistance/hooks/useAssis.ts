@@ -9,7 +9,7 @@ import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 
 export const useAssis = () => {
 
-    const {createData, getData, fetchOneData, filterData, updateData, deleteData} = useAssistanceStore();
+    const {createData, getData, fetchOneData, filterData, updateData, toggleData} = useAssistanceStore();
     const showToast = useToastStore((state) => state.showToast);
     const typeData = useAssistanceTypeStore((state) => state.data);
 
@@ -35,15 +35,16 @@ export const useAssis = () => {
       useEffect(() => {
           const timer = setTimeout(() => {
             getData(1, searchTerm);
+            // setFilterMode(false);
           }, 500);
 
           return () => clearTimeout(timer);
-        }, [searchTerm, getData]);
+        }, [getData]);
 
       // Initial load (no search)
-      useEffect(() => {
-        getData(1, "");
-      }, [getData]);
+      // useEffect(() => {
+      //   getData(1, "");
+      // }, [getData]);
 
       const handleSearch = (value: string) => {
         setSearchTerm(value);
@@ -171,17 +172,19 @@ export const useAssis = () => {
 
     }
 
-    const handleDelete = async (id: number): Promise<boolean> => {
+    const handleToggle = async (id: number, status: string): Promise<boolean> => {
 
         if (!id || id <= 0) {
             return false;
         }
 
-        const result = await deleteData(id);
+        const result = await toggleData(id, status);
         showToast(result);
         await getData();
         return result.type === "success";
     }
+  
+
 
 
     return{
@@ -193,7 +196,7 @@ export const useAssis = () => {
       handleChange,
       handleSubmit,
       handleView,
-      handleDelete,
+      handleToggle,
       handleClearForm,
       handleTypeChange,
 

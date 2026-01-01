@@ -18,7 +18,7 @@ router.post('/', verifyToken, AssistanceController.create);
 
 router.put('/:id', verifyToken, AssistanceController.update);
 
-router.put('/delete/:id', verifyToken, AssistanceController.delete);
+router.put('/toggle/:id', verifyToken, AssistanceController.toggleStatus);
 
 
 

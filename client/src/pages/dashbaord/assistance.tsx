@@ -35,7 +35,7 @@ const Assistance = () => {
             searchTerm, 
             handleSearch, 
             refreshCurrentPage, 
-            handleDelete,
+            handleToggle,
             handleDatePresetChange
         } = useAssis();
 
@@ -44,17 +44,21 @@ const Assistance = () => {
 
 
     const [assistanceModalMode, setAssistanceModalMode] = useState<ModalMode>(null);
-    const [currentAssistanceId, setCurrentAssistanceId] = useState<number | null>(null);
+    const [selectedRecord, setSelectedRecord] = useState<{
+        id: number;
+        name: string;
+        status: "true" | "false";
+        } | null>(null);
 
 
     const openAssistanceModal = (mode: 'add' | 'edit' | 'view', id?: number) => {
         setAssistanceModalMode(mode);
-        setCurrentAssistanceId(id ?? null);
+        setSelectedRecord(selectedRecord ?? null);
     };
 
     const closeAssistanceModal = () => {
         setAssistanceModalMode(null);
-        setCurrentAssistanceId(null);
+        setSelectedRecord(null);
     };
     
 
@@ -87,6 +91,25 @@ const Assistance = () => {
           }
     } },
     { key: "action", label: "Action", visibleOn: "always", render: (row) => {
+
+        if(row.status === 'false')
+        {
+            return(
+             <div className="flex items-center space-x-3">
+                <ActionIcon name="restore"
+                    onClick={() => {
+                        setSelectedRecord({
+                            id: row.id,
+                            name: row.name,
+                            status: row.status
+                        });
+                        setDeletePopUp(true);
+                    }}
+                />
+             </div>
+          )
+        }
+
           return(
              <div className="flex items-center space-x-3">
                 <ActionIcon name="edit"
@@ -97,7 +120,11 @@ const Assistance = () => {
                 />
                 <ActionIcon name="trash"
                     onClick={() => {
-                        setCurrentAssistanceId(row.id);
+                        setSelectedRecord({
+                            id: row.id,
+                            name: row.name,
+                            status: row.status
+                        });
                         setDeletePopUp(true);
                     }}
                 />
@@ -317,7 +344,7 @@ const Assistance = () => {
                 children={
                     assistanceModalMode === 'add' || assistanceModalMode === 'edit' ? (
                         <AssistanceForm
-                            id={currentAssistanceId ?? undefined}
+                            id={selectedRecord!.id ?? undefined}
                             isOpen={assistanceModalMode !== null}
                             onSuccess={() => {
                                 getData();
@@ -327,31 +354,44 @@ const Assistance = () => {
                         ) : (
                         <AssistanceView
                             isOpen={assistanceModalMode === 'view'}
-                            id={currentAssistanceId!}
+                            id={selectedRecord != null ? selectedRecord!.id! : 0}
                         />
                         )
                 }
             />
 
-            <Popup
-                open={deletePopup}
-                onClose={() => setDeletePopUp(false)}
-                title="Delete this record"
-                description={<>This record is about to be deleted. Do you want to proceed </>}
-                confirmText="Delete"
-                cancelText="Cancel"
-                onConfirm={async () => {
-                    if (!currentAssistanceId) return;
+        <Popup
+            open={deletePopup}
+            onClose={() => setDeletePopUp(false)}
+            title={selectedRecord?.status === "true" ? "Deactivate Record" : "Activate Record"}
+            description={
+                selectedRecord ? (
+                <>
+                    You are about to <strong>{selectedRecord.status === "true" ? "delete" : "restore"} </strong> 
+                    the record <span className="font-bold">{selectedRecord.name}</span>. 
+                    Do you want to proceed?
+                </>
+                ) : "Loading..."
+            }
+            confirmText={selectedRecord?.status === "true" ? "Delete" : "Restore"}
+            cancelText="Cancel"
+            onConfirm={async () => {
+                if (!selectedRecord) return;
 
-                        const success = await handleDelete(currentAssistanceId);
-                        if (success) {
-                        setDeletePopUp(false);
-                        // No need to clear ID separately — modal already closed or will stay consistent
-                        await getData();
-                        }
-                }}
-            confirmButtonClass="bg-red-500 hover:bg-red-400"
-            />
+                const success = await handleToggle(selectedRecord.id, selectedRecord.status);
+                if (success) {
+                setDeletePopUp(false);
+                setSelectedRecord(null); // ← Clear selected record
+                await refreshCurrentPage(pagination!.page);
+                }
+            }}
+            confirmButtonClass={
+                selectedRecord?.status === "true" 
+                ? "bg-red-500 hover:bg-red-400" 
+                : "bg-accent hover:bg-accent/80"
+            }
+        />
+            
 
 
         </div>

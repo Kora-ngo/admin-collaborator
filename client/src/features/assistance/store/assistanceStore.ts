@@ -13,7 +13,7 @@ interface AssiantnceState {
     fetchOneData: (id: number) => Promise<Assistance>,
     filterData: (page: number, filters: any) => Promise<any>
     updateData: (id: number, data: Assistance) => Promise<any>
-    deleteData: (id: number) => Promise<any>
+    toggleData: (id: number, status: string) => Promise<any>
 }
 
 const endpoint = "assistance";
@@ -101,10 +101,12 @@ export const useAssistanceStore = create<AssiantnceState>((set, get) => ({
         }
     },
 
-    deleteData: async (id) => {
+    toggleData: async (id, status) => {
         try{
 
-        const response = await axiosInstance.put(`${endpoint}/delete/${id}`);
+        console.log("Assiance toggle -- Status -- > ", status);
+
+        const response = await axiosInstance.put(`${endpoint}/toggle/${id}`, {status: status});
         console.log("Assistance delete one --> ", response.data);
         return response.data;
 

@@ -194,33 +194,40 @@ const AssistanceController = {
         }
     },
 
-    delete: async (req: Request, res: Response) => {
-        console.log("Backend Delete --> entrance");
-
+    toggleStatus: async (req: Request, res: Response) => {
         try {
-            const {id} = req.params;
+            const { id } = req.params;
 
-            const assistance = await AssistanceModel.findByPk(id);
+            const assistanceData = await AssistanceModel.findByPk(id);
+
+            const assistance = assistanceData?.dataValues;
 
             if (!assistance) {
-                res.status(404).json({
-                    type: 'error',
-                    message: 'record_not_found',
-                });
-                return;
+            return res.status(404).json({
+                type: 'error',
+                message: 'record_not_found',
+            });
             }
 
-            await assistance.update({
-                status: 'false',
-                update_of: new Date(),
+            // Always toggle — simple and predictable
+            const newStatus = assistance.status === 'true' ? 'false' : 'true';
+
+            await assistanceData.update({
+            status: newStatus,
+            update_of: new Date(),
             });
 
             res.status(200).json({
-                type: 'success',
-                message: 'done',
+            type: 'success',
+            message: 'done',
+            data: {
+                id: assistance.id,
+                name: assistance.name,
+                status: newStatus,
+            },
             });
-        }catch (error) {
-            console.error("Assistance: Soft_Delete error:", error);
+        } catch (error) {
+            console.error("Assistance: Toggle Status error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
