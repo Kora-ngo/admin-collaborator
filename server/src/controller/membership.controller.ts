@@ -82,7 +82,7 @@ const MembershipController = {
             const membership = await MembershipModel.findOne({
                     where: {
                         id,
-                        status: 'true',
+                        status: ['true', 'blocked'],
                     },
                     include: [
                         {

@@ -47,7 +47,7 @@ const MembershipView = ({ id, isOpen }: MembershipViewProps) => {
         { label: "Email", value: data.user.email },
         { label: "Phone", value: data.user.phone || "-" },
         { label: "Role", value: data.role.charAt(0).toUpperCase() + data.role.slice(1) },
-        { label: "Status", value: data.status === "true" ? "Active" : "Inactive" },
+        { label: "Status", value: data.status === "true" ? "Active" : "Blocked" },
         { label: "Created On", value: new Date(data.date_of!).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) },
     ];
 
