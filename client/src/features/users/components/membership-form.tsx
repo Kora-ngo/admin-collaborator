@@ -31,6 +31,7 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
     }, [isOpen]);
 
     const handleValidate = async () => {
+        // console.log("Hello World --> ", form);
         const success = await handleSubmit(id);
         if(success){
             onSuccess();

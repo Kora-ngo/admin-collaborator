@@ -121,7 +121,7 @@ export const useMembershipStore = create<MembershipState>((set) => ({
         page = 1,
         filters: {
             status?: "true" | "false";
-            roleId?: number;
+            role?: 'all'| 'admin' | 'collaborator' | 'enumerator';
             datePreset?: string;
         }
     ) => {
@@ -131,7 +131,7 @@ export const useMembershipStore = create<MembershipState>((set) => ({
 
         const params: any = { page, limit: 5 };
         if (filters.status) params.status = filters.status;
-        if (filters.roleId) params.roleId = filters.roleId;
+        if (filters.role) params.role = filters.role;
         if (filters.datePreset) params.datePreset = filters.datePreset;
 
         const response = await axiosInstance.get("/membership/filter", { params });

@@ -24,7 +24,7 @@ const MembershipController = {
         console.log("Current ID --> ", currentUserId);
 
         const whereClause: any = {
-            status: 'true',
+            status: ['true', 'blocked'],
         };
 
         if (currentUserId) {
@@ -274,6 +274,17 @@ const MembershipController = {
     toggleStatus: async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
+            const { status } = req.body;
+
+            // Validate that status is provided and is one of the allowed values
+            const allowedStatuses = ['true', 'false', 'blocked'];
+            if (!status || !allowedStatuses.includes(status)) {
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'invalid_status'
+                });
+            }
+
             const membershipData = await MembershipModel.findByPk(id);
             const membership = membershipData?.dataValues;
 
@@ -284,10 +295,21 @@ const MembershipController = {
                 });
             }     
             
-            const newStatus = membership.status === 'true' ? 'false' : 'true';
+            // Only update if the status actually changes (optional, but good practice)
+            if (membershipData.status === status) {
+                return res.status(200).json({
+                    type: 'success',
+                    message: 'no_change',
+                    data: {
+                        id: membershipData.id,
+                        user_id: membershipData.user_id,
+                        status: membershipData.status,
+                    },
+                });
+            }
 
             await membershipData.update({
-                status: newStatus,
+                status: status,
             }); 
 
 
@@ -297,7 +319,7 @@ const MembershipController = {
             data: {
                 id: membership.id,
                 user_id: membership.user_id,
-                status: newStatus,
+                status,
             },
             });
             
@@ -306,6 +328,7 @@ const MembershipController = {
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
+
 
     search: async (req: Request, res: Response) => {
         try {
@@ -370,26 +393,40 @@ const MembershipController = {
     },
 
     filter: async (req: Request, res: Response) => {
-        try{
+        try {
             const page = parseInt(req.query.page as string) || 1;
             const limit = 5;
             const offset = (page - 1) * limit;
 
-            // Filters
-            const status = (req.query.status as string)?.trim(); // "true" | "false"
-            const roleId = req.query.roleId ? parseInt(req.query.roleId as string) : undefined;
+            // Filters from query
+            const statusFilter = (req.query.status as string)?.trim(); // "true" | "false" | "blocked" | undefined
+            const roleFilter = req.query.role ? (req.query.role as string).trim() : undefined;
             const datePreset = (req.query.datePreset as string)?.trim();
+
+            console.log("Role --> ", req.query.role);
+            console.log("Status --> ", req.query.status);
 
             const where: any = {};
 
-            if (status === "true" || status === "false") {
-                where.status = status;
+            // Handle status filter
+            if (statusFilter) {
+                if (statusFilter === "true" || statusFilter === "blocked") {
+                    where.status = statusFilter; // exact match
+                } else if (statusFilter === "false") {
+                    where.status = 'false';
+                }
+                // If invalid, ignore (or you can return error)
+            } else {
+                // Default behavior: show active + blocked
+                where.status = ['true', 'false', 'blocked'];
             }
 
-            if (roleId && roleId > 0) {
-                where.role_id = roleId;
+            // Role filter (assuming role is string: admin/collaborator/enumerator)
+            if (roleFilter) {
+                where.role = roleFilter;
             }
 
+            // Date preset filter
             if (datePreset && datePreset !== "all") {
                 const now = new Date();
                 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -398,65 +435,62 @@ const MembershipController = {
 
                 switch (datePreset) {
                     case "today":
-                    where.date_of[Op.gte] = today;
-                    where.date_of[Op.lt] = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-                    break;
-
+                        where.date_of[Op.gte] = today;
+                        where.date_of[Op.lt] = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                        break;
                     case "this_week":
-                    const weekStart = new Date(today);
-                    weekStart.setDate(today.getDate() - today.getDay()); // Sunday
-                    where.date_of[Op.gte] = weekStart;
-                    break;
-
+                        const weekStart = new Date(today);
+                        weekStart.setDate(today.getDate() - today.getDay());
+                        where.date_of[Op.gte] = weekStart;
+                        break;
                     case "this_month":
-                    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-                    where.date_of[Op.gte] = monthStart;
-                    break;
-
+                        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                        where.date_of[Op.gte] = monthStart;
+                        break;
                     case "this_year":
-                    const yearStart = new Date(now.getFullYear(), 0, 1);
-                    where.date_of[Op.gte] = yearStart;
-                    break;
+                        const yearStart = new Date(now.getFullYear(), 0, 1);
+                        where.date_of[Op.gte] = yearStart;
+                        break;
                 }
-                }
+            }
 
             const { count, rows } = await MembershipModel.findAndCountAll({
-            where,
-            order: [['date_of', 'DESC']],
-            include: [
-                {
-                model: UserModel,
-                as: 'user',
-                attributes: ['id', 'name', 'email', 'phone', 'status'],
-                required: true,
-                },
-                {
-                model: OrganisationModel,
-                as: 'organization',
-                attributes: ['id', 'name'],
-                required: true,
-                },
-            ],
-            limit,
-            offset,
+                where,
+                order: [['date_of', 'DESC']],
+                include: [
+                    {
+                        model: UserModel,
+                        as: 'user',
+                        attributes: ['id', 'name', 'email', 'phone', 'status'],
+                        required: true,
+                    },
+                    {
+                        model: OrganisationModel,
+                        as: 'organization',
+                        attributes: ['id', 'name'],
+                        required: true,
+                    },
+                ],
+                limit,
+                offset,
             });
 
             const totalPages = Math.ceil(count / limit);
 
             res.status(200).json({
-            type: 'success',
-            data: rows,
-            pagination: {
-                total: count,
-                page,
-                limit,
-                totalPages,
-                hasNext: page < totalPages,
-                hasPrev: page > 1,
-            },
+                type: 'success',
+                data: rows,
+                pagination: {
+                    total: count,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNext: page < totalPages,
+                    hasPrev: page > 1,
+                },
             });
-            
-        }   catch (error) {
+
+        } catch (error) {
             console.error("Membership: Filter error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }

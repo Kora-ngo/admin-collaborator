@@ -42,6 +42,7 @@ const User = () => {
     } = useMembership();
 
     const [deletePopup, setDeletePopUp] = useState(false);
+    const [disableUserPopup, setDisableUserPopup] = useState(false);
     const [membershipModalMode, setMembershipModalMode] = useState<ModalMode>(null);
     const [selectedRecord, setSelectedRecord] = useState<{
         id: number;
@@ -94,7 +95,9 @@ const User = () => {
     { key: "status", label: "Status", visibleOn: "always", render: (row) => {
         if(row.status === "false"){
             return <StatusBadge text="Deleted" color="red" />;
-        }else{
+        }else if(row.status === "blocked") {
+            return <StatusBadge text="Blocked" color="orange" />;
+        }else {
             return <StatusBadge text="Active" color="purple" />;
         }
     } },
@@ -120,7 +123,7 @@ const User = () => {
 
           return(
              <div className="flex items-center space-x-3">
-                <ActionIcon name="edit"
+                {/* <ActionIcon name="edit"
                     onClick={() =>
                         {setSelectedRecord({
                             id: row.id,
@@ -128,7 +131,7 @@ const User = () => {
                             status: row.status
                         })
                         openMembershipModal('edit', row.id)}}
-                />
+                /> */}
                 <ActionIcon name="view"
                     onClick={() => {
                         setSelectedRecord({
@@ -138,6 +141,18 @@ const User = () => {
                         });
                         openMembershipModal('view', row.id)}}
                 />
+
+                <ActionIcon name={row.status === "blocked" ? "unlock" : "lock"}
+                    onClick={() => {
+                        setSelectedRecord({
+                            id: row.id,
+                            userName: row.user.name,
+                            status: row.status
+                        });
+                        setDisableUserPopup(true);
+                    }}
+                />
+                
                 <ActionIcon name="trash"
                     onClick={() => {
                         setSelectedRecord({
@@ -186,6 +201,7 @@ const User = () => {
                                 { label: "All Status", value: "" },
                                 { label: "Active", value: "true" },
                                 { label: "Deleted", value: "false" },
+                                { label: "Blocked", value: "blocked" },
                             ]}
                             value={filters.status}
                             onChange={(e) => handleStatusChange(e.target.value)}
@@ -393,7 +409,7 @@ const User = () => {
                 onConfirm={async () => {
                     if (!selectedRecord) return;
 
-                    const success = await handleToggle(selectedRecord.id, selectedRecord.status);
+                    const success = await handleToggle(selectedRecord.id, selectedRecord?.status === "true" ? "false" : "true");
                     if (success) {
                         setDeletePopUp(false);
                         setSelectedRecord(null);
@@ -406,6 +422,44 @@ const User = () => {
                     : "bg-accent hover:bg-accent/80"
                 }
             />
+
+
+
+                <Popup
+                    open={disableUserPopup}
+                    onClose={() => setDisableUserPopup(false)}
+                    title={selectedRecord?.status === "true" ? "Disable User" : "Enable User"}
+                    description={
+                        selectedRecord ? (
+                        <>
+                            You are about to <strong>{selectedRecord.status === "true" ? "disable" : "enable"} </strong> 
+                            the user <span className="font-bold">{selectedRecord.userName}</span>. 
+                            Do you want to proceed?
+                        </>
+                        ) : "Loading..."
+                    }
+                    confirmText={selectedRecord?.status === "true" ? "Disable" : "Enable"}
+                    cancelText="Cancel"
+                    onConfirm={async () => {
+                        if (!selectedRecord) return;
+
+                        // Toggle between "true" (active) and "blocked"
+                        const newStatus = selectedRecord.status === "true" ? "blocked" : "true";
+
+                        const success = await handleToggle(selectedRecord.id, newStatus);
+                        if (success) {
+                        setDisableUserPopup(false);
+                        setSelectedRecord(null);
+                        await refreshCurrentPage(pagination!.page);
+                        }
+                    }}
+                    confirmButtonClass={
+                        selectedRecord?.status === "true" 
+                        ? "bg-red-500 hover:bg-red-400"   // Disable = red
+                        : "bg-accent hover:bg-accent/50" // Enable = green
+                    }
+                />
+
         </div>
      );
 }

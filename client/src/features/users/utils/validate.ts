@@ -7,7 +7,9 @@ export const validateMembership = (
     isEdit: boolean = false
 ) => {
     console.log("Membership - Validation --> ", form);
-    console.log("Membership -  II --> ", form.organization_id);
+    console.log("Membership - Is Edit --> ", isEdit);
+
+    
     const errors = {
         name: false,
         organization_id: false,
@@ -16,49 +18,66 @@ export const validateMembership = (
         password: false
     };
 
-    // Required fields
-    if (!form.name) {
+
+    if(isEdit) {
+        if (!form.role || !["admin", "collaborator", "enumerator"].includes(form.role)) {
+            errors.role = true;
+        }
+
+        const data: any = {
+            role: form.role,
+        };
+
+        const hasErrors = Object.values(errors).some(Boolean);
+        return { hasErrors, formErrors: errors, data };
+    }
+    
+
+    // Always required fields (create & edit)
+    if (!form.name?.trim()) {
         errors.name = true;
     }
-
-
 
     if (!form.organization_id || form.organization_id === 0) {
         errors.organization_id = true;
     }
 
-    if (!form.role || !["admin", "collaborator", "enumerator"].includes(form.role)) {
-        errors.role = true;
-    }
-
-    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
-    if(!emailRegex.test(form.email!)){
+    // Email validation (always, since it's used for user lookup/create)
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    if (!form.email?.trim() || !emailRegex.test(form.email.trim())) {
         errors.email = true;
     }
 
-    if (form.password!.length === 0) {
-        errors.password = true
+    // Password: required only on create (when new user is being made)
+    if (!isEdit && (!form.password || form.password.length === 0)) {
+        errors.password = true;
     }
 
-    // On create: either user_id OR email must be provided
+    // Role validation: ONLY on create (skip on edit)
     if (!isEdit) {
-        if (!form.user_id && !form.email?.trim()) {
-            errors.email = true;
+        if (!form.role || !["admin", "collaborator", "enumerator"].includes(form.role)) {
+            errors.role = true;
         }
     }
+    // On edit: we allow role to be empty/undefined → backend will keep existing value
 
     const hasErrors = Object.values(errors).some(Boolean);
 
     // Clean data for submission
     const data: any = {
         organization_id: form.organization_id,
-        role: form.role,
     };
 
     if (form.email) data.email = form.email.trim().toLowerCase();
     if (form.name) data.name = form.name.trim();
-    if (form.phone) data.phone = form.phone.trim();
-    if (form.password) data.password = form.password;
+    if (form.phone) data.phone = form.phone?.trim() || null;
+    if (form.password && form.password.length > 0) data.password = form.password;
+
+    // Only include role if it's present and valid (mainly for create)
+    // On edit: if role is provided, include it; if not, omit → backend ignores
+    if (form.role && ["admin", "collaborator", "enumerator"].includes(form.role)) {
+        data.role = form.role;
+    }
 
     return { hasErrors, formErrors: errors, data };
 };

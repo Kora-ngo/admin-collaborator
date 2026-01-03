@@ -154,7 +154,7 @@ export const useMembership = () => {
 
 
     const handleView = async (id: number): Promise<any> => {
-        const response: Membership = await fetchOneData(id);
+        const response: Membership | any = await fetchOneData(id);
 
         setForm({
             user_id: response.user_id,
