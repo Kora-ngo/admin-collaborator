@@ -346,7 +346,7 @@ const MembershipController = {
             } 
 
             const where: any = {
-                status: 'true',
+                status: ['true', 'blocked'],
             }; 
             
             const { count, rows } = await MembershipModel.findAndCountAll({
