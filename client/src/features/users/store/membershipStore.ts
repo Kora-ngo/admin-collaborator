@@ -1,30 +1,31 @@
-import { create } from "zustand";
-import type { Assistance } from "../../../types/assistance";
-import axiosInstance from "../../../utils/axiosInstance";
-import { handleApiError } from "../../../utils/handleApiError";
-import type { Pagination } from "../../../types/pagination";
+import { create } from "zustand"
+import type { Membership } from "../../../types/membership"
+import type { Pagination } from "../../../types/pagination"
+import axiosInstance from "../../../utils/axiosInstance"
+import { handleApiError } from "../../../utils/handleApiError"
 
-interface AssiantnceState {
-    data: Assistance[],
+interface MembershipState {
+    data: Membership[],
     loading: boolean,
     pagination: Pagination | null,
-    createData: (data: Assistance) => Promise<any>,
+    createData: (data: Membership) => Promise<any>,
     getData: (page?: number, searchTerm?: string) => Promise<any>,
-    fetchOneData: (id: number) => Promise<Assistance>,
+    fetchOneData: (id: number) => Promise<Membership>,
     filterData: (page: number, filters: any) => Promise<any>
-    updateData: (id: number, data: Assistance) => Promise<any>
+    updateData: (id: number, data: Membership) => Promise<any>
     toggleData: (id: number, status: string) => Promise<any>
 }
 
-const endpoint = "assistance";
+const endpoint = "membership";
 
-export const useAssistanceStore = create<AssiantnceState>((set) => ({
+export const useMembershipStore = create<MembershipState>((set) => ({
     data: [],
     loading: false,
     pagination: null,
 
     getData: async (page, searchTerm = "") => {
-        console.log("Assistnace GetData Search --> ", searchTerm);
+        console.log("Membership GetData Search --> ", searchTerm);
+
         try{
             set({loading: true, data: []});
             const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
@@ -32,18 +33,16 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
 
             if (searchTerm.trim()) params.q = searchTerm.trim();
 
-            console.log("Assistnace GetData params Search --> ", params);
+            console.log("Membership GetData params Search --> ", params);
 
             const {data} = await axiosInstance.get(getEndpoint, { params });
-
-
 
             set({
                 data: data.data,
                 pagination: data.pagination
             });
 
-            console.log("Assis - Fetch type response --> ", data);
+            console.log("Membership - Fetch response --> ", data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -57,7 +56,7 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
             set({loading: true});
 
             const response = await axiosInstance.post(endpoint, data);
-            console.log("Assistance create --> ", response.data);
+            console.log("Membership create --> ", response.data);
             return response.data;
 
             
@@ -71,10 +70,10 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
 
     fetchOneData: async (id) => {
         try{
-            console.log("Assistance get one --> ");
+            console.log("Membership get one --> ");
 
             const response = await axiosInstance.get(`${endpoint}/${id}`);
-            console.log("Assistance get one --> ", response.data.data);
+            console.log("Membership get one --> ", response.data.data);
             return response.data.data;
 
             
@@ -89,7 +88,7 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
             set({loading: true});
 
             const response = await axiosInstance.put(`${endpoint}/${id}`, data);
-            console.log("Assistance update --> ", response.data);
+            console.log("Membership update --> ", response.data);
             return response.data;
 
             
@@ -104,10 +103,10 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
     toggleData: async (id, status) => {
         try{
 
-        console.log("Assiance toggle -- Status -- > ", status);
+        console.log("Membership toggle -- Status -- > ", status);
 
         const response = await axiosInstance.put(`${endpoint}/toggle/${id}`, {status: status});
-        console.log("Assistance delete one --> ", response.data);
+        console.log("Membership delete one --> ", response.data);
         return response.data;
 
             
@@ -122,7 +121,7 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
         page = 1,
         filters: {
             status?: "true" | "false";
-            typeId?: number;
+            roleId?: number;
             datePreset?: string;
         }
     ) => {
@@ -132,11 +131,10 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
 
         const params: any = { page, limit: 5 };
         if (filters.status) params.status = filters.status;
-        if (filters.typeId) params.typeId = filters.typeId;
+        if (filters.roleId) params.roleId = filters.roleId;
         if (filters.datePreset) params.datePreset = filters.datePreset;
 
-
-        const response = await axiosInstance.get("/assistance/filter", { params });
+        const response = await axiosInstance.get("/membership/filter", { params });
 
         set({
         data: response.data.data,
@@ -151,5 +149,5 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
     },
 
 
+}));
 
-}))

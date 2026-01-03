@@ -28,7 +28,7 @@ const OrganisationModel = Organisation.init({
         primaryKey: true
     },
     uid: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
         unique: true
     },

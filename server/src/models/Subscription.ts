@@ -20,7 +20,7 @@ const SubscriptionModel = Subscription.init({
         primaryKey: true
     },
     uid: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false
     },
     organization_id: {

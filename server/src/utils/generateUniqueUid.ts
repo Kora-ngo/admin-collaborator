@@ -25,7 +25,7 @@ export async function generateUniqueUid(tableName: string): Promise<number> {
   const timestampPart = now
     .toISOString()
     .replace(/[-:T.Z]/g, '')
-    .slice(0, 14); // "20251231143025"
+    .slice(0, 14);
 
   let uid: number;
   let attempts = 0;

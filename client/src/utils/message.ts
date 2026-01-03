@@ -25,12 +25,17 @@ export const messages: MessageItem[] = [
 
 
     // Assistance Type ----------------------------------------------->
-    { key: "no_data_provided", message: "No data provided." },
-    { key: "validation_failed", message: "Validation failed." },
-    { key: "record_already_exists", message: "This assistance type already exists." },
-    { key: "duplicate_in_batch", message: "Duplicate entry in the list." },
-    { key: "done", message: "Operation completed successfully." },
-    { key: "foreign_key_constraint", message: "Cannot delete: Assistance type is in use." },
+    { key: "no_data_provided", message: "Please add at least one item." },
+    { key: "validation_failed", message: "Some information is missing or incorrect." },
+    { key: "duplicate_in_batch", message: "An Item has been added more than once" },
+
+
+    // Membership  ---------------------------------------------------->
+    { key: "invalid_role", message: "Please select a valid role." },
+    { key: "user_already_in_organization", message: "This user is already part of this organization." },
+    
+
+
 
 
     // GENERAL ----------------------------------------------------------->
@@ -38,7 +43,15 @@ export const messages: MessageItem[] = [
     { key: "record_not_found", message: "Record not found." }, 
     { key: "fields_required", message: "Required fields are missing." },
     { key: "duplicate_records", message: "Duplicate records detected." },
-    { key: "uid_already_exists", message: "Identifier conflict detected. Please try again." }
+    { key: "uid_already_exists", message: "Identifier conflict detected. Please try again." },
+    { key: "record_already_exists", message: "This record already exists." },
+    { key: "done", message: "Operation completed successfully." },
+    { key: "foreign_key_constraint", message: "This item is currently in use and cannot be deleted." },
+    { key: "search_query_required", message: "Please enter a search term." }
+
+
+
+
 
 
 
