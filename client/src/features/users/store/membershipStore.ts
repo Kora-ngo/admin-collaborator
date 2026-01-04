@@ -9,7 +9,7 @@ interface MembershipState {
     loading: boolean,
     pagination: Pagination | null,
     createData: (data: Membership) => Promise<any>,
-    getData: (page?: number, searchTerm?: string) => Promise<any>,
+    getData: (page?: number, searchTerm?: string, status?: string) => Promise<any>,
     fetchOneData: (id: number) => Promise<Membership>,
     filterData: (page: number, filters: any) => Promise<any>
     updateData: (id: number, data: Membership) => Promise<any>
@@ -23,13 +23,13 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     loading: false,
     pagination: null,
 
-    getData: async (page, searchTerm = "") => {
+    getData: async (page, searchTerm = "", status) => {
         console.log("Membership GetData Search --> ", searchTerm);
 
         try{
             set({loading: true, data: []});
             const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
-            const params: any = { page, limit: 5 };
+            const params: any = { page, limit: 5, status };
 
             if (searchTerm.trim()) params.q = searchTerm.trim();
 

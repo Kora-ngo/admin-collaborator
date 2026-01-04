@@ -13,33 +13,65 @@ const AssistanceController = {
     fetchAll: async (req: Request, res: Response) => {
         console.log("Backend fetch --> entrance");
 
-       try {
+        try {
+            // await cleanupOldDeleted(AssistanceModel, 7);
 
-        await cleanupOldDeleted(AssistanceModel, 7)
+            const status = req.query.status as string;
 
-        // Get Query Params with defaults----------------------->
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 5;
-        const offset = (page - 1) * limit;
+            console.log("Status from query --> ", status);
 
-        const {count, rows} = await AssistanceModel.findAndCountAll({
-            where: { status: 'true' },
-            order: [['date_of', 'DESC']],
-            include: [
-                {
-                    model: AssistanceTypeModel,
-                    as: 'assistanceType',
-                    attributes: ['id', 'name', 'unit'],
-                    required: true
-                }
-            ],
-            limit,
-            offset
-        });
+            const whereClause: any = {};
 
-        const totalPages = Math.ceil(count / limit);
+            // Check if status is "all"
+            if (status === "all") {
+                // Fetch all except 'false', no pagination
+                whereClause.status = { [Op.ne]: 'false' };
 
-         res.status(200).json({
+                const rows = await AssistanceModel.findAll({
+                    where: whereClause,
+                    order: [['date_of', 'DESC']],
+                    include: [
+                        {
+                            model: AssistanceTypeModel,
+                            as: 'assistanceType',
+                            attributes: ['id', 'name', 'unit'],
+                            required: true
+                        }
+                    ]
+                });
+
+                return res.status(200).json({
+                    type: 'success',
+                    data: rows,
+                    pagination: null
+                });
+            }
+
+            // Default behavior: paginated with status = 'true'
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+            const offset = (page - 1) * limit;
+
+            whereClause.status = 'true';
+
+            const { count, rows } = await AssistanceModel.findAndCountAll({
+                where: whereClause,
+                order: [['date_of', 'DESC']],
+                include: [
+                    {
+                        model: AssistanceTypeModel,
+                        as: 'assistanceType',
+                        attributes: ['id', 'name', 'unit'],
+                        required: true
+                    }
+                ],
+                limit,
+                offset
+            });
+
+            const totalPages = Math.ceil(count / limit);
+
+            res.status(200).json({
                 type: 'success',
                 data: rows,
                 pagination: {
@@ -52,8 +84,7 @@ const AssistanceController = {
                 }
             });
 
-
-       }catch (error) {
+        } catch (error) {
             console.error("Assistance: Fetch_All error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }

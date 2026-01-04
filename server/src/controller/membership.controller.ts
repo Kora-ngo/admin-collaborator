@@ -10,52 +10,86 @@ import bcrypt from "bcryptjs";
 const MembershipController = {
 
     fetchAll: async (req: Request, res: Response) => {
-        try{
+        try {
             // await cleanupOldDeleted(MembershipModel, 7)
-        const authUser = req.user;
+            const authUser = req.user;
 
-        // Get Query Params with defaults----------------------->
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 5;
-        const offset = (page - 1) * limit;
+            const status = req.query.status as string;
 
-        const currentUserId = authUser?.userId;
+            const currentUserId = authUser?.userId;
 
-        console.log("Current ID --> ", currentUserId);
+            console.log("Current ID --> ", currentUserId);
+            console.log("Status from body --> ", status);
 
-        const whereClause: any = {
-            status: ['true', 'blocked'],
-        };
+            const whereClause: any = {};
 
-        if (currentUserId) {
-            whereClause.user_id = { [Op.ne]: currentUserId }; // Not Equal
-        }
-        
-        const {count, rows} = await MembershipModel.findAndCountAll({
-            where: whereClause,
-            order: [['date_of', 'DESC']],
-            include: [
-                {
-                    model: UserModel,
-                    as: 'user',
-                    attributes: ['id', 'name', 'email', 'phone', 'status'],
-                    required: true
-                },
-                {
-                    model: OrganisationModel,
-                    as: 'organization',
-                    attributes: ['id', 'name'],
-                    required: true
-                }
-            ],
-            limit,
-            offset
-        });
+            if (currentUserId) {
+                whereClause.user_id = { [Op.ne]: currentUserId }; // Not Equal
+            }
 
+            // Check if status is "all"
+            if (status === "all") {
+                // Fetch all except 'false' and 'blocked', no pagination
+                whereClause.status = { [Op.notIn]: ['false', 'blocked'] };
+                whereClause.role = { [Op.ne]: 'admin' }; // Exclude admin role
 
-        const totalPages = Math.ceil(count / limit);
+                const rows = await MembershipModel.findAll({
+                    where: whereClause,
+                    order: [['date_of', 'DESC']],
+                    include: [
+                        {
+                            model: UserModel,
+                            as: 'user',
+                            attributes: ['id', 'name', 'email', 'phone', 'status'],
+                            required: true
+                        },
+                        {
+                            model: OrganisationModel,
+                            as: 'organization',
+                            attributes: ['id', 'name'],
+                            required: true
+                        }
+                    ]
+                });
 
-         res.status(200).json({
+                return res.status(200).json({
+                    type: 'success',
+                    data: rows,
+                    pagination: null
+                });
+            }
+
+            // Default behavior: paginated with status ['true', 'blocked']
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+            const offset = (page - 1) * limit;
+
+            whereClause.status = ['true', 'blocked'];
+
+            const { count, rows } = await MembershipModel.findAndCountAll({
+                where: whereClause,
+                order: [['date_of', 'DESC']],
+                include: [
+                    {
+                        model: UserModel,
+                        as: 'user',
+                        attributes: ['id', 'name', 'email', 'phone', 'status'],
+                        required: true
+                    },
+                    {
+                        model: OrganisationModel,
+                        as: 'organization',
+                        attributes: ['id', 'name'],
+                        required: true
+                    }
+                ],
+                limit,
+                offset
+            });
+
+            const totalPages = Math.ceil(count / limit);
+
+            res.status(200).json({
                 type: 'success',
                 data: rows,
                 pagination: {
@@ -67,8 +101,8 @@ const MembershipController = {
                     hasPrev: page > 1
                 }
             });
-        
-        }catch (error) {
+
+        } catch (error) {
             console.error("Membership: Fetch_All error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }

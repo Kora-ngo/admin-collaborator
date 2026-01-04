@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button } from "../../../components/widgets/button";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
@@ -5,6 +6,7 @@ import Tag from "../../../components/widgets/tag";
 import { Textarea } from "../../../components/widgets/textarea";
 import { useAssitanceSelect } from "../hooks/useAssitanceSelect";
 import { useCollaboratorSelect } from "../hooks/useCollaboratorSelect";
+import { useProject } from "../hooks/useProject";
 
 interface ProjectFormProps {
     id: number | any,
@@ -14,8 +16,27 @@ interface ProjectFormProps {
 
 const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
 
-    const {allCollaborators, availableOptions, selectedCollaborator, handleAddColl, handleRemoveColl, handleClearAllColl} = useCollaboratorSelect();
+    const {availableOptions, selectedCollaborator, handleAddColl, handleRemoveColl, handleClearAllColl} = useCollaboratorSelect();
     const {selectedAssistance, availableAssisOptions, handleAddAssistance, handleRemoveAssistance, handleClearAllAssistance,} = useAssitanceSelect();
+    const {errors, projectForm, handleChange, handleSubmit, updateSelectedMembers, updateSelectedAssitance} = useProject();
+
+
+    useEffect(() => {
+        // console.log("Av --> ", availableOptions);
+        updateSelectedMembers(selectedCollaborator)
+    }, [selectedCollaborator]);
+
+
+    useEffect(() => {
+        updateSelectedAssitance(selectedAssistance)
+    }, [selectedAssistance]);
+
+    const handleValidate = async () => {
+        const isValide = await handleSubmit(id);
+        if(isValide){
+            onSuccess();
+        }
+    }
     
     return ( 
         <div className="flex flex-col justify-between w-full h-full">
@@ -24,18 +45,23 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                     <Label htmlFor="name">Title</Label>
                     <Input
                         id="name"
-                        type="name"
+                        name="name"
+                        type="text"
                         placeholder="Name of the project"
+                        value={projectForm.name}
+                        onChange={handleChange}
+                        hasError={errors.name}
                     />
                 </div>
-                <div className="grid gap-2">
+                {/* <div className="grid gap-2">
                     <Label htmlFor="region"  required={false}>Target Location</Label>
                     <Input
                         id="region"
                         type="region"
                         placeholder="Region, City, discrict etc..."
+                        value={projectForm.region}
                     />
-                </div>
+                </div> */}
                 <div className="grid gap-2">
                     <Label htmlFor="description" required={false}>Description</Label>
                     <Textarea 
@@ -43,6 +69,8 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                         name="description"
                         placeholder="Short overview"
                         rows={2}
+                        value={projectForm.description}
+                        onChange={handleChange}
                     />
                 </div>
                 
@@ -61,7 +89,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                         </option>
                         {availableOptions.map(collab => (
                             <option key={collab.id} value={collab.id}>
-                            {collab.name}
+                            {`${collab.user?.name} (${collab.role})`}
                             </option>
                         ))}
                         </select>
@@ -70,11 +98,18 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                     {/* Tags Container - Scrollable */}
                     <div className="w-full min-h-20 max-h-32 overflow-y-auto p-3 rounded-md border border-gray-200 bg-gray-50">
                         {selectedCollaborator.length === 0 ? (
-                        <p className="text-sm text-gray-500">No member selected</p>
+                            <>
+                            {
+                                errors.selectedMembers ? 
+                             <p className="text-sm text-red-500 font-bold">Memebers required</p>:
+                             <p className="text-sm text-gray-500">No member selected</p>
+
+                            }
+                            </>
                         ) : (
                         <div className="flex flex-wrap gap-2">
                             {selectedCollaborator.map(collab => (
-                                <Tag label={collab.name} onRemove={() => handleRemoveColl(collab.id)} />
+                                <Tag label={`${collab.user?.name} (${collab.role})`} onRemove={() => handleRemoveColl(collab.id)} />
                             ))}
 
                             {/* Clear All Button - only show if there are tags */}
@@ -93,7 +128,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
 
                 <div className="grid gap-2">
                     <div className="flex justify-between items-center">
-                        <Label required>Assistance</Label>
+                        <Label required={false}>Assistance</Label>
 
                         <select
                         onChange={handleAddAssistance}
@@ -117,7 +152,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                         ) : (
                         <div className="flex flex-wrap gap-2">
                             {selectedAssistance.map(assistance => (
-                                <Tag label={assistance.name} onRemove={() => handleRemoveColl(assistance.id)} />
+                                <Tag label={assistance.name} onRemove={() => handleRemoveAssistance(assistance.id!)} />
                             ))}
 
                             {selectedAssistance.length > 1 && (
@@ -134,13 +169,16 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                 </div>
 
                 <div className="grid gap-2">
-                    <div className="grid grid-cols-2 gap-8">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label className="start_date">Start Date</Label>
                             <Input
                                 id="start_date"
                                 name="start_date"
-                                type="datetime-local"
+                                type="date"
+                                value={projectForm.start_date?.toString()}
+                                onChange={handleChange}
+                                hasError={errors.start_date}
                             />
                         </div>
 
@@ -150,7 +188,10 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                             <Input
                                 id="end_date"
                                 name="end_date"
-                                type="datetime-local"
+                                type="date"
+                                value={projectForm.end_date?.toString()}
+                                onChange={handleChange}
+                                hasError={errors.end_date}
                             />
                         </div>
 
@@ -161,7 +202,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
 
             <div className="border-t-1 border-gray-200 mt-8">
                 <div className="my-4 flex gap-4 justify-end">
-                    <Button >
+                    <Button onClick={handleValidate}>
                         {id ? "Update" : "Save"}
                     </Button>
 

@@ -9,7 +9,7 @@ interface AssiantnceState {
     loading: boolean,
     pagination: Pagination | null,
     createData: (data: Assistance) => Promise<any>,
-    getData: (page?: number, searchTerm?: string) => Promise<any>,
+    getData: (page?: number, searchTerm?: string, status?: string) => Promise<any>,
     fetchOneData: (id: number) => Promise<Assistance>,
     filterData: (page: number, filters: any) => Promise<any>
     updateData: (id: number, data: Assistance) => Promise<any>
@@ -23,12 +23,12 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
     loading: false,
     pagination: null,
 
-    getData: async (page, searchTerm = "") => {
+    getData: async (page, searchTerm = "", status) => {
         console.log("Assistnace GetData Search --> ", searchTerm);
         try{
             set({loading: true, data: []});
             const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
-            const params: any = { page, limit: 5 };
+            const params: any = { page, limit: 5, status};
 
             if (searchTerm.trim()) params.q = searchTerm.trim();
 

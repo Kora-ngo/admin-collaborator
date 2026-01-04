@@ -50,43 +50,32 @@ OrganisationModel.hasMany(MembershipModel, {
 
 // PROJECT -- PROJECT_MEMBER -- PROJECT_ASSISTANCE ------------------------->
 
-// Project → Organisation --->
-ProjectModel.belongsTo(OrganisationModel, {
-    foreignKey: 'organisation_id',
-    as: 'organization'
-});
-
-
-// Project Members --->
+// Project -> ProjectMembers
 ProjectModel.hasMany(ProjectMemberModel, {
     foreignKey: 'project_id',
     as: 'members'
 });
-
 
 ProjectMemberModel.belongsTo(ProjectModel, {
     foreignKey: 'project_id',
     as: 'project'
 });
 
-
+// ProjectMember -> Membership
 ProjectMemberModel.belongsTo(MembershipModel, {
     foreignKey: 'membership_id',
     as: 'membership'
 });
 
-
 MembershipModel.hasMany(ProjectMemberModel, {
     foreignKey: 'membership_id',
-    as: 'projectAssignments'
+    as: 'projectMemberships'
 });
 
-
-
-// Project Assistance (allowed types) -->
+// Project -> ProjectAssistances
 ProjectModel.hasMany(ProjectAssistanceModel, {
     foreignKey: 'project_id',
-    as: 'allowedAssistances'
+    as: 'assistances'
 });
 
 ProjectAssistanceModel.belongsTo(ProjectModel, {
@@ -94,6 +83,7 @@ ProjectAssistanceModel.belongsTo(ProjectModel, {
     as: 'project'
 });
 
+// ProjectAssistance -> Assistance
 ProjectAssistanceModel.belongsTo(AssistanceModel, {
     foreignKey: 'assistance_id',
     as: 'assistance'
@@ -101,9 +91,8 @@ ProjectAssistanceModel.belongsTo(AssistanceModel, {
 
 AssistanceModel.hasMany(ProjectAssistanceModel, {
     foreignKey: 'assistance_id',
-    as: 'projectAllowances'
+    as: 'projectAssistances'
 });
-
 
 
 export {
