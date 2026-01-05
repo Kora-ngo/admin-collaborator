@@ -7,7 +7,7 @@ export interface Project {
     start_date?: string | Date;
     end_date?: string | Date;
     target_families?: number;
-    created_at?: Date;
+    created_at?: string | Date;
 }
 
 

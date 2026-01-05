@@ -17,6 +17,7 @@ import Loading from "../../components/widgets/loading";
 import Popup from "../../components/widgets/popup";
 import { useProject } from "../../features/project/hooks/useProject";
 import { SelectInput } from "../../components/widgets/select-input";
+import ProjectView from "../../features/project/components/project-view";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
@@ -32,7 +33,7 @@ const Projects = () => {
         refreshCurrentPage,
         handleToggle,
         handleDatePresetChange,
-        // handleView
+        handleView
     } = useProject();
 
     const [deletePopup, setDeletePopUp] = useState(false);
@@ -52,13 +53,13 @@ const Projects = () => {
 
         if (!id) return;
 
-        // const fullRecord = await handleView(id);
+        const fullRecord = await handleView(id);
 
-        // setSelectedRecord({
-        //     id,
-        //     name: fullRecord.name,
-        //     status: fullRecord.status,
-        // });
+        setSelectedRecord({
+            id,
+            name: fullRecord.name,
+            status: fullRecord.status,
+        });
 
         setProjectModalMode(mode);
     };
@@ -162,7 +163,7 @@ const Projects = () => {
                         <ActionIcon name="view"
                             onClick={() => openProjectModal('view', row.id)}
                         />
-                        <ActionIcon name="trash"
+                        {/* <ActionIcon name="trash"
                             onClick={() => {
                                 setSelectedRecord({
                                     id: row.id,
@@ -171,7 +172,7 @@ const Projects = () => {
                                 });
                                 setDeletePopUp(true);
                             }}
-                        />
+                        /> */}
                     </div>
                 );
             }
@@ -365,11 +366,10 @@ const Projects = () => {
                             }}
                         />
                     ) : (
-                        <div>Yeah</div>
-                        // <ProjectView
-                        //     isOpen={projectModalMode === 'view'}
-                        //     id={selectedRecord != null ? selectedRecord!.id! : 0}
-                        // />
+                        <ProjectView
+                            isOpen={projectModalMode === 'view'}
+                            id={selectedRecord != null ? selectedRecord!.id! : 0}
+                        />
                     )
                 }
             />

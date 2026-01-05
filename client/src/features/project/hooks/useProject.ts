@@ -7,7 +7,7 @@ import { useAuthStore } from "../../auth/store/authStore";
 import { useToastStore } from "../../../store/toastStore";
 import { useProjectStore } from "../store/projectStore";
 
-type ProjectFormData = Partial<Project> & {
+export type ProjectFormData = Partial<Project> & {
     selectedMembers: ProjectMember[];
     selectedAssistances: ProjectAssistance[];
 };
@@ -218,7 +218,18 @@ export const useProject = () => {
     };
 
     const handleView = async (id: number): Promise<any> => {
-        const response = await fetchOneData(id);
+        const response = await fetchOneData(id) as any;
+        console.log(" Response --> ", response);
+        setProjectForm({
+            organisation_id: response.id,
+            name: response.name,
+            description: response.description,
+            status: response.status,
+            start_date: response.start_date,
+            end_date: response.end_date,
+            selectedMembers: response.members,
+            selectedAssistances: response.assistances,
+        });
         return response;
     };
 
