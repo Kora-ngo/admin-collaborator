@@ -6,13 +6,10 @@ import { validateProject } from "../utils/validate";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useToastStore } from "../../../store/toastStore";
 import { useProjectStore } from "../store/projectStore";
-// import 
-
 
 type ProjectFormData = Partial<Project> & {
-    selectedMembers: ProjectMember[];   // Array of selected members
-    selectedAssistances: ProjectAssistance[]; // Array of selected assistances
-    region?: string;  // UI-only field
+    selectedMembers: ProjectMember[];
+    selectedAssistances: ProjectAssistance[];
 };
 
 export const useProject = () => {
@@ -21,7 +18,6 @@ export const useProject = () => {
 
     const { createData, getData, fetchOneData, filterData, updateData, toggleData } = useProjectStore();
     const showToast = useToastStore((state) => state.showToast);
-
 
     const [projectForm, setProjectForm] = useState<ProjectFormData>({
         organisation_id: organisation?.id,
@@ -40,6 +36,7 @@ export const useProject = () => {
         start_date: false,
         end_date: false,
         selectedMembers: false,
+        selectedCollaborator: false,
     });
 
     // Search state
@@ -61,7 +58,6 @@ export const useProject = () => {
         setSearchTerm("");
     };
 
-
     // Filter state
     const [filterMode, setFilterMode] = useState(false);
     const [filters, setFilters] = useState({
@@ -69,15 +65,12 @@ export const useProject = () => {
         datePreset: "all"
     });
 
-
     const toggleFilter = () => {
         setFilterMode(prev => !prev);
         if (!filterMode) {
             setSearchTerm("");
         }
     };
-
-
 
     const applyFilters = useCallback(() => {
         if (!filterMode) {
@@ -92,29 +85,24 @@ export const useProject = () => {
         filterData(1, activeFilters);
     }, [filterMode, filters, searchTerm, getData, filterData]);
 
-
     useEffect(() => {
         applyFilters();
     }, [applyFilters]);
-
 
     const handleStatusChange = (value: string) => setFilters(prev => ({ ...prev, status: value }));
     const handleDatePresetChange = (value: string) => {
         setFilters(prev => ({ ...prev, datePreset: value }));
     };
 
-    
-
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
         const { name, value } = e.target;
         
-        // Handle date fields specially
         if (name === 'start_date' || name === 'end_date') {
             setProjectForm(prev => ({
                 ...prev,
-                [name]: value || undefined  // datetime-local gives empty string when cleared
+                [name]: value || undefined
             }));
         } else {
             setProjectForm(prev => ({
@@ -124,25 +112,36 @@ export const useProject = () => {
         }
     };
 
+    // Combine enumerators (multiple) and collaborator (single) into one array
+    const updateSelectedMembers = (enumerators: Membership[], collaboratorId: number) => {
+        const members: ProjectMember[] = [];
 
-    const updateSelectedMembers = (members: any) => {
-        // Convert to the format needed for backend
-        const formatted = members.map((m: Membership) => ({
-            membership_id: m.id,
-            role_in_project: m.role
-        }));
-        setProjectForm(prev => ({ ...prev, selectedMembers: formatted }));
+        // Add all enumerators
+        enumerators.forEach((e: Membership) => {
+            members.push({
+                membership_id: e.id,
+                role_in_project: 'enumerator'
+            });
+        });
+
+        // Add single collaborator if selected
+        if (collaboratorId > 0) {
+            members.push({
+                membership_id: collaboratorId,
+                role_in_project: 'collaborator'
+            });
+        }
+
+        setProjectForm(prev => ({ ...prev, selectedMembers: members }));
+        console.log("Combined members:", members);
     };
 
-
-    const updateSelectedAssitance = (assistnace: any) => {
-        // Convert to the format needed for backend
-        const formatted = assistnace.map((a: Assistance) => ({
+    const updateSelectedAssitance = (assistance: Assistance[]) => {
+        const formatted = assistance.map((a: any) => ({
             assistance_id: a.id,
         }));
         setProjectForm(prev => ({ ...prev, selectedAssistances: formatted }));
     };
-
 
     const handleClearForm = () => {
         setProjectForm({
@@ -157,18 +156,16 @@ export const useProject = () => {
         });
     };
 
-
     const refreshCurrentPage = (page: number) => {
         filterMode ? filterData(page, filters) : getData(page, searchTerm);
     };
 
-
     const handleSubmit = async (id?: number): Promise<boolean> => {
-        const { hasErrors, errors } = validateProject(projectForm);
+        const { hasErrors, errors: validationErrors } = validateProject(projectForm);
 
         if (hasErrors) {
-            setErrors(errors);
-            console.log("Validation failed:", errors);
+            setErrors(validationErrors);
+            console.log("Validation failed:", validationErrors);
             return false;
         }
 
@@ -185,6 +182,8 @@ export const useProject = () => {
                 selectedMembers: projectForm.selectedMembers,
                 selectedAssistances: projectForm.selectedAssistances
             };
+
+            console.log("Submitting project data:", submitData);
 
             if (id) {
                 result = await updateData(id, submitData);
@@ -207,32 +206,6 @@ export const useProject = () => {
         }
     };
 
-
-    // const handleView = async (id: number): Promise<any> => {
-    //     const response = await fetchOneData(id);
-
-    //     // Pre-fill form for editing
-    //     setProjectForm({
-    //         organisation_id: response.organisation_id,
-    //         name: response.name,
-    //         description: response.description,
-    //         status: response.status,
-    //         start_date: response.start_date,
-    //         end_date: response.end_date,
-    //         selectedMembers: response.members?.map((m: any) => ({
-    //             membership_id: m.membership_id,
-    //             role_in_project: m.role_in_project
-    //         })) || [],
-    //         selectedAssistances: response.assistances?.map((a: any) => ({
-    //             assistance_id: a.assistance_id
-    //         })) || []
-    //     });
-
-    //     return response;
-    // };
-
-
-
     const handleToggle = async (id: number, status: string): Promise<boolean> => {
         if (!id || id <= 0) {
             return false;
@@ -244,7 +217,10 @@ export const useProject = () => {
         return result.type === "success";
     };
 
-
+    const handleView = async (id: number): Promise<any> => {
+        const response = await fetchOneData(id);
+        return response;
+    };
 
     return {
         errors,
@@ -255,7 +231,7 @@ export const useProject = () => {
 
         handleChange,
         handleSubmit,
-        // handleView,
+        handleView,
         handleToggle,
         handleClearForm,
 
@@ -269,8 +245,5 @@ export const useProject = () => {
 
         updateSelectedMembers,
         updateSelectedAssitance
-        
     }
 }
-
-

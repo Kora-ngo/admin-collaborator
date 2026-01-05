@@ -8,54 +8,72 @@ export const useCollaboratorSelect = () => {
     useEffect(() => {
         getData(1, "", "all");
         console.log("Hello world --> ", data);
-    }, [getData])
+    }, [getData]);
 
-    // const allCollaborators = [
-    //     { id: 1, name: 'Morel D. (Enumerator)' },
-    //     { id: 2, name: 'Alice J. (Collaborator)' },
-    //     { id: 3, name: 'Bob S. (Collaborator)' },
-    //     { id: 4, name: 'Carol W. (Enumerator)' },
-    //     { id: 5, name: 'David B. (Collaborator)' },
-    //     { id: 6, name: 'Eve D. (Enumerator)' },
-    // ];
-    
-    // Handle the multiple seleceted tags for collaborators
-    const [selectedCollaborator, setSelectedCollaborator] = useState<typeof data>([]);
+    // Separate enumerators from collaborators
+    const enumerators = data.filter(m => m.role === 'enumerator');
+    const collaborators = data.filter(m => m.role === 'collaborator');
 
-    const handleAddColl = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // Handle multiple selected enumerators (tags)
+    const [selectedEnumerators, setSelectedEnumerators] = useState<typeof data>([]);
+
+    // Handle single selected collaborator
+    const [selectedCollaborator, setSelectedCollaborator] = useState<number>(0);
+
+    const handleAddEnumerator = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         if(!value) return;
     
-        const collaborator = data.find(c => c.id === Number(value));
-        if (collaborator && !selectedCollaborator.some(s => s.id === collaborator.id)) {
-            setSelectedCollaborator([...selectedCollaborator, collaborator]);
+        const enumerator = enumerators.find(c => c.id === Number(value));
+        if (enumerator && !selectedEnumerators.some(s => s.id === enumerator.id)) {
+            setSelectedEnumerators([...selectedEnumerators, enumerator]);
         }
 
-        console.log("Collaborator --> ", selectedCollaborator);
+        console.log("Enumerators --> ", selectedEnumerators);
 
         e.target.value = '';
     };
 
-    const handleRemoveColl = (id: number) => {
-        setSelectedCollaborator(selectedCollaborator.filter(c => c.id !== id));
-     }; 
+    const handleRemoveEnumerator = (id: number) => {
+        setSelectedEnumerators(selectedEnumerators.filter(c => c.id !== id));
+    }; 
 
-     const handleClearAllColl = () => {
-        setSelectedCollaborator([]);
-     };
+    const handleClearAllEnumerators = () => {
+        setSelectedEnumerators([]);
+    };
 
-     // exclude already selected
-    const availableOptions = data.filter(
-        c => !selectedCollaborator.some(s => s.id === c.id)
+    const handleSelectCollaborator = (value: string) => {
+        setSelectedCollaborator(Number(value));
+    };
+
+    const handleClearCollaborator = () => {
+        setSelectedCollaborator(0);
+    };
+
+    // Get the full collaborator object for the selected ID
+    const getSelectedCollaboratorData = () => {
+        if (selectedCollaborator === 0) return null;
+        return collaborators.find(c => c.id === selectedCollaborator) || null;
+    };
+
+    // Exclude already selected enumerators
+    const availableEnumerators = enumerators.filter(
+        e => !selectedEnumerators.some(s => s.id === e.id)
     );
 
-
     return {
-        selectedCollaborator,
-        availableOptions,
+        // Enumerators (multiple selection)
+        selectedEnumerators,
+        availableEnumerators,
+        handleAddEnumerator,
+        handleRemoveEnumerator,
+        handleClearAllEnumerators,
 
-        handleAddColl,
-        handleRemoveColl,
-        handleClearAllColl
+        // Collaborators (single selection)
+        collaborators,
+        selectedCollaborator,
+        handleSelectCollaborator,
+        handleClearCollaborator,
+        getSelectedCollaboratorData
     }
-} 
+}

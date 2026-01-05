@@ -13,30 +13,45 @@ export const validateProject = (form: ProjectFormData) => {
         start_date: false,
         end_date: false,
         selectedMembers: false,
+        selectedCollaborator: false,
     };
 
-    // Required fields (except description & region)
+    // Required: Project name
     if (!form.name?.trim()) {
         errors.name = true;
     }
 
+    // Required: Organisation
     if (!form.organisation_id || form.organisation_id === 0) {
         errors.organisation_id = true;
     }
 
+    // Required: Start date
     if (!form.start_date) {
         errors.start_date = true;
     }
 
+    // Required: End date
     if (!form.end_date) {
         errors.end_date = true;
     }
 
-    if (form.selectedMembers.length === 0) {
+    // Required: At least one enumerator
+    const enumerators = form.selectedMembers.filter(m => m.role_in_project === 'enumerator');
+    if (enumerators.length === 0) {
         errors.selectedMembers = true;
     }
 
+    // Required: Exactly one collaborator (project lead)
+    const collaborators = form.selectedMembers.filter(m => m.role_in_project === 'collaborator');
+    if (collaborators.length === 0) {
+        errors.selectedCollaborator = true;
+    }
+
     const hasErrors = Object.values(errors).some(Boolean);
+
+    console.log("Validation errors:", errors);
+    console.log("Has errors:", hasErrors);
 
     return {
         hasErrors,

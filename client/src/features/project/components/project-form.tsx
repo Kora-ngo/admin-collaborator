@@ -4,6 +4,7 @@ import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
 import Tag from "../../../components/widgets/tag";
 import { Textarea } from "../../../components/widgets/textarea";
+import { SelectInput } from "../../../components/widgets/select-input";
 import { useAssitanceSelect } from "../hooks/useAssitanceSelect";
 import { useCollaboratorSelect } from "../hooks/useCollaboratorSelect";
 import { useProject } from "../hooks/useProject";
@@ -16,24 +17,33 @@ interface ProjectFormProps {
 
 const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
 
-    const {availableOptions, selectedCollaborator, handleAddColl, handleRemoveColl, handleClearAllColl} = useCollaboratorSelect();
-    const {selectedAssistance, availableAssisOptions, handleAddAssistance, handleRemoveAssistance, handleClearAllAssistance,} = useAssitanceSelect();
+    const {
+        selectedEnumerators,
+        availableEnumerators,
+        handleAddEnumerator,
+        handleRemoveEnumerator,
+        handleClearAllEnumerators,
+        collaborators,
+        selectedCollaborator,
+        handleSelectCollaborator
+    } = useCollaboratorSelect();
+
+    const {selectedAssistance, availableAssisOptions, handleAddAssistance, handleRemoveAssistance, handleClearAllAssistance} = useAssitanceSelect();
+    
     const {errors, projectForm, handleChange, handleSubmit, updateSelectedMembers, updateSelectedAssitance} = useProject();
 
+    // Update members whenever enumerators or collaborator changes
+    useEffect(() => {
+        updateSelectedMembers(selectedEnumerators, selectedCollaborator);
+    }, [selectedEnumerators, selectedCollaborator]);
 
     useEffect(() => {
-        // console.log("Av --> ", availableOptions);
-        updateSelectedMembers(selectedCollaborator)
-    }, [selectedCollaborator]);
-
-
-    useEffect(() => {
-        updateSelectedAssitance(selectedAssistance)
+        updateSelectedAssitance(selectedAssistance);
     }, [selectedAssistance]);
 
     const handleValidate = async () => {
-        const isValide = await handleSubmit(id);
-        if(isValide){
+        const isValid = await handleSubmit(id);
+        if(isValid){
             onSuccess();
         }
     }
@@ -53,15 +63,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                         hasError={errors.name}
                     />
                 </div>
-                {/* <div className="grid gap-2">
-                    <Label htmlFor="region"  required={false}>Target Location</Label>
-                    <Input
-                        id="region"
-                        type="region"
-                        placeholder="Region, City, discrict etc..."
-                        value={projectForm.region}
-                    />
-                </div> */}
+
                 <div className="grid gap-2">
                     <Label htmlFor="description" required={false}>Description</Label>
                     <Textarea 
@@ -73,105 +75,132 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                         onChange={handleChange}
                     />
                 </div>
+
+                {/* Single Collaborator Selection */}
+                <div className="grid gap-2">
+                    <Label htmlFor="collaborator">Project Lead (Collaborator)</Label>
+                    <SelectInput
+                        id="collaborator"
+                        options={[
+                            { label: "Select a collaborator...", value: 0 },
+                            ...collaborators.map(collab => ({
+                                label: `${collab.user?.name}`,
+                                value: collab.id
+                            }))
+                        ]}
+                        value={selectedCollaborator}
+                        hasError={errors.selectedCollaborator}
+                        onChange={(e) => handleSelectCollaborator(e.target.value)}
+                    />
+                </div>
                 
+                {/* Multiple Enumerators Selection */}
                 <div className="grid gap-2">
                     <div className="flex justify-between items-center">
-                        <Label required>Members</Label>
+                        <Label required>Enumerators</Label>
 
-                        {/* Add Collaborator Select */}
                         <select
-                        onChange={handleAddColl}
-                        className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                        defaultValue=""
+                            onChange={handleAddEnumerator}
+                            className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                            defaultValue=""
                         >
-                        <option value="" disabled>
-                            Add Members...
-                        </option>
-                        {availableOptions.map(collab => (
-                            <option key={collab.id} value={collab.id}>
-                            {`${collab.user?.name} (${collab.role})`}
+                            <option value="" disabled>
+                                Add Enumerators...
                             </option>
-                        ))}
+                            {availableEnumerators.map(enum_ => (
+                                <option key={enum_.id} value={enum_.id}>
+                                    {enum_.user?.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
                     {/* Tags Container - Scrollable */}
                     <div className="w-full min-h-20 max-h-32 overflow-y-auto p-3 rounded-md border border-gray-200 bg-gray-50">
-                        {selectedCollaborator.length === 0 ? (
+                        {selectedEnumerators.length === 0 ? (
                             <>
-                            {
-                                errors.selectedMembers ? 
-                             <p className="text-sm text-red-500 font-bold">Memebers required</p>:
-                             <p className="text-sm text-gray-500">No member selected</p>
-
-                            }
+                                {
+                                    errors.selectedMembers ? 
+                                    <p className="text-sm text-red-500 font-bold">Enumerators required</p> :
+                                    <p className="text-sm text-gray-500">No enumerator selected</p>
+                                }
                             </>
                         ) : (
-                        <div className="flex flex-wrap gap-2">
-                            {selectedCollaborator.map(collab => (
-                                <Tag label={`${collab.user?.name} (${collab.role})`} onRemove={() => handleRemoveColl(collab.id)} />
-                            ))}
+                            <div className="flex flex-wrap gap-2">
+                                {selectedEnumerators.map(enum_ => (
+                                    <Tag 
+                                        key={enum_.id}
+                                        label={enum_.user?.name || ''} 
+                                        onRemove={() => handleRemoveEnumerator(enum_.id)} 
+                                    />
+                                ))}
 
-                            {/* Clear All Button - only show if there are tags */}
-                            {selectedCollaborator.length > 1 && (
-                            <button
-                                onClick={handleClearAllColl}
-                                className="text-xs text-red-600 hover:text-red-800 underline ml-2 self-center"
-                            >
-                                Clear all
-                            </button>
-                            )}
-                        </div>
+                                {/* Clear All Button - only show if there are tags */}
+                                {selectedEnumerators.length > 1 && (
+                                    <button
+                                        onClick={handleClearAllEnumerators}
+                                        className="text-xs text-red-600 hover:text-red-800 underline ml-2 self-center"
+                                    >
+                                        Clear all
+                                    </button>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
 
+                {/* Assistances Selection */}
                 <div className="grid gap-2">
                     <div className="flex justify-between items-center">
                         <Label required={false}>Assistance</Label>
 
                         <select
-                        onChange={handleAddAssistance}
-                        className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
-                        defaultValue=""
+                            onChange={handleAddAssistance}
+                            className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
+                            defaultValue=""
                         >
-                        <option value="" disabled>
-                            Add assistance...
-                        </option>
-                        {availableAssisOptions.map(person => (
-                            <option key={person.id} value={person.id}>
-                            {person.name}
+                            <option value="" disabled>
+                                Add assistance...
                             </option>
-                        ))}
+                            {availableAssisOptions.map(person => (
+                                <option key={person.id} value={person.id}>
+                                    {person.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
                     <div className="w-full min-h-20 max-h-32 overflow-y-auto p-3 rounded-md border border-gray-200 bg-gray-50">
                         {selectedAssistance.length === 0 ? (
-                        <p className="text-sm text-gray-500">No assistance selected</p>
+                            <p className="text-sm text-gray-500">No assistance selected</p>
                         ) : (
-                        <div className="flex flex-wrap gap-2">
-                            {selectedAssistance.map(assistance => (
-                                <Tag label={assistance.name} onRemove={() => handleRemoveAssistance(assistance.id!)} />
-                            ))}
+                            <div className="flex flex-wrap gap-2">
+                                {selectedAssistance.map(assistance => (
+                                    <Tag 
+                                        key={assistance.id}
+                                        label={assistance.name} 
+                                        onRemove={() => handleRemoveAssistance(assistance.id!)} 
+                                    />
+                                ))}
 
-                            {selectedAssistance.length > 1 && (
-                            <button
-                                onClick={handleClearAllAssistance}
-                                className="text-xs text-red-600 hover:text-red-800 underline ml-2 self-center"
-                            >
-                                Clear all
-                            </button>
-                            )}
-                        </div>
+                                {selectedAssistance.length > 1 && (
+                                    <button
+                                        onClick={handleClearAllAssistance}
+                                        className="text-xs text-red-600 hover:text-red-800 underline ml-2 self-center"
+                                    >
+                                        Clear all
+                                    </button>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
 
+                {/* Date Fields */}
                 <div className="grid gap-2">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label className="start_date">Start Date</Label>
+                            <Label htmlFor="start_date">Start Date</Label>
                             <Input
                                 id="start_date"
                                 name="start_date"
@@ -182,9 +211,8 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                             />
                         </div>
 
-
                         <div className="grid gap-2">
-                            <Label className="end_date">End Date</Label>
+                            <Label htmlFor="end_date">End Date</Label>
                             <Input
                                 id="end_date"
                                 name="end_date"
@@ -194,10 +222,8 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                                 hasError={errors.end_date}
                             />
                         </div>
-
                     </div>
                 </div>
-
             </div>
 
             <div className="border-t-1 border-gray-200 mt-8">
@@ -205,15 +231,10 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                     <Button onClick={handleValidate}>
                         {id ? "Update" : "Save"}
                     </Button>
-
-                    {/* <Button variant="ghost" onClick={onClose}>
-                        Cancel
-                    </Button> */}
-
                 </div>
             </div>             
         </div>
-     );
+    );
 }
  
 export default ProjectForm;

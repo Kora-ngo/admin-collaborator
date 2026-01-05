@@ -31,7 +31,7 @@ const MembershipController = {
             if (status === "all") {
                 // Fetch all except 'false' and 'blocked', no pagination
                 whereClause.status = { [Op.notIn]: ['false', 'blocked'] };
-                whereClause.role = { [Op.ne]: 'admin' }; // Exclude admin role
+                whereClause.role = { [Op.ne]: ['admin'] };
 
                 const rows = await MembershipModel.findAll({
                     where: whereClause,
