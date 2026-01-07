@@ -18,6 +18,7 @@ import Popup from "../../components/widgets/popup";
 import { useProject } from "../../features/project/hooks/useProject";
 import { SelectInput } from "../../components/widgets/select-input";
 import ProjectView from "../../features/project/components/project-view";
+import ProjectActionPopup from "../../features/project/components/ProjectActionPopup";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
@@ -33,9 +34,11 @@ const Projects = () => {
         refreshCurrentPage,
         handleToggle,
         handleDatePresetChange,
+        handleStatusUpdate,
         handleView
     } = useProject();
 
+    const [actionPopup, setActionPopup] = useState(false);
     const [deletePopup, setDeletePopUp] = useState(false);
     const [projectModalMode, setProjectModalMode] = useState<ModalMode>(null);
     const [selectedRecord, setSelectedRecord] = useState<{
@@ -43,6 +46,25 @@ const Projects = () => {
         name: string;
         status: string;
     } | null>(null);
+
+    const handleActionConfirm = async (action: string) => {
+        if (!selectedRecord) return;
+
+        let success = false;
+
+        if (action === 'delete') {
+            success = await handleToggle(selectedRecord.id, selectedRecord.status);
+        } else {
+            // Update status to 'done' or 'suspended'
+            success = await handleStatusUpdate(selectedRecord.id, action);
+        }
+
+        if (success) {
+            setActionPopup(false);
+            setSelectedRecord(null);
+            await refreshCurrentPage(pagination!.page);
+        }
+    };
 
     const openProjectModal = async (mode: 'add' | 'edit' | 'view', id?: number) => {
         if (mode === 'add') {
@@ -67,6 +89,15 @@ const Projects = () => {
     const closeProjectModal = () => {
         setProjectModalMode(null);
         setSelectedRecord(null);
+    };
+
+    const openActionPopup = (project: any) => {
+        setSelectedRecord({
+            id: project.id,
+            name: project.name,
+            status: project.status
+        });
+        setActionPopup(true);
     };
 
     useEffect(() => {
@@ -164,16 +195,14 @@ const Projects = () => {
                         <ActionIcon name="view"
                             onClick={() => openProjectModal('view', row.id)}
                         />
-                        {/* <ActionIcon name="trash"
-                            onClick={() => {
-                                setSelectedRecord({
-                                    id: row.id,
-                                    name: row.name,
-                                    status: row.status
-                                });
-                                setDeletePopUp(true);
-                            }}
-                        /> */}
+                        {
+                            row.status === "done" ? 
+                            <ActionIcon name="disable" />:
+                            <ActionIcon name="setting"
+                                onClick={() => openActionPopup(row)}
+                            />
+                        }
+                        
                     </div>
                 );
             }
@@ -375,6 +404,19 @@ const Projects = () => {
                     )
                 }
             />
+
+            <ProjectActionPopup
+                open={actionPopup}
+                onClose={() => {
+                    setActionPopup(false);
+                    setSelectedRecord(null);
+                }}
+                projectStatus={selectedRecord?.status || ''}
+                projectName={selectedRecord?.name || ''}
+                onConfirm={handleActionConfirm}
+            />
+
+            
 
             <Popup
                 open={deletePopup}

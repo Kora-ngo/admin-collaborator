@@ -233,6 +233,23 @@ export const useProject = () => {
         return response;
     };
 
+
+    const handleStatusUpdate = async (id: number, newStatus: string): Promise<boolean> => {
+        if (!id || id <= 0) {
+            return false;
+        }
+
+        try {
+            const result = await updateData(id, { status: newStatus });
+            showToast(result);
+            await getData();
+            return result.type === "success";
+        } catch (error) {
+            console.error("Status update error:", error);
+            return false;
+        }
+    };
+
     return {
         errors,
         projectForm,
@@ -253,6 +270,7 @@ export const useProject = () => {
         toggleFilter,
         handleStatusChange,
         handleDatePresetChange,
+        handleStatusUpdate,
 
         updateSelectedMembers,
         updateSelectedAssitance
