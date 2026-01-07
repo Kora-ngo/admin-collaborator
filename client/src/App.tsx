@@ -11,6 +11,8 @@ import { useEffect } from 'react'
 import Users from './pages/dashbaord/users'
 import GlobalToast from './utils/globalToast'
 import Assistance from './pages/dashbaord/assistance'
+import Families from './pages/dashbaord/families'
+import Deliveries from './pages/dashbaord/deliveries'
 
 function App() {
   const token = localStorage.getItem('token');
@@ -59,6 +61,8 @@ function App() {
               <Route path="projects" element={<Projects />} />
               <Route path="users" element={<Users />} />
               <Route path="assistance" element={<Assistance />} />
+              <Route path="families" element={<Families />} />
+              <Route path="deliveries" element={<Deliveries />} />
             </Route>
             {/* Redirect everything else to admin dashboard */}
             <Route path="*" element={<Navigate to="/dashbaord" replace />} />
