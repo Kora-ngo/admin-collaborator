@@ -127,6 +127,7 @@ const Projects = () => {
                     ongoing: { text: "Ongoing", color: "blue" },
                     done: { text: "Done", color: "green" },
                     suspended: { text: "Suspended", color: "orange" },
+                    overdue: { text: "Overdue", color: "red" },
                     false: { text: "Deleted", color: "red" }
                 };
                 const s = statusColors[row.status] || statusColors.pending;
@@ -212,6 +213,7 @@ const Projects = () => {
                                     { label: "Ongoing", value: "ongoing" },
                                     { label: "Done", value: "done" },
                                     { label: "Suspended", value: "suspended" },
+                                    { label: "Overdue", value: "overdue" },
                                     { label: "Deleted", value: "false" },
                                 ]}
                                 value={filters.status}

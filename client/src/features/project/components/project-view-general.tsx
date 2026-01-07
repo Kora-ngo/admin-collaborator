@@ -1,8 +1,8 @@
 // src/features/project/components/project-view-general.tsx
 
 import DetailView from "../../../components/widgets/detail-view";
+import EmptyState from "../../../components/widgets/empty";
 import StatusBadge from "../../../components/widgets/status-badge";
-import type { Project } from "../../../types/project";
 import { formatDate } from "../../../utils/formatDate";
 
 interface ProjectViewGeneralProps {
@@ -12,8 +12,10 @@ interface ProjectViewGeneralProps {
 const ProjectViewGeneral = ({ data }: ProjectViewGeneralProps) => {
   if (!data) {
     return (
-      <div className="text-center py-10 text-gray-500">
-        No project data available
+      <div className="flex justify-center items-center h-80">
+            <EmptyState
+                title="No Record Found"
+            />
       </div>
     );
   }
@@ -22,6 +24,7 @@ const ProjectViewGeneral = ({ data }: ProjectViewGeneralProps) => {
     const statusColors: any = {
         pending: { text: "Pending", color: "gray" },
         ongoing: { text: "Ongoing", color: "blue" },
+        overdue: { text: "Overdue", color: "red" },
         done: { text: "Done", color: "green" },
         suspended: { text: "Suspended", color: "orange" },
         false: { text: "Deleted", color: "red" }

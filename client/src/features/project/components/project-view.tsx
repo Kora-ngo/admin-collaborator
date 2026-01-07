@@ -20,7 +20,7 @@ const ProjectView = ({ id, isOpen }: ProjectViewProps) => {
 
 const [activeTab, setActiveTab] = useState<Tab>("general");
 const [loading, setLoading] = useState(false);
-const [data, setData] = useState<ProjectFormData | null>(null);
+const [data, setData] = useState<any | null>(null);
 const {fetchOneData} = useProjectStore();
 const [generalData, setGeneralData] = useState({
   name: "",
@@ -29,7 +29,8 @@ const [generalData, setGeneralData] = useState({
   end_date: "",
   status: "",
   created_at: ""
-}) 
+});
+
 
 
   useEffect(() => {
@@ -107,9 +108,9 @@ const [generalData, setGeneralData] = useState({
       case "families":
         return <ProjectViewFamilies />;
       case "assistances":
-        return <ProjectViewAssistance />;
+        return <ProjectViewAssistance selectedAssistance={data?.assistances} />;
       case "members":
-        return <ProjectViewMembers />;
+        return <ProjectViewMembers selectedMembers={data?.members} />;
       default:
         return null;
     }

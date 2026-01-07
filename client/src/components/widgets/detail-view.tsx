@@ -3,39 +3,63 @@
 import type { ReactNode } from "react";
 
 interface DetailField {
-  label: string;
-  value: ReactNode; // Allows strings, numbers, JSX, formatted dates, etc.
+  label?: string;
+  value: ReactNode;
 }
 
 interface DetailViewProps {
-  title: string;
+  title?: string;           // optional now (if you don't always need it)
   subtitle?: string;
   fields: DetailField[];
   className?: string;
+  layout?: "single" | "double";  // NEW: control layout
 }
 
 const DetailView = ({
+  title,
+  subtitle,
   fields,
   className = "",
+  layout = "double",  // default to current behavior
 }: DetailViewProps) => {
+  const isSingle = layout === "single";
+
   return (
-    <div className={`max-w-4xl mx-auto border-1 border-gray-200 rounded-xl ${className}`}>
+    <div className={`max-w-4xl mx-auto border border-gray-200 rounded-xl ${className}`}>
+
       <div className="overflow-hidden">
-        <div className="grid grid-cols-3 gap-4 py-2 bg-gray-200 rounded-t-xl">
-          <p className="ml-4 font-semibold">Label</p>
-          <p className="font-semibold">Value</p>
+        {/* Header Row - only shown in double layout */}
+        {layout === "double" ? (
+          <div className="grid grid-cols-3 gap-4 py-3 bg-gray-100 px-6">
+            <p className="font-semibold text-gray-700">Label</p>
+            <p className="col-span-2 font-semibold text-gray-700">Value</p>
+          </div>
+        )
+      : 
+      (
+        <div className="grid grid-cols-3 gap-4 py-3 bg-gray-100 px-6">
+            <p className="col-span-2 font-semibold text-gray-700">Value</p>
         </div>
+      )
+      
+      }
+
         {/* Fields */}
         <div className="divide-y divide-gray-200">
-          {fields.map((field) => (
+          {fields.map((field, index) => (
             <div
-              key={field.label}
-              className="grid grid-cols-3 gap-4 py-4 hover:bg-muted/30 transition-colors"
+              key={field.label! + index}
+              className={`px-6 py-4 hover:bg-gray-50 transition-colors ${
+                isSingle ? "grid grid-cols-1 gap-1" : "grid grid-cols-3 gap-4"
+              }`}
             >
-              <div className="text-sm ml-4 font-medium text-gray-500">
-                {field.label}
+              {/* Label */}
+              <div className={`${isSingle ? "text-sm font-medium text-gray-500" : "text-sm font-medium text-gray-500"}`}>
+                {field.label!}
               </div>
-              <div className="col-span-2 text-sm text-gray-900 font-semibold">
+
+              {/* Value */}
+              <div className={`${isSingle ? "text-base font-semibold text-gray-900 mt-1" : "col-span-2 text-sm font-semibold text-gray-900"}`}>
                 {field.value || "-"}
               </div>
             </div>

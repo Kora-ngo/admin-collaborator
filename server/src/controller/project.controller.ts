@@ -149,6 +149,7 @@ const ProjectController = {
     create: async (req: Request, res: Response) => {
         try {
             const body = req.body;
+            const middlewareAuth = req.user;
 
             console.log("Project - creation - body --> ", body);
 
@@ -180,6 +181,7 @@ const ProjectController = {
             // Create project
             const newProject = await ProjectModel.create({
                 organisation_id: body.organisation_id,
+                membership_id: middlewareAuth!.membershipId,
                 name: body.name,
                 description: body.description || '',
                 status: 'pending',

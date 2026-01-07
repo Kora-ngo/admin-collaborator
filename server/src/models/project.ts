@@ -6,9 +6,10 @@ class Project extends Model<ProjectAttributes, ProjectCreationAttributes>
     implements ProjectAttributes {
     public id!: number;
     public organisation_id!: number;
+    public membership_id!: number;
     public name!: string;
     public description?: string;
-    public status!: 'true' | 'false' | 'pending' | 'ongoing' | 'done' | 'suspended';
+    public status!: 'true' | 'false' | 'pending' | 'ongoing' | 'done' | 'suspended' | 'overdue';
     public start_date?: Date;
     public end_date?: Date;
     public target_families?: number;
@@ -25,6 +26,9 @@ const ProjectModel = Project.init({
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    membership_id: {
+        type: DataTypes.INTEGER,
+    },
     name: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -33,7 +37,7 @@ const ProjectModel = Project.init({
         type: DataTypes.TEXT,
     },
     status: {
-        type: DataTypes.ENUM('true', 'false', 'pending', 'ongoing', 'done', 'suspended'),
+        type: DataTypes.ENUM('true', 'false', 'pending', 'ongoing', 'done', 'suspended', 'overdue'),
         allowNull: false,
         defaultValue: 'pending',
     },

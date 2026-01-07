@@ -1,9 +1,10 @@
 export interface ProjectAttributes {
     id: number;
     organisation_id: number;
+    membership_id: number;
     name: string;
     description?: string;
-    status: 'true' | 'false' | 'pending' | 'ongoing' | 'done' | 'suspended';
+    status: 'true' | 'false' | 'pending' | 'ongoing' | 'done' | 'suspended' | 'overdue';
     start_date?: Date;
     end_date?: Date;
     target_families?: number;
