@@ -84,7 +84,7 @@ const User = () => {
 
     const membershipColumns: TableColumn[] = [
     { key: "id", label: "ID", visibleOn: "always",  render: (_, globalIndex) => formatCode("MB", globalIndex) },
-    { key: "user", label: "User", visibleOn: "always", render: (row) => row.user.name },
+    { key: "user", label: "Member", visibleOn: "always", render: (row) => row.user.name },
     { key: "email", label: "Email", visibleOn: "md", render: (row) => row.user.email },
     { key: "role", label: "Role", visibleOn: "sm", render: (row) => {
         const roleText = row.role === "admin" ? "Admin" : row.role === "collaborator" ? "Collaborator" : "Enumerator";
@@ -177,7 +177,7 @@ const User = () => {
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                         <div className="w-full sm:w-64 lg:w-80">
                             <SearchInput
-                                placeholder="Search for user name"
+                                placeholder="Search for a member's name"
                                 className="w-full sm:w-64 lg:w-80"
                                 value={searchTerm}
                                 onChange={(e) => handleSearch(e.target.value)}
@@ -368,9 +368,9 @@ const User = () => {
                 isOpen={membershipModalMode !== null}
                 onClose={closeMembershipModal}
                 title={
-                    membershipModalMode === 'add' ? "New User" :
-                    membershipModalMode === 'view' ? "View User" :
-                    "Edit User"
+                    membershipModalMode === 'add' ? "New Member" :
+                    membershipModalMode === 'view' ? "View Member" :
+                    "Edit Member"
                 }
                 children={
                     membershipModalMode === 'add' || membershipModalMode === 'edit' ? (
@@ -428,7 +428,7 @@ const User = () => {
                 <Popup
                     open={disableUserPopup}
                     onClose={() => setDisableUserPopup(false)}
-                    title={selectedRecord?.status === "true" ? "Disable User" : "Enable User"}
+                    title={selectedRecord?.status === "true" ? "Disable Member" : "Enable Member"}
                     description={
                         selectedRecord ? (
                         <>

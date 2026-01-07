@@ -15,7 +15,7 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
         const titles: Record<string, string> = {
         "/dashbaord": "Dashboard",
         "/dashbaord/projects": "Projects",
-        "/dashbaord/users": "Users",
+        "/dashbaord/users": "Members",
         "/dashbaord/assistance": "Assistance",
         "/borrow": "Loans/Returns",
         "/report": "Report",
