@@ -3,7 +3,7 @@ import { Op } from 'sequelize';
 import { ProjectModel, ProjectMemberModel, ProjectAssistanceModel, MembershipModel, AssistanceModel, UserModel } from '../models/index.js';
 import type { ProjectCreationAttributes } from '../types/project.js';
 import { cleanupOldDeleted } from '../utils/cleanupOldDeleted.js';
-import { applyProjectStatusToAll, applyProjectStatus } from '../helpers/projectStatus.js';
+import { bulkUpdateProjectStatuses, updateProjectStatusInDB } from '../helpers/projectStatus.js';
 
 const ProjectController = {
     
@@ -60,12 +60,23 @@ const ProjectController = {
 
             const totalPages = Math.ceil(count / limit);
 
-            // Apply automatic status based on dates
-            const projectsWithStatus = applyProjectStatusToAll(rows);
+            // Update project statuses in database based on dates
+            await bulkUpdateProjectStatuses(rows);
+
+            // Convert to plain JSON objects, handling both dataValues and direct access
+            const projectsData = rows.map(p => {
+                const data: any = p.dataValues || p;
+                return {
+                    ...data,
+                    // Ensure nested associations are also converted
+                    members: data.members?.map((m: any) => m.dataValues || m) || [],
+                    assistances: data.assistances?.map((a: any) => a.dataValues || a) || []
+                };
+            });
 
             res.status(200).json({
                 type: 'success',
-                data: projectsWithStatus,
+                data: projectsData,
                 pagination: {
                     total: count,
                     page,
@@ -133,12 +144,12 @@ const ProjectController = {
                 return;
             }
 
-            // Apply automatic status
-            const projectWithStatus = applyProjectStatus(project.toJSON());
+            // Update project status in database
+            await updateProjectStatusInDB(project);
 
             res.status(200).json({
                 type: 'success',
-                data: projectWithStatus,
+                data: project.toJSON(),
             });
         } catch (error) {
             console.error("Project: Fetch_One error:", error);
@@ -181,7 +192,7 @@ const ProjectController = {
             // Create project
             const newProject = await ProjectModel.create({
                 organisation_id: body.organisation_id,
-                membership_id: middlewareAuth!.membershipId,
+                membership_id: middlewareAuth?.membershipId!,
                 name: body.name,
                 description: body.description || '',
                 status: 'pending',
@@ -392,12 +403,14 @@ const ProjectController = {
 
             const totalPages = Math.ceil(count / limit);
 
-            // Apply automatic status based on dates
-            const projectsWithStatus = applyProjectStatusToAll(rows);
+            // Update project statuses in database
+            await bulkUpdateProjectStatuses(rows);
+
+            const projectsData = rows.map(p => p.toJSON());
 
             res.status(200).json({
                 type: 'success',
-                data: projectsWithStatus,
+                data: projectsData,
                 pagination: {
                     total: count,
                     page,
@@ -502,12 +515,14 @@ const ProjectController = {
 
             const totalPages = Math.ceil(count / limit);
 
-            // Apply automatic status based on dates
-            const projectsWithStatus = applyProjectStatusToAll(rows);
+            // Update project statuses in database
+            await bulkUpdateProjectStatuses(rows);
+
+            const projectsData = rows.map(p => p.toJSON());
 
             res.status(200).json({
                 type: 'success',
-                data: projectsWithStatus,
+                data: projectsData,
                 pagination: {
                     total: count,
                     page,

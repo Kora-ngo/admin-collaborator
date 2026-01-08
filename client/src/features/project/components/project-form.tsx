@@ -348,11 +348,11 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
             </div>
 
 
-            {/* File Uploader - Images & Documents */}
+            {/* File Uploader - Images & Documents 
                 <div className="grid gap-2 mt-8">
-                    <Label htmlFor="project_files" required={false}>Project Files</Label>
+                    <Label htmlFor="project_files" required={false}>Project Files</Label>*/}
                     
-                    {/* Upload Zone */}
+                    {/* Upload Zone 
                     <label 
                         htmlFor="project_files"
                         onDragOver={handleDragOver}
@@ -399,9 +399,9 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                             multiple
                             onChange={handleFileChange}
                         />
-                    </label>
+                    </label>*/}
 
-                    {/* Uploaded Files List */}
+                    {/* Uploaded Files List 
                     {uploadedFiles.length > 0 && (
                         <div className="mt-3 space-y-4 py-2 bg-gray-50 border-gray-200 border-1 rounded-md">
                             <div className="flex mt-2 px-2 items-center justify-between">
@@ -462,7 +462,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                             </div>
                         </div>
                     )}
-                </div>
+                </div>*/}
 
             <div className="border-t-1 border-gray-200 mt-8">
                 <div className="my-4 flex gap-4 justify-end">

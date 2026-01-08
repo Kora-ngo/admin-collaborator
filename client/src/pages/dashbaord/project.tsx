@@ -379,6 +379,7 @@ const Projects = () => {
             </div>
 
             <Modal
+                className={projectModalMode ===  "view" ? "lg:w-[630px]" : ""}
                 isOpen={projectModalMode !== null}
                 onClose={closeProjectModal}
                 title={

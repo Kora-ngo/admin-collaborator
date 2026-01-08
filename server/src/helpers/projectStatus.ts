@@ -1,3 +1,5 @@
+import type { Model } from 'sequelize';
+
 /**
  * Automatically determines project status based on start and end dates
  * 
@@ -39,31 +41,72 @@ export const determineProjectStatus = (
 };
 
 /**
- * Apply automatic status to a project object
+ * Update project status in database based on dates
+ * This actually updates the database record
  */
-export const applyProjectStatus = (project: any): any => {
-    if (!project.start_date || !project.end_date) {
+export const updateProjectStatusInDB = async (project: any): Promise<any> => {
+    // Access dataValues if it exists, otherwise use the project directly
+    const projectData = project.dataValues || project;
+    
+    if (!projectData.start_date || !projectData.end_date) {
         return project;
     }
 
-    const autoStatus = determineProjectStatus(
-        project.start_date,
-        project.end_date,
-        project.status
+    const currentStatus = projectData.status;
+    const calculatedStatus = determineProjectStatus(
+        projectData.start_date,
+        projectData.end_date,
+        currentStatus
     );
 
-    return {
-        ...project,
-        status: autoStatus
-    };
+    // Only update if status has changed
+    if (calculatedStatus !== currentStatus) {
+        // If it's a Sequelize instance, use .update()
+        if (typeof project.update === 'function') {
+            await project.update({ status: calculatedStatus });
+        } else {
+            // If it's a plain object, we can't update it
+            console.warn(`Cannot update project ${projectData.id} - not a Sequelize instance`);
+        }
+        console.log(`Project ${projectData.id} status updated: ${currentStatus} → ${calculatedStatus}`);
+    }
+
+    return project;
 };
 
 /**
- * Apply automatic status to multiple projects
+ * Bulk update all projects' statuses in database
+ * This is more efficient for multiple projects
  */
-export const applyProjectStatusToAll = (projects: any[]): any[] => {
-    return projects.map(project => {
-        const plainProject = project.toJSON ? project.toJSON() : project;
-        return applyProjectStatus(plainProject);
+export const bulkUpdateProjectStatuses = async (projects: any[]): Promise<any[]> => {
+    const updatePromises = projects.map(async (project) => {
+        // Access dataValues if it exists
+        const projectData = project.dataValues || project;
+        
+        if (!projectData.start_date || !projectData.end_date) {
+            return project;
+        }
+
+        const currentStatus = projectData.status;
+        const calculatedStatus = determineProjectStatus(
+            projectData.start_date,
+            projectData.end_date,
+            currentStatus
+        );
+
+        // Only update if status has changed
+        if (calculatedStatus !== currentStatus) {
+            // If it's a Sequelize instance, use .update()
+            if (typeof project.update === 'function') {
+                await project.update({ status: calculatedStatus });
+                console.log(`Project ${projectData.id} status updated: ${currentStatus} → ${calculatedStatus}`);
+            } else {
+                console.warn(`Cannot update project ${projectData.id} - not a Sequelize instance`);
+            }
+        }
+
+        return project;
     });
+
+    return await Promise.all(updatePromises);
 };
