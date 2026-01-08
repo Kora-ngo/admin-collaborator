@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../../components/widgets/button";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
@@ -32,6 +32,9 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
     
     const {errors, projectForm, handleChange, handleSubmit, updateSelectedMembers, updateSelectedAssitance, handleView} = useProject();
 
+    // File upload state
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+    const [isDragging, setIsDragging] = useState(false);
 
     useEffect(() => {
         const handleFetch = async () => {
@@ -42,7 +45,6 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
         handleFetch();
     }, [id]);
 
-
     // Update members whenever enumerators or collaborator changes
     useEffect(() => {
         updateSelectedMembers(selectedEnumerators, selectedCollaborator);
@@ -52,12 +54,112 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
         updateSelectedAssitance(selectedAssistance);
     }, [selectedAssistance]);
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        processFiles(files);
+        // Reset input
+        e.target.value = '';
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const files = Array.from(e.dataTransfer.files);
+        processFiles(files);
+    };
+
+    const processFiles = (files: File[]) => {
+        if (files.length === 0) return;
+
+        // Validate each file
+        const validFiles: File[] = [];
+        
+        for (const file of files) {
+            // Check file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                alert(`${file.name} is too large. Maximum file size is 10MB.`);
+                continue;
+            }
+
+            // Check if file already exists
+            if (uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                alert(`${file.name} is already uploaded.`);
+                continue;
+            }
+
+            validFiles.push(file);
+        }
+
+        if (validFiles.length > 0) {
+            setUploadedFiles(prev => [...prev, ...validFiles]);
+        }
+    };
+
+    const handleRemoveFile = (index: number) => {
+        setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const getFileIcon = (fileName: string) => {
+        const ext = fileName.split('.').pop()?.toLowerCase();
+        
+        // Image files
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext || '')) {
+            return '🖼️';
+        }
+        // PDF
+        if (ext === 'pdf') {
+            return '📄';
+        }
+        // Word documents
+        if (['doc', 'docx'].includes(ext || '')) {
+            return '📝';
+        }
+        // Excel
+        if (['xls', 'xlsx'].includes(ext || '')) {
+            return '📊';
+        }
+        // PowerPoint
+        if (['ppt', 'pptx'].includes(ext || '')) {
+            return '📽️';
+        }
+        // Text files
+        if (['txt', 'csv'].includes(ext || '')) {
+            return '📃';
+        }
+        // Default
+        return '📎';
+    };
+
+    const formatFileSize = (bytes: number): string => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    };
+
     const handleValidate = async () => {
         const isValid = await handleSubmit(id);
+        // const isValid = await handleSubmit(id, uploadedFiles);
         if(isValid){
             onSuccess();
         }
     }
+    
     
     return ( 
         <div className="flex flex-col justify-between w-full h-full">
@@ -244,6 +346,123 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                 }
    
             </div>
+
+
+            {/* File Uploader - Images & Documents */}
+                <div className="grid gap-2 mt-8">
+                    <Label htmlFor="project_files" required={false}>Project Files</Label>
+                    
+                    {/* Upload Zone */}
+                    <label 
+                        htmlFor="project_files"
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all ${
+                            isDragging 
+                                ? 'border-primary bg-primary/5 scale-[1.02]' 
+                                : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+                        }`}
+                    >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg 
+                                className={`w-8 h-8 mb-2 transition-colors ${
+                                    isDragging ? 'text-primary' : 'text-gray-400'
+                                }`}
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                            >
+                                <path 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round" 
+                                    strokeWidth={2} 
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" 
+                                />
+                            </svg>
+                            <p className={`mb-1 text-sm ${isDragging ? 'text-primary font-semibold' : 'text-gray-500'}`}>
+                                {isDragging ? (
+                                    <span className="font-bold">Drop files here</span>
+                                ) : (
+                                    <>
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                    </>
+                                )}
+                            </p>
+                            <p className="text-xs text-gray-500">Images, PDF, Word, Excel (MAX. 10MB each)</p>
+                        </div>
+                        <input 
+                            id="project_files" 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                            multiple
+                            onChange={handleFileChange}
+                        />
+                    </label>
+
+                    {/* Uploaded Files List */}
+                    {uploadedFiles.length > 0 && (
+                        <div className="mt-3 space-y-4 py-2 bg-gray-50 border-gray-200 border-1 rounded-md">
+                            <div className="flex mt-2 px-2 items-center justify-between">
+                                <p className="text-sm font-medium text-gray-700">
+                                    Uploaded Files ({uploadedFiles.length})
+                                </p>
+                                {uploadedFiles.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setUploadedFiles([])}
+                                        className="text-xs text-red-600 hover:text-red-800 underline"
+                                    >
+                                        Clear all
+                                    </button>
+                                )}
+                            </div>
+                            
+                            <div className="max-h-48 px-2 overflow-y-auto space-y-2">
+                                {uploadedFiles.map((file, index) => (
+                                    <div 
+                                        key={index}
+                                        className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <span className="text-2xl flex-shrink-0">
+                                                {getFileIcon(file.name)}
+                                            </span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-gray-900 truncate">
+                                                    {file.name}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {formatFileSize(file.size)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveFile(index)}
+                                            className="flex-shrink-0 ml-3 text-red-500 hover:text-red-700 transition-colors"
+                                        >
+                                            <svg 
+                                                className="w-5 h-5" 
+                                                fill="none" 
+                                                stroke="currentColor" 
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path 
+                                                    strokeLinecap="round" 
+                                                    strokeLinejoin="round" 
+                                                    strokeWidth={2} 
+                                                    d="M6 18L18 6M6 6l12 12" 
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
             <div className="border-t-1 border-gray-200 mt-8">
                 <div className="my-4 flex gap-4 justify-end">

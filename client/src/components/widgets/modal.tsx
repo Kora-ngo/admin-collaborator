@@ -16,7 +16,7 @@ const Modal: React.FC<ModalProps> = ({
   title,
   children,
   footer,
-  widthClass = "sm:w-[450px] lg:w-[500px] w-full rounded-xl",
+  widthClass = "sm:w-[450px] lg:w-[520px] w-full rounded-xl",
   className = "",
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
