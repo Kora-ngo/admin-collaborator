@@ -20,6 +20,7 @@ interface AuthState {
     logout: () => Promise<any>,
     getCurrentUser: () => Promise<any>,
     updateProfile: (data: any) => Promise<any>;
+    updateOrganisation: (data: any) => Promise<any>;
 }
 
 const endpoint = "/auth";
@@ -165,6 +166,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({ loading: false });
         }
     },
+
+        updateOrganisation: async (data) => {
+            try {
+                set({ loading: true });
+                const response = await axiosInstance.put(`${endpoint}/organisation`, data);
+                if (response.data.type === "success") {
+                    await get().getCurrentUser();
+                }
+                return response.data;
+            } catch (error: any) {
+                return handleApiError(error);
+            } finally {
+                set({ loading: false });
+            }
+        }
 
 
 

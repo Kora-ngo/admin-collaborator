@@ -525,128 +525,227 @@ const AuthController = {
 
     // Add this method to your AuthController
 
-updateProfile: async (req: Request, res: Response) => {
-    const authUser = req.user;
+    updateProfile: async (req: Request, res: Response) => {
+        const authUser = req.user;
 
-    if (!authUser || !authUser.userId) {
-        return res.status(401).json({ type: 'error', message: 'unauthorized' });
-    }
+        if (!authUser || !authUser.userId) {
+            return res.status(401).json({ type: 'error', message: 'unauthorized' });
+        }
 
-    const { name, phone, email, password, currentPassword } = req.body;
+        const { name, phone, email, password, currentPassword } = req.body;
 
-    // At least one field must be provided
-    if (!name && !phone && !email && !password) {
-        return res.status(400).json({
-            type: 'error',
-            message: 'no_fields_to_update',
-        });
-    }
-
-    const transaction = await sequelize.transaction();
-
-    try {
-        // Fetch current user
-        const userData = await UserModel.findByPk(authUser.userId);
-        const user = userData?.dataValues;
-
-        if (!user) {
-            await transaction.rollback();
-            return res.status(404).json({
+        // At least one field must be provided
+        if (!name && !phone && !email && !password) {
+            return res.status(400).json({
                 type: 'error',
-                message: 'user_not_found',
+                message: 'no_fields_to_update',
             });
         }
 
-        if (user.status !== 'true') {
+        const transaction = await sequelize.transaction();
+
+        try {
+            // Fetch current user
+            const userData = await UserModel.findByPk(authUser.userId);
+            const user = userData?.dataValues;
+
+            if (!user) {
+                await transaction.rollback();
+                return res.status(404).json({
+                    type: 'error',
+                    message: 'user_not_found',
+                });
+            }
+
+            if (user.status !== 'true') {
+                await transaction.rollback();
+                return res.status(403).json({
+                    type: 'error',
+                    message: 'user_inactive',
+                });
+            }
+
+            // If changing email or password → require current password
+            if ((email && email !== user.email) || password) {
+                if (!currentPassword) {
+                    await transaction.rollback();
+                    return res.status(400).json({
+                        type: 'error',
+                        message: 'current_password_required',
+                    });
+                }
+
+                const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+                if (!isCurrentPasswordValid) {
+                    await transaction.rollback();
+                    return res.status(401).json({
+                        type: 'error',
+                        message: 'invalid_current_password',
+                    });
+                }
+            }
+
+            // Validate new email if provided
+            if (email && email !== user.email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    await transaction.rollback();
+                    return res.status(400).json({
+                        type: 'error',
+                        message: 'invalid_email_format',
+                    });
+                }
+
+                // Check if new email is already taken
+                const emailTaken = await UserModel.findOne({
+                    where: { email: email.toLowerCase().trim() },
+                });
+
+                if (emailTaken) {
+                    await transaction.rollback();
+                    return res.status(409).json({
+                        type: 'error',
+                        message: 'email_already_in_use',
+                    });
+                }
+            }
+
+            // Prepare update data
+            const updates: any = {};
+
+            if (name) updates.name = name.trim();
+            if (phone !== undefined) updates.phone = phone?.trim() || null;
+            if (email) updates.email = email.toLowerCase().trim();
+            if (password) updates.password = await bcrypt.hash(password, 10);
+
+
+            console.log('Updates --> ', updates);
+
+            // Update user
+            await UserModel.update(updates, {
+                where: { id: authUser.userId },
+                transaction,
+            });
+
+            // Fetch updated user (without password)
+            const updatedUserData = await UserModel.findByPk(authUser.userId, {
+                attributes: ['id', 'uid', 'name', 'email', 'phone'],
+            });
+            const updatedUser = updatedUserData?.dataValues;
+
+            await transaction.commit();
+
+            return res.status(200).json({
+                type: 'success',
+                message: 'done',
+                user: updatedUser,
+            });
+
+        } catch (error: any) {
             await transaction.rollback();
-            return res.status(403).json({
+            console.error("Update profile error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
+
+    // Add this method to your AuthController
+
+    updateOrganisation: async (req: Request, res: Response) => {
+        const authUser = req.user;
+
+        if (!authUser || !authUser.organizationId) {
+            return res.status(401).json({ type: 'error', message: 'unauthorized' });
+        }
+
+        const { name, description, email, phone, country, region } = req.body;
+
+        // At least one field must be provided
+        if (!name && !description && !email && !phone && !country && !region) {
+            return res.status(400).json({
                 type: 'error',
-                message: 'user_inactive',
+                message: 'no_fields_to_update',
             });
         }
 
-        // If changing email or password → require current password
-        if ((email && email !== user.email) || password) {
-            if (!currentPassword) {
+        const transaction = await sequelize.transaction();
+
+        try {
+            // Fetch current organisation
+            const orgData = await OrganisationModel.findByPk(authUser.organizationId);
+            const organisation = orgData?.dataValues;
+
+            if (!organisation) {
                 await transaction.rollback();
-                return res.status(400).json({
+                return res.status(404).json({
                     type: 'error',
-                    message: 'current_password_required',
+                    message: 'organization_not_found',
                 });
             }
 
-            const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-            if (!isCurrentPasswordValid) {
-                await transaction.rollback();
-                return res.status(401).json({
-                    type: 'error',
-                    message: 'invalid_current_password',
-                });
-            }
-        }
+            // Validate new email if provided and different
+            if (email && email !== organisation.email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    await transaction.rollback();
+                    return res.status(400).json({
+                        type: 'error',
+                        message: 'invalid_email_format',
+                    });
+                }
 
-        // Validate new email if provided
-        if (email && email !== user.email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                await transaction.rollback();
-                return res.status(400).json({
-                    type: 'error',
-                    message: 'invalid_email_format',
+                // Check if new email is already taken by another organisation
+                const emailTaken = await OrganisationModel.findOne({
+                    where: { email: email.toLowerCase().trim() },
                 });
+
+                if (emailTaken) {
+                    await transaction.rollback();
+                    return res.status(409).json({
+                        type: 'error',
+                        message: 'organisation_email_already_in_use',
+                    });
+                }
             }
 
-            // Check if new email is already taken
-            const emailTaken = await UserModel.findOne({
-                where: { email: email.toLowerCase().trim() },
+            // Prepare update data
+            const updates: any = {};
+
+            if (name) updates.name = name.trim();
+            if (description !== undefined) updates.description = description?.trim() || null;
+            if (email) updates.email = email.toLowerCase().trim();
+            if (phone !== undefined) updates.phone = phone?.trim() || null;
+            if (country !== undefined) updates.country = country?.trim() || null;
+            if (region !== undefined) updates.region = region?.trim() || null;
+
+            console.log("Updates --> ", updates);
+
+            // Update organisation
+            await OrganisationModel.update(updates, {
+                where: { id: authUser.organizationId },
+                transaction,
             });
 
-            if (emailTaken) {
-                await transaction.rollback();
-                return res.status(409).json({
-                    type: 'error',
-                    message: 'email_already_in_use',
-                });
-            }
+            // Fetch updated organisation
+            const updatedOrgData = await OrganisationModel.findByPk(authUser.organizationId, {
+                attributes: ['id', 'uid', 'name', 'description', 'email', 'phone', 'country', 'region'],
+            });
+            const updatedOrg = updatedOrgData?.dataValues;
+
+            await transaction.commit();
+
+            return res.status(200).json({
+                type: 'success',
+                message: 'organisation_updated_successfully',
+                organisation: updatedOrg,
+            });
+
+        } catch (error: any) {
+            await transaction.rollback();
+            console.error("Update organisation error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
         }
-
-        // Prepare update data
-        const updates: any = {};
-
-        if (name) updates.name = name.trim();
-        if (phone !== undefined) updates.phone = phone?.trim() || null;
-        if (email) updates.email = email.toLowerCase().trim();
-        if (password) updates.password = await bcrypt.hash(password, 10);
-
-
-        console.log('Updates --> ', updates);
-
-        // Update user
-        await UserModel.update(updates, {
-            where: { id: authUser.userId },
-            transaction,
-        });
-
-        // Fetch updated user (without password)
-        const updatedUserData = await UserModel.findByPk(authUser.userId, {
-            attributes: ['id', 'uid', 'name', 'email', 'phone'],
-        });
-        const updatedUser = updatedUserData?.dataValues;
-
-        await transaction.commit();
-
-        return res.status(200).json({
-            type: 'success',
-            message: 'done',
-            user: updatedUser,
-        });
-
-    } catch (error: any) {
-        await transaction.rollback();
-        console.error("Update profile error:", error);
-        res.status(500).json({ type: 'error', message: 'server_error' });
-    }
-},
+    },
 
 
 

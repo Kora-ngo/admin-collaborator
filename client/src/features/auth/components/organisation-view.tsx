@@ -1,10 +1,23 @@
+import { useEffect } from "react";
 import { Button } from "../../../components/widgets/button";
+import { useAuthStore } from "../store/authStore";
 
 interface OrganisationViewProps {
     onToggle: () => void;
 }
 
+
+
+
 const OrganisationView: React.FC<OrganisationViewProps> = ({onToggle}) => {
+
+        const {organisation} = useAuthStore();
+
+        useEffect(() => {
+            console.log("This is the org -->", organisation);
+        }, [organisation]);
+
+
     return ( 
         <div className="relative border rounded-md border-gray-200 p-4">
             {/* Edit button */}
@@ -15,27 +28,27 @@ const OrganisationView: React.FC<OrganisationViewProps> = ({onToggle}) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <p className="text-sm font-semibold text-gray-400">Name</p>
-                <p className="text-md font-medium">Breezly</p>
+                <p className="text-md font-medium">{organisation?.name}</p>
             </div>
 
             <div>
                 <p className="text-sm font-semibold text-gray-400">Email</p>
-                <p className="text-md font-medium">breezly@gmail.com</p>
+                <p className="text-md font-medium">{organisation?.email}</p>
             </div>
 
             <div>
                 <p className="text-sm font-semibold text-gray-400">Phone</p>
-                <p className="text-md font-medium">(+237) 675320239</p>
+                <p className="text-md font-medium">{organisation?.phone}</p>
             </div>
 
             <div>
                 <p className="text-sm font-semibold text-gray-400">Country</p>
-                <p className="text-md font-medium">Cameroon</p>
+                <p className="text-md font-medium">{organisation?.country}</p>
             </div>
 
             <div>
                 <p className="text-sm font-semibold text-gray-400">Region</p>
-                <p className="text-md font-medium">Yaounde</p>
+                <p className="text-md font-medium">{organisation?.region}</p>
             </div>
             </div>
         </div>

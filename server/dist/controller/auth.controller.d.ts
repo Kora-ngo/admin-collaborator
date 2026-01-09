@@ -9,6 +9,7 @@ declare const AuthController: {
     forgotPassword: (req: Request, res: Response) => Promise<void>;
     resetPassword: (req: Request, res: Response) => Promise<void>;
     updateProfile: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+    updateOrganisation: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 };
 export default AuthController;
 //# sourceMappingURL=auth.controller.d.ts.map

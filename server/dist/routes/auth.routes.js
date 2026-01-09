@@ -21,5 +21,6 @@ router.post('/reset-password', AuthController.resetPassword);
 // GET /api/auth/me
 router.get('/me', verifyToken, AuthController.getCurrentUser);
 router.put('/profile', verifyToken, AuthController.updateProfile);
+router.put('/organisation', verifyToken, AuthController.updateOrganisation);
 export default router;
 //# sourceMappingURL=auth.routes.js.map

@@ -34,4 +34,6 @@ router.get('/me', verifyToken, AuthController.getCurrentUser);
 
 router.put('/profile', verifyToken, AuthController.updateProfile);
 
+router.put('/organisation', verifyToken, AuthController.updateOrganisation);
+
 export default router;

@@ -7,7 +7,7 @@ import type { ToastMessage } from "../../../types/toastMessage";
 export const useAdminResgister = () => {
 
     const resgister = useAuthStore((state) => state.register);
-    const {user, updateProfile} = useAuthStore();
+    const {user, organisation, updateProfile, updateOrganisation} = useAuthStore();
     const showToast = useToastStore((state) => state.showToast);
 
 
@@ -65,6 +65,22 @@ export const useAdminResgister = () => {
             })
         }
     }, [user])
+
+
+        useEffect(() => {
+            console.log("Or --> ", organisation);
+        if(organisation!.id){
+            setOrgForm({
+                name: organisation?.name|| "",
+                description: organisation?.description|| "",
+                country: organisation?.country|| "",
+                region: organisation?.region|| "",
+                email: organisation?.email|| "",
+                phone: organisation?.phone|| "",
+            })
+        }
+    }, [organisation])
+
 
 
 
@@ -140,7 +156,40 @@ export const useAdminResgister = () => {
         }
 
         return toastMessage.type === "success";
-    }
+    };
+
+
+    const handleUpdateOrganisation = async (): Promise<boolean> => {
+        console.log("Organisation Update Form --> ", orgForm);
+
+        // Simple validation — only required: name and email
+        const newErrors: any = {};
+        if (!orgForm.name.trim()) newErrors.name = true;
+        if (!orgForm.email.trim()) newErrors.email = true;
+        if (orgForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orgForm.email)) {
+            newErrors.email = true;
+        }
+
+        setOrgErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            console.log("Validation failed:", newErrors);
+            return false;
+        }
+
+        const result = await updateOrganisation(orgForm);
+        showToast(result);
+
+        if (result.type === "success") {
+            console.log("Organisation updated successfully");
+            // Optionally refetch user to get fresh org data
+            // await getCurrentUser();
+            return true;
+        } else {
+            console.log("Update failed:", result);
+            return false;
+        }
+    };
     
 
 
@@ -157,7 +206,9 @@ export const useAdminResgister = () => {
         handleOrgChange,
         
         handleUpdateProfile,
-        handleOrgData
+        handleOrgData,
+
+        handleUpdateOrganisation
     }
 
 
