@@ -1,9 +1,11 @@
 import { type Request, type Response } from 'express';
 import { Op } from 'sequelize';
-import { ProjectModel, ProjectMemberModel, ProjectAssistanceModel, MembershipModel, AssistanceModel, UserModel } from '../models/index.js';
+import { ProjectModel, ProjectMemberModel, ProjectAssistanceModel, MembershipModel, AssistanceModel, UserModel, MediaLink, Media } from '../models/index.js';
 import type { ProjectCreationAttributes } from '../types/project.js';
 import { cleanupOldDeleted } from '../utils/cleanupOldDeleted.js';
 import { bulkUpdateProjectStatuses, updateProjectStatusInDB } from '../helpers/projectStatus.js';
+import sequelize from '../config/database.js';
+import MediaController from './media.controller.js';
 
 const ProjectController = {
     
@@ -50,12 +52,23 @@ const ProjectController = {
                                 attributes: ['id', 'name']
                             }
                         ]
+                    },
+                    {
+                        model: MediaLink,
+                        as: 'mediaLinks',
+                        include: [
+                            {
+                                model: Media,
+                                as: 'media',
+                                attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
+                            }
+                        ]
                     }
                 ],
                 limit,
                 offset,
-                distinct: true, // FIX: Counts distinct projects, not joined rows
-                col: 'id' // Specify which column to count distinctly
+                distinct: true,
+                col: 'id'
             });
 
             const totalPages = Math.ceil(count / limit);
@@ -70,7 +83,8 @@ const ProjectController = {
                     ...data,
                     // Ensure nested associations are also converted
                     members: data.members?.map((m: any) => m.dataValues || m) || [],
-                    assistances: data.assistances?.map((a: any) => a.dataValues || a) || []
+                    assistances: data.assistances?.map((a: any) => a.dataValues || a) || [],
+                    mediaLinks: data.mediaLinks?.map((ml: any) => ml.dataValues || ml) || []
                 };
             });
 
@@ -132,6 +146,17 @@ const ProjectController = {
                                 attributes: ['id', 'name']
                             }
                         ]
+                    },
+                    {
+                        model: MediaLink,
+                        as: 'mediaLinks',
+                        include: [
+                            {
+                                model: Media,
+                                as: 'media',
+                                attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
+                            }
+                        ]
                     }
                 ]
             });
@@ -144,7 +169,6 @@ const ProjectController = {
                 return;
             }
 
-            // Update project status in database
             await updateProjectStatusInDB(project);
 
             res.status(200).json({
@@ -158,8 +182,11 @@ const ProjectController = {
     },
 
     create: async (req: Request, res: Response) => {
+        const transaction = await sequelize.transaction();
+
         try {
             const body = req.body;
+            const files = req.files as Express.Multer.File[] | undefined;
             const middlewareAuth = req.user;
 
             console.log("Project - creation - body --> ", body);
@@ -168,6 +195,25 @@ const ProjectController = {
                 res.status(400).json({
                     type: 'error',
                     message: 'fields_required',
+                });
+                return;
+            }
+
+
+                        // Parse selectedMembers and selectedAssistances if they're strings (from FormData)
+            const selectedMembers = typeof body.selectedMembers === 'string' 
+                ? JSON.parse(body.selectedMembers) 
+                : body.selectedMembers;
+
+            const selectedAssistances = typeof body.selectedAssistances === 'string'
+                ? JSON.parse(body.selectedAssistances)
+                : body.selectedAssistances;
+
+            if (!selectedMembers?.length) {
+                await transaction.rollback();
+                res.status(400).json({
+                    type: 'error',
+                    message: 'members_required',
                 });
                 return;
             }
@@ -199,7 +245,7 @@ const ProjectController = {
                 start_date: body.start_date,
                 end_date: body.end_date,
                 target_families: body.target_families
-            });
+            }, {transaction});
 
             // Add members
             if (body.selectedMembers?.length > 0) {
@@ -208,7 +254,7 @@ const ProjectController = {
                     membership_id: m.membership_id,
                     role_in_project: m.role_in_project
                 }));
-                await ProjectMemberModel.bulkCreate(membersData);
+                await ProjectMemberModel.bulkCreate(membersData, {transaction});
             }
 
             // Add assistances
@@ -220,10 +266,33 @@ const ProjectController = {
                 await ProjectAssistanceModel.bulkCreate(assistancesData);
             }
 
+            let uploadedFiles: any[] = [];
+            if (files && files.length > 0) {
+                console.log(`⬆️  Uploading ${files.length} files to Cloudinary...`);
+
+                uploadedFiles  = await MediaController.uploadAndLinkFiles(
+                    files,
+                    'project',
+                    newProject.id,
+                    'document',
+                    body.organisation_id,
+                    middlewareAuth?.membershipId || 0,
+                    transaction
+                );
+
+                console.log(`✓ Uploaded ${uploadedFiles.length} files successfully`);
+            }
+
+            await transaction.commit();
+            console.log("✅ Transaction committed successfully");
+
             res.status(201).json({
                 type: 'success',
                 message: 'done',
-                data: newProject,
+                data: {
+                    project: newProject,
+                    uploadedFiles: uploadedFiles
+                },
             });
         } catch (error: any) {
             console.error("Project: Create error:", error);
@@ -254,7 +323,6 @@ const ProjectController = {
                 return;
             }
 
-            // Update basic project fields
             await project.update({
                 name: updates.name,
                 description: updates.description,
@@ -264,12 +332,9 @@ const ProjectController = {
                 target_families: updates.target_families
             });
 
-            // Update members if provided
             if (updates.selectedMembers !== undefined) {
-                // Remove old members
                 await ProjectMemberModel.destroy({ where: { project_id: id } });
                 
-                // Add new members
                 if (updates.selectedMembers.length > 0) {
                     const membersData = updates.selectedMembers.map((m: any) => ({
                         project_id: id,
@@ -280,12 +345,9 @@ const ProjectController = {
                 }
             }
 
-            // Update assistances if provided
             if (updates.selectedAssistances !== undefined) {
-                // Remove old assistances
                 await ProjectAssistanceModel.destroy({ where: { project_id: id } });
                 
-                // Add new assistances
                 if (updates.selectedAssistances.length > 0) {
                     const assistancesData = updates.selectedAssistances.map((a: any) => ({
                         project_id: id,
@@ -320,7 +382,6 @@ const ProjectController = {
                 });
             }
 
-            // Toggle status: if 'false' restore to 'pending', else delete (set to 'false')
             const newStatus = project.status === 'false' ? 'pending' : 'false';
 
             await projectData.update({
@@ -368,31 +429,21 @@ const ProjectController = {
                     {
                         model: ProjectMemberModel,
                         as: 'members',
-                        include: [
-                            {
-                                model: MembershipModel,
-                                as: 'membership',
-                                attributes: ['id', 'role'],
-                                include: [
-                                    {
-                                        model: UserModel,
-                                        as: 'user',
-                                        attributes: ['id', 'name']
-                                    }
-                                ]
-                            }
-                        ]
+                        include: [{
+                            model: MembershipModel,
+                            as: 'membership',
+                            include: [{ model: UserModel, as: 'user' }]
+                        }]
                     },
                     {
                         model: ProjectAssistanceModel,
                         as: 'assistances',
-                        include: [
-                            {
-                                model: AssistanceModel,
-                                as: 'assistance',
-                                attributes: ['id', 'name']
-                            }
-                        ]
+                        include: [{ model: AssistanceModel, as: 'assistance' }]
+                    },
+                    {
+                        model: MediaLink,
+                        as: 'mediaLinks',
+                        include: [{ model: Media, as: 'media' }]
                     }
                 ],
                 limit,
@@ -401,11 +452,7 @@ const ProjectController = {
                 col: 'id'
             });
 
-            const totalPages = Math.ceil(count / limit);
-
-            // Update project statuses in database
             await bulkUpdateProjectStatuses(rows);
-
             const projectsData = rows.map(p => p.toJSON());
 
             res.status(200).json({
@@ -415,8 +462,8 @@ const ProjectController = {
                     total: count,
                     page,
                     limit,
-                    totalPages,
-                    hasNext: page < totalPages,
+                    totalPages: Math.ceil(count / limit),
+                    hasNext: page < Math.ceil(count / limit),
                     hasPrev: page > 1,
                 },
             });
@@ -437,12 +484,8 @@ const ProjectController = {
 
             const where: any = {};
 
-            // Status filter
-            if (status) {
-                where.status = status;
-            }
+            if (status) where.status = status;
 
-            // Date filter
             if (datePreset && datePreset !== "all") {
                 const now = new Date();
                 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -454,21 +497,16 @@ const ProjectController = {
                         where.created_at[Op.gte] = today;
                         where.created_at[Op.lt] = new Date(today.getTime() + 24 * 60 * 60 * 1000);
                         break;
-
                     case "this_week":
                         const weekStart = new Date(today);
                         weekStart.setDate(today.getDate() - today.getDay());
                         where.created_at[Op.gte] = weekStart;
                         break;
-
                     case "this_month":
-                        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-                        where.created_at[Op.gte] = monthStart;
+                        where.created_at[Op.gte] = new Date(now.getFullYear(), now.getMonth(), 1);
                         break;
-
                     case "this_year":
-                        const yearStart = new Date(now.getFullYear(), 0, 1);
-                        where.created_at[Op.gte] = yearStart;
+                        where.created_at[Op.gte] = new Date(now.getFullYear(), 0, 1);
                         break;
                 }
             }
@@ -480,31 +518,21 @@ const ProjectController = {
                     {
                         model: ProjectMemberModel,
                         as: 'members',
-                        include: [
-                            {
-                                model: MembershipModel,
-                                as: 'membership',
-                                attributes: ['id', 'role'],
-                                include: [
-                                    {
-                                        model: UserModel,
-                                        as: 'user',
-                                        attributes: ['id', 'name']
-                                    }
-                                ]
-                            }
-                        ]
+                        include: [{
+                            model: MembershipModel,
+                            as: 'membership',
+                            include: [{ model: UserModel, as: 'user' }]
+                        }]
                     },
                     {
                         model: ProjectAssistanceModel,
                         as: 'assistances',
-                        include: [
-                            {
-                                model: AssistanceModel,
-                                as: 'assistance',
-                                attributes: ['id', 'name']
-                            }
-                        ]
+                        include: [{ model: AssistanceModel, as: 'assistance' }]
+                    },
+                    {
+                        model: MediaLink,
+                        as: 'mediaLinks',
+                        include: [{ model: Media, as: 'media' }]
                     }
                 ],
                 limit,
@@ -513,11 +541,7 @@ const ProjectController = {
                 col: 'id'
             });
 
-            const totalPages = Math.ceil(count / limit);
-
-            // Update project statuses in database
             await bulkUpdateProjectStatuses(rows);
-
             const projectsData = rows.map(p => p.toJSON());
 
             res.status(200).json({
@@ -527,8 +551,8 @@ const ProjectController = {
                     total: count,
                     page,
                     limit,
-                    totalPages,
-                    hasNext: page < totalPages,
+                    totalPages: Math.ceil(count / limit),
+                    hasNext: page < Math.ceil(count / limit),
                     hasPrev: page > 1,
                 },
             });
@@ -538,5 +562,6 @@ const ProjectController = {
         }
     },
 };
+
 
 export default ProjectController;

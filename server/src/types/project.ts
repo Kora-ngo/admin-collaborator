@@ -13,7 +13,7 @@ export interface ProjectAttributes {
 
 }
 
-export type ProjectCreationAttributes = Omit<ProjectAttributes, 'id' | 'created_at'>;
+export type ProjectCreationAttributes = Omit<ProjectAttributes, 'id' | 'created_at' | 'updated_at'>;
 
 
 

@@ -42,81 +42,88 @@ const MediaController =  {
     */
 
     uploadAndLinkFiles: async (
-        files: Express.Multer.File[],
-        entityType: string,
-        entityId: number,
-        usage: 'cover' | 'document',
-        organisationId: number,
-        membershipId: number
-    ): Promise<UploadedFileInfo[]> => {
-        const transaction = await sequelize.transaction();
+            files: Express.Multer.File[],
+            entityType: string,
+            entityId: number,
+            usage: 'cover' | 'document',
+            organisationId: number,
+            membershipId: number,
+            externalTransaction?: any
+        ): Promise<UploadedFileInfo[]> => {
+            // Use provided transaction or create new one
+            const transaction = externalTransaction || await sequelize.transaction();
+            const shouldCommit = !externalTransaction; // Only commit if we created the transaction
 
-        try{
-            const uploadedFiles: UploadedFileInfo[] = [];
+            try {
+                const uploadedFiles: UploadedFileInfo[] = [];
 
-            for(const file of files){
+                for (const file of files) {
+                    // Determine file type
+                    const isImage = file.mimetype.startsWith('image/');
+                    const fileType: 'image' | 'document' = isImage ? 'image' : 'document';
 
-                // Determine file type
-                const isImage = file.mimetype.startsWith('image/');
-                const fileType: 'image' | 'document' = isImage ? 'image' : 'document';
-                
-                
-                // Upload to Cloudinary
-                const uploadResult = await new Promise<any>((resolve, reject) => {
-                    const uploadStream = cloudinary.uploader.upload_stream(
-                        {
-                            folder: `${organisationId}/${entityType}`,
-                            resource_type: isImage ? 'image' : 'raw',
-                            public_id: `${Date.now()}_${file.originalname.replace(/\.[^/.]+$/, '')}`,
-                        },
-                        (error, result) => {
-                            if (error) reject(error);
-                            else resolve(result);
-                        }
-                    );
-                    uploadStream.end(file.buffer);
-                });
+                    // Upload to Cloudinary
+                    const uploadResult = await new Promise<any>((resolve, reject) => {
+                        const uploadStream = cloudinary.uploader.upload_stream(
+                            {
+                                folder: `${organisationId}/${entityType}`,
+                                resource_type: isImage ? 'image' : 'raw',
+                                public_id: `${Date.now()}_${file.originalname.replace(/\.[^/.]+$/, '')}`,
+                            },
+                            (error, result) => {
+                                if (error) reject(error);
+                                else resolve(result);
+                            }
+                        );
+                        uploadStream.end(file.buffer);
+                    });
 
-                // Save to Media table
-                const media = await Media.create({
-                    organisation_id: organisationId,
-                    file_name: file.originalname,
-                    file_type: fileType,
-                    size: file.size,
-                    storage_path: uploadResult.secure_url, // Remote URL
-                    uploaded_by_membership_id: membershipId,
-                    updated_at: new Date()
-                }, { transaction });
+                    // Save to Media table
+                    const media = await Media.create({
+                        organisation_id: organisationId,
+                        file_name: file.originalname,
+                        file_type: fileType,
+                        size: file.size,
+                        storage_path: uploadResult.secure_url, // Remote URL
+                        uploaded_by_membership_id: membershipId,
+                        updated_at: new Date()
+                    }, { transaction });
 
+                    // Create MediaLink
+                    await MediaLink.create({
+                        media_id: media.id,
+                        entity_type: entityType,
+                        entity_id: entityId,
+                        usage: usage,
+                        updated_at: new Date()
+                    }, { transaction });
 
-                // Create MediaLink
-                await MediaLink.create({
-                    media_id: media.id,
-                    entity_type: entityType,
-                    entity_id: entityId,
-                    usage: usage,
-                    updated_at: new Date()
-                }, { transaction });
+                    uploadedFiles.push({
+                        media_id: media.id,
+                        file_name: file.originalname,
+                        file_type: fileType,
+                        storage_path: uploadResult.secure_url,
+                        size: file.size
+                    });
 
+                    console.log(`Uploaded ${file.originalname} to Cloudinary: ${uploadResult.secure_url}`);
+                }
 
-                uploadedFiles.push({
-                    media_id: media.id,
-                    file_name: file.originalname,
-                    file_type: fileType,
-                    storage_path: uploadResult.secure_url,
-                    size: file.size
-                });
+                // Only commit if we created the transaction
+                if (shouldCommit) {
+                    await transaction.commit();
+                }
 
-                console.log(`Uploaded ${file.originalname} to Cloudinary: ${uploadResult.secure_url}`);
+                return uploadedFiles;
+
+            } catch (error) {
+                // Only rollback if we created the transaction
+                if (shouldCommit) {
+                    await transaction.rollback();
+                }
+                console.error('Media upload error:', error);
+                throw error;
             }
-
-            await transaction.commit();
-            return uploadedFiles;
-        } catch (error) {
-            await transaction.rollback();
-            console.error('Media upload error:', error);
-            throw error;
-        }
     },
 
 
@@ -125,32 +132,32 @@ const MediaController =  {
      */
 
     getEntityMedia: async (req: Request, res: Response) => {
-    try{
-        const { entityType, entityId } = req.params;
+        try {
+            const { entityType, entityId } = req.params;
 
-        const mediaLinks = await MediaLink.findAll({
-            where: {
-                entity_type: entityType,
-                entity_id: entityId                   
-            },
-            include: [
+            const mediaLinks = await MediaLink.findAll({
+                where: {
+                    entity_type: entityType,
+                    entity_id: entityId
+                },
+                include: [
                     {
-                    model: Media,
-                    as: 'media',
-                    attributes: ['id', 'file_name', 'file_type', 'size', 'storage_path', 'created_at']
-                }                   
-            ]
-        });
+                        model: Media,
+                        as: 'media',
+                        attributes: ['id', 'file_name', 'file_type', 'size', 'storage_path', 'created_at']
+                    }
+                ]
+            });
 
-        res.status(200).json({
-            type: 'success',
-            data: mediaLinks
-        });
+            res.status(200).json({
+                type: 'success',
+                data: mediaLinks
+            });
 
-    } catch (error) {
-        console.error('Get entity media error:', error);
-        res.status(500).json({ type: 'error', message: 'server_error' });
-    }
+        } catch (error) {
+            console.error('Get entity media error:', error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
     },
 
 
@@ -169,7 +176,7 @@ const MediaController =  {
             if (!media) {
                 res.status(404).json({
                     type: 'error',
-                    message: 'record_not_found'
+                    message: 'media_not_found'
                 });
                 return;
             }
@@ -190,7 +197,6 @@ const MediaController =  {
                 transaction
             });
 
-
             // Delete Media record
             await media.destroy({ transaction });
 
@@ -198,8 +204,9 @@ const MediaController =  {
 
             res.status(200).json({
                 type: 'success',
-                message: 'done'
+                message: 'media_deleted'
             });
+
         } catch (error) {
             await transaction.rollback();
             console.error('Delete media error:', error);
