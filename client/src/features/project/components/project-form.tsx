@@ -8,6 +8,8 @@ import { SelectInput } from "../../../components/widgets/select-input";
 import { useAssitanceSelect } from "../hooks/useAssitanceSelect";
 import { useCollaboratorSelect } from "../hooks/useCollaboratorSelect";
 import { useProject } from "../hooks/useProject";
+import { useProjectImage } from "../hooks/useProjectImage";
+import { getFileIcon } from "../../../utils/fileIcons";
 
 interface ProjectFormProps {
     id: number | any,
@@ -17,24 +19,11 @@ interface ProjectFormProps {
 
 const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
 
-    const {
-        selectedEnumerators,
-        availableEnumerators,
-        handleAddEnumerator,
-        handleRemoveEnumerator,
-        handleClearAllEnumerators,
-        collaborators,
-        selectedCollaborator,
-        handleSelectCollaborator
-    } = useCollaboratorSelect();
-
-    const {selectedAssistance, availableAssisOptions, handleAddAssistance, handleRemoveAssistance, handleClearAllAssistance} = useAssitanceSelect();
-    
+    const {selectedEnumerators, availableEnumerators, handleAddEnumerator, handleRemoveEnumerator, handleClearAllEnumerators, collaborators, selectedCollaborator, handleSelectCollaborator } = useCollaboratorSelect();
+    const {selectedAssistance, availableAssisOptions, handleAddAssistance, handleRemoveAssistance, handleClearAllAssistance} = useAssitanceSelect()
     const {errors, projectForm, handleChange, handleSubmit, updateSelectedMembers, updateSelectedAssitance, handleView} = useProject();
+    const {isDragging, uploadedFiles, setUploadedFiles, handleFileChange, handleDragOver, handleDragLeave, handleDrop, handleRemoveFile, formatFileSize } = useProjectImage();
 
-    // File upload state
-    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-    const [isDragging, setIsDragging] = useState(false);
 
     useEffect(() => {
         const handleFetch = async () => {
@@ -54,110 +43,18 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
         updateSelectedAssitance(selectedAssistance);
     }, [selectedAssistance]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        processFiles(files);
-        // Reset input
-        e.target.value = '';
-    };
 
-    const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-    };
 
-    const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-    };
 
-    const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
 
-        const files = Array.from(e.dataTransfer.files);
-        processFiles(files);
-    };
-
-    const processFiles = (files: File[]) => {
-        if (files.length === 0) return;
-
-        // Validate each file
-        const validFiles: File[] = [];
-        
-        for (const file of files) {
-            // Check file size (10MB max)
-            if (file.size > 10 * 1024 * 1024) {
-                alert(`${file.name} is too large. Maximum file size is 10MB.`);
-                continue;
-            }
-
-            // Check if file already exists
-            if (uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
-                alert(`${file.name} is already uploaded.`);
-                continue;
-            }
-
-            validFiles.push(file);
-        }
-
-        if (validFiles.length > 0) {
-            setUploadedFiles(prev => [...prev, ...validFiles]);
-        }
-    };
-
-    const handleRemoveFile = (index: number) => {
-        setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-    };
-
-    const getFileIcon = (fileName: string) => {
-        const ext = fileName.split('.').pop()?.toLowerCase();
-        
-        // Image files
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext || '')) {
-            return '🖼️';
-        }
-        // PDF
-        if (ext === 'pdf') {
-            return '📄';
-        }
-        // Word documents
-        if (['doc', 'docx'].includes(ext || '')) {
-            return '📝';
-        }
-        // Excel
-        if (['xls', 'xlsx'].includes(ext || '')) {
-            return '📊';
-        }
-        // PowerPoint
-        if (['ppt', 'pptx'].includes(ext || '')) {
-            return '📽️';
-        }
-        // Text files
-        if (['txt', 'csv'].includes(ext || '')) {
-            return '📃';
-        }
-        // Default
-        return '📎';
-    };
-
-    const formatFileSize = (bytes: number): string => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-    };
 
     const handleValidate = async () => {
-        const isValid = await handleSubmit(id);
+        console.log("Images --> ", uploadedFiles);
+        // const isValid = await handleSubmit(id);
         // const isValid = await handleSubmit(id, uploadedFiles);
-        if(isValid){
-            onSuccess();
-        }
+        // if(isValid){
+        //     onSuccess();
+        // }
     }
     
     
@@ -348,11 +245,11 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
             </div>
 
 
-            {/* File Uploader - Images & Documents 
+            {/* File Uploader - Images & Documents */}
                 <div className="grid gap-2 mt-8">
-                    <Label htmlFor="project_files" required={false}>Project Files</Label>*/}
+                    <Label htmlFor="project_files" required={false}>Project Files</Label>
                     
-                    {/* Upload Zone 
+                    {/* Upload Zone */}
                     <label 
                         htmlFor="project_files"
                         onDragOver={handleDragOver}
@@ -399,9 +296,9 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                             multiple
                             onChange={handleFileChange}
                         />
-                    </label>*/}
+                    </label>
 
-                    {/* Uploaded Files List 
+                    {/* Uploaded Files List */}
                     {uploadedFiles.length > 0 && (
                         <div className="mt-3 space-y-4 py-2 bg-gray-50 border-gray-200 border-1 rounded-md">
                             <div className="flex mt-2 px-2 items-center justify-between">
@@ -427,7 +324,11 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                                     >
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
                                             <span className="text-2xl flex-shrink-0">
-                                                {getFileIcon(file.name)}
+                                                <img 
+                                                    src={getFileIcon(file.name)} 
+                                                    alt={`${file.name} icon`}
+                                                    className="w-12 h-12 object-contain"
+                                                    />
                                             </span>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-medium text-gray-900 truncate">
@@ -462,7 +363,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                             </div>
                         </div>
                     )}
-                </div>*/}
+                </div>
 
             <div className="border-t-1 border-gray-200 mt-8">
                 <div className="my-4 flex gap-4 justify-end">
