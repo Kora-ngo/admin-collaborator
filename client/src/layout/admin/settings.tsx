@@ -4,12 +4,8 @@ import SettingOrganisation from "../admin/setting-modules/setting-organisation";
 import SettingNotifications from "./setting-modules/setting-notification";
 import SettingDataPrivacy from "./setting-modules/setting-data-privacy";
 import SettingSubscription from "./setting-modules/setting-subscription";
-// Add your other setting modules below when ready
-// import SettingNotifications from "../admin/setting-modules/setting-notifications";
-// import SettingDataPrivacy from "../admin/setting-modules/setting-data-privacy";
-// import SettingSubscription from "../admin/setting-modules/setting-subscription";
-// import SettingHelpSupport from "../admin/setting-modules/setting-help-support";
-// import SettingLanguage from "../admin/setting-modules/setting-language";
+import SettingHelp from "./setting-modules/setting-help";
+import brandImg from "../../assets/icons/brand.png";
 
 type SettingsTab =
   | "account"
@@ -160,7 +156,7 @@ const Settings = () => {
               </svg>
 
               <span className={`px-2 text-sm ${activeTab === "subscription-billing" ? "text-white" : ""}`}>
-                Subscription & Billing
+                Subscription
               </span>
             </button>
           </li>
@@ -208,6 +204,10 @@ const Settings = () => {
             </button>
           </li>
         </ul>
+        <div className="w-full mt-20 px-4">
+          <img  src={brandImg} className="h-8 opacity-50" />
+          <p className="font-semibold text-sm px-7 text-gray-300">v1.0.1</p>
+        </div>
       </div>
 
       {/* Content */}
@@ -221,10 +221,7 @@ const Settings = () => {
         {activeTab === "notifications" && <SettingNotifications />}
         {activeTab === "data-privacy" && <SettingDataPrivacy />}
         {activeTab === "subscription-billing" && <SettingSubscription /> }
-        {activeTab === "help-support" && (
-          <div className="text-gray-600">Help & support resources coming soon...</div>
-          // <SettingHelpSupport />
-        )}
+        {activeTab === "help-support" && <SettingHelp />}
         {activeTab === "language" && (
           <div className="text-gray-600">Language preferences coming soon...</div>
           // <SettingLanguage />

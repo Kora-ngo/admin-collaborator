@@ -44,8 +44,8 @@ function SelectInput({
           bg-transparent outline-none appearance-none
           border 
           ${hasError 
-            ? "border-gray-300 focus-visible:ring-primary/30 focus:ring-4 focus:ring-blue-100" 
-            : "border-gray-300 focus-visible:ring-primary/30 focus:ring-4 focus:ring-blue-100"
+            ? "border-gray-300 focus-visible:ring-primary/30 focus:ring-1 focus:ring-blue-100" 
+            : "border-gray-300 focus-visible:ring-primary/30 focus:ring-1 focus:ring-blue-100"
           }
           transition-all duration-200
           disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50

@@ -14,6 +14,7 @@ class Project extends Model<ProjectAttributes, ProjectCreationAttributes>
     public end_date?: Date;
     public target_families?: number;
     public created_at!: Date;
+    public updated_at!: Date;
 }
 
 const ProjectModel = Project.init({
@@ -53,6 +54,10 @@ const ProjectModel = Project.init({
     created_at: {
         type: DataTypes.DATE,
         allowNull: false,
+        defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+        type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     },
 }, {

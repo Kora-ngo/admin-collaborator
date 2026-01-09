@@ -1,5 +1,7 @@
 import AssistanceModel from "./Assistance.js";
 import AssistanceTypeModel from "./AssistanceType.js";
+import Media from "./media.js";
+import MediaLink from "./mediaLink.js";
 import MembershipModel from "./Membership.js";
 import OrganisationModel from "./Organisation.js";
 import ProjectModel from "./project.js";
@@ -95,6 +97,59 @@ AssistanceModel.hasMany(ProjectAssistanceModel, {
 });
 
 
+
+
+// MEDIA -- MEDIA_LINK  ------------------------->
+
+// Media → Organisation
+Media.belongsTo(OrganisationModel, {
+    foreignKey: 'organisation_id',
+    as: 'organization'
+});
+
+// Media → Uploader (Membership)
+Media.belongsTo(MembershipModel, {
+    foreignKey: 'uploaded_by_membership_id',
+    as: 'uploader'
+});
+
+// MediaLink → Media
+MediaLink.belongsTo(Media, {
+    foreignKey: 'media_id',
+    as: 'media'
+});
+
+Media.hasMany(MediaLink, {
+    foreignKey: 'media_id',
+    as: 'links'
+});
+
+
+
+
+
+
+// Polymorphic: MediaLink points to any entity
+MediaLink.belongsTo(ProjectModel, {
+    foreignKey: 'entity_id',
+    constraints: false,
+    scope: {
+        entity_type: 'project'
+    },
+    as: 'project'
+});
+
+ProjectModel.hasMany(MediaLink, {
+    foreignKey: 'entity_id',
+    constraints: false,
+    scope: {
+        entity_type: 'project'
+    },
+    as: 'mediaLinks'
+});
+
+
+
 export {
     AssistanceModel,
     AssistanceTypeModel,
@@ -107,4 +162,8 @@ export {
     ProjectModel,
     ProjectMemberModel,
     ProjectAssistanceModel,
+
+
+    Media,
+    MediaLink,
 };

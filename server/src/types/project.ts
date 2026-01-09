@@ -9,6 +9,8 @@ export interface ProjectAttributes {
     end_date?: Date;
     target_families?: number;
     created_at: Date;
+    updated_at: Date;
+
 }
 
 export type ProjectCreationAttributes = Omit<ProjectAttributes, 'id' | 'created_at'>;
