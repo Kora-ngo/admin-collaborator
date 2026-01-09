@@ -160,7 +160,7 @@ export const useProject = () => {
         filterMode ? filterData(page, filters) : getData(page, searchTerm);
     };
 
-    const handleSubmit = async (id?: number): Promise<boolean> => {
+    const handleSubmit = async (id?: number, files?: File[]): Promise<boolean> => {
         const { hasErrors, errors: validationErrors } = validateProject(projectForm);
 
         if (hasErrors) {
@@ -188,7 +188,7 @@ export const useProject = () => {
             if (id) {
                 result = await updateData(id, submitData);
             } else {
-                result = await createData(submitData);
+                result = await createData(submitData, files);
             }
 
             showToast(result);

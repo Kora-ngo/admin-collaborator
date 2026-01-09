@@ -189,111 +189,111 @@ const ProjectController = {
             const files = req.files as Express.Multer.File[] | undefined;
             const middlewareAuth = req.user;
 
-            console.log("Project - creation - body --> ", body);
+            console.log("Project - creation - body --> ", files);
 
-            if (!body.name || !body.organisation_id || !body.start_date || !body.end_date || !body.selectedMembers?.length) {
-                res.status(400).json({
-                    type: 'error',
-                    message: 'fields_required',
-                });
-                return;
-            }
+            // if (!body.name || !body.organisation_id || !body.start_date || !body.end_date || !body.selectedMembers?.length) {
+            //     res.status(400).json({
+            //         type: 'error',
+            //         message: 'fields_required',
+            //     });
+            //     return;
+            // }
 
 
-                        // Parse selectedMembers and selectedAssistances if they're strings (from FormData)
-            const selectedMembers = typeof body.selectedMembers === 'string' 
-                ? JSON.parse(body.selectedMembers) 
-                : body.selectedMembers;
+            //             // Parse selectedMembers and selectedAssistances if they're strings (from FormData)
+            // const selectedMembers = typeof body.selectedMembers === 'string' 
+            //     ? JSON.parse(body.selectedMembers) 
+            //     : body.selectedMembers;
 
-            const selectedAssistances = typeof body.selectedAssistances === 'string'
-                ? JSON.parse(body.selectedAssistances)
-                : body.selectedAssistances;
+            // const selectedAssistances = typeof body.selectedAssistances === 'string'
+            //     ? JSON.parse(body.selectedAssistances)
+            //     : body.selectedAssistances;
 
-            if (!selectedMembers?.length) {
-                await transaction.rollback();
-                res.status(400).json({
-                    type: 'error',
-                    message: 'members_required',
-                });
-                return;
-            }
+            // if (!selectedMembers?.length) {
+            //     await transaction.rollback();
+            //     res.status(400).json({
+            //         type: 'error',
+            //         message: 'members_required',
+            //     });
+            //     return;
+            // }
 
-            // Check for duplicate project name in the same organisation
-            const existingProject = await ProjectModel.findOne({
-                where: { 
-                    name: body.name, 
-                    organisation_id: body.organisation_id, 
-                    status: { [Op.ne]: 'false' } 
-                }
-            });
+            // // Check for duplicate project name in the same organisation
+            // const existingProject = await ProjectModel.findOne({
+            //     where: { 
+            //         name: body.name, 
+            //         organisation_id: body.organisation_id, 
+            //         status: { [Op.ne]: 'false' } 
+            //     }
+            // });
 
-            if (existingProject) {
-                res.status(409).json({
-                    type: 'error',
-                    message: 'record_already_exists',
-                });
-                return;
-            }
+            // if (existingProject) {
+            //     res.status(409).json({
+            //         type: 'error',
+            //         message: 'record_already_exists',
+            //     });
+            //     return;
+            // }
 
-            // Create project
-            const newProject = await ProjectModel.create({
-                organisation_id: body.organisation_id,
-                membership_id: middlewareAuth?.membershipId!,
-                name: body.name,
-                description: body.description || '',
-                status: 'pending',
-                start_date: body.start_date,
-                end_date: body.end_date,
-                target_families: body.target_families
-            }, {transaction});
+            // // Create project
+            // const newProject = await ProjectModel.create({
+            //     organisation_id: body.organisation_id,
+            //     membership_id: middlewareAuth?.membershipId!,
+            //     name: body.name,
+            //     description: body.description || '',
+            //     status: 'pending',
+            //     start_date: body.start_date,
+            //     end_date: body.end_date,
+            //     target_families: body.target_families
+            // }, {transaction});
 
-            // Add members
-            if (body.selectedMembers?.length > 0) {
-                const membersData = body.selectedMembers.map((m: any) => ({
-                    project_id: newProject.id,
-                    membership_id: m.membership_id,
-                    role_in_project: m.role_in_project
-                }));
-                await ProjectMemberModel.bulkCreate(membersData, {transaction});
-            }
+            // // Add members
+            // if (body.selectedMembers?.length > 0) {
+            //     const membersData = body.selectedMembers.map((m: any) => ({
+            //         project_id: newProject.id,
+            //         membership_id: m.membership_id,
+            //         role_in_project: m.role_in_project
+            //     }));
+            //     await ProjectMemberModel.bulkCreate(membersData, {transaction});
+            // }
 
-            // Add assistances
-            if (body.selectedAssistances?.length > 0) {
-                const assistancesData = body.selectedAssistances.map((a: any) => ({
-                    project_id: newProject.id,
-                    assistance_id: a.assistance_id
-                }));
-                await ProjectAssistanceModel.bulkCreate(assistancesData);
-            }
+            // // Add assistances
+            // if (body.selectedAssistances?.length > 0) {
+            //     const assistancesData = body.selectedAssistances.map((a: any) => ({
+            //         project_id: newProject.id,
+            //         assistance_id: a.assistance_id
+            //     }));
+            //     await ProjectAssistanceModel.bulkCreate(assistancesData);
+            // }
 
-            let uploadedFiles: any[] = [];
-            if (files && files.length > 0) {
-                console.log(`⬆️  Uploading ${files.length} files to Cloudinary...`);
+            // let uploadedFiles: any[] = [];
+            // if (files && files.length > 0) {
+            //     console.log(`⬆️  Uploading ${files.length} files to Cloudinary...`);
 
-                uploadedFiles  = await MediaController.uploadAndLinkFiles(
-                    files,
-                    'project',
-                    newProject.id,
-                    'document',
-                    body.organisation_id,
-                    middlewareAuth?.membershipId || 0,
-                    transaction
-                );
+            //     uploadedFiles  = await MediaController.uploadAndLinkFiles(
+            //         files,
+            //         'project',
+            //         newProject.id,
+            //         'document',
+            //         body.organisation_id,
+            //         middlewareAuth?.membershipId || 0,
+            //         transaction
+            //     );
 
-                console.log(`✓ Uploaded ${uploadedFiles.length} files successfully`);
-            }
+            //     console.log(`✓ Uploaded ${uploadedFiles.length} files successfully`);
+            // }
 
-            await transaction.commit();
-            console.log("✅ Transaction committed successfully");
+            // await transaction.commit();
+            // console.log("✅ Transaction committed successfully");
 
-            res.status(201).json({
-                type: 'success',
-                message: 'done',
-                data: {
-                    project: newProject,
-                    uploadedFiles: uploadedFiles
-                },
-            });
+            // res.status(201).json({
+            //     type: 'success',
+            //     message: 'done',
+            //     data: {
+            //         project: newProject,
+            //         uploadedFiles: uploadedFiles
+            //     },
+            // });
         } catch (error: any) {
             console.error("Project: Create error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });

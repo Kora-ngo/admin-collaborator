@@ -8,7 +8,7 @@ interface ProjectState {
     data: Project[];
     loading: boolean;
     pagination: Pagination | null;
-    createData: (data: any) => Promise<any>;
+    createData: (projectData: any, files?: File[]) => Promise<any>;
     getData: (page?: number, searchTerm?: string) => Promise<any>;
     fetchOneData: (id: number) => Promise<Project>;
     filterData: (page: number, filters: any) => Promise<any>;
@@ -48,12 +48,14 @@ export const useProjectStore = create<ProjectState>((set) => ({
     },
 
 
-      createData: async (projectData) => {
+      createData: async (projectData, files) => {
         try {
             set({ loading: true });
 
 
             // console.log("Data --> ", projectData);
+
+
 
             const response = await axiosInstance.post(endpoint, projectData);
             console.log("Project create:", response.data);
