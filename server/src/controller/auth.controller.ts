@@ -518,7 +518,135 @@ const AuthController = {
 
     resetPassword: async (req: Request, res: Response): Promise<void> => {
         res.status(200).json({ message: 'Password reset successfully' });
+    },
+
+
+
+
+    // Add this method to your AuthController
+
+updateProfile: async (req: Request, res: Response) => {
+    const authUser = req.user;
+
+    if (!authUser || !authUser.userId) {
+        return res.status(401).json({ type: 'error', message: 'unauthorized' });
     }
+
+    const { name, phone, email, password, currentPassword } = req.body;
+
+    // At least one field must be provided
+    if (!name && !phone && !email && !password) {
+        return res.status(400).json({
+            type: 'error',
+            message: 'no_fields_to_update',
+        });
+    }
+
+    const transaction = await sequelize.transaction();
+
+    try {
+        // Fetch current user
+        const userData = await UserModel.findByPk(authUser.userId);
+        const user = userData?.dataValues;
+
+        if (!user) {
+            await transaction.rollback();
+            return res.status(404).json({
+                type: 'error',
+                message: 'user_not_found',
+            });
+        }
+
+        if (user.status !== 'true') {
+            await transaction.rollback();
+            return res.status(403).json({
+                type: 'error',
+                message: 'user_inactive',
+            });
+        }
+
+        // If changing email or password → require current password
+        if ((email && email !== user.email) || password) {
+            if (!currentPassword) {
+                await transaction.rollback();
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'current_password_required',
+                });
+            }
+
+            const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+            if (!isCurrentPasswordValid) {
+                await transaction.rollback();
+                return res.status(401).json({
+                    type: 'error',
+                    message: 'invalid_current_password',
+                });
+            }
+        }
+
+        // Validate new email if provided
+        if (email && email !== user.email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                await transaction.rollback();
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'invalid_email_format',
+                });
+            }
+
+            // Check if new email is already taken
+            const emailTaken = await UserModel.findOne({
+                where: { email: email.toLowerCase().trim() },
+            });
+
+            if (emailTaken) {
+                await transaction.rollback();
+                return res.status(409).json({
+                    type: 'error',
+                    message: 'email_already_in_use',
+                });
+            }
+        }
+
+        // Prepare update data
+        const updates: any = {};
+
+        if (name) updates.name = name.trim();
+        if (phone !== undefined) updates.phone = phone?.trim() || null;
+        if (email) updates.email = email.toLowerCase().trim();
+        if (password) updates.password = await bcrypt.hash(password, 10);
+
+
+        console.log('Updates --> ', updates);
+
+        // Update user
+        await UserModel.update(updates, {
+            where: { id: authUser.userId },
+            transaction,
+        });
+
+        // Fetch updated user (without password)
+        const updatedUserData = await UserModel.findByPk(authUser.userId, {
+            attributes: ['id', 'uid', 'name', 'email', 'phone'],
+        });
+        const updatedUser = updatedUserData?.dataValues;
+
+        await transaction.commit();
+
+        return res.status(200).json({
+            type: 'success',
+            message: 'done',
+            user: updatedUser,
+        });
+
+    } catch (error: any) {
+        await transaction.rollback();
+        console.error("Update profile error:", error);
+        res.status(500).json({ type: 'error', message: 'server_error' });
+    }
+},
 
 
 

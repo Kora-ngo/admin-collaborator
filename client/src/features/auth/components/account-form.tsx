@@ -11,7 +11,15 @@ interface AccountFormProps {
 const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
 
     const [enablePassword, setEnablePassword] = useState(false);
-    const {userForm, errors, handleChange, handleUserData} = useAdminResgister();
+    const {userForm, errors, handleChange, handleUpdateProfile} = useAdminResgister();
+
+
+    const handleSubmit = async () => {
+        const isValide = await handleUpdateProfile();
+        if(isValide){
+            onToggle();
+        }
+    }
 
     const handleCancel = () => {
         // Reste to the default data
@@ -131,7 +139,7 @@ const AccountForm: React.FC<AccountFormProps> = ({onToggle}) => {
                 <div className="flex justify-end space-x-4 mt-auto pt-6">
                     <Button variant="outline" onClick={() => setEnablePassword(!enablePassword)}>{enablePassword ? "Reset Password" : "Change Password"}</Button>
                     <Button variant="ghost" onClick={handleCancel}>Cancel</Button>
-                    <Button onClick={handleUserData}>Update Profile</Button>
+                    <Button onClick={handleSubmit}>Update Profile</Button>
                 </div>
         
         </div>

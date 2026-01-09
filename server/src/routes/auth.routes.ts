@@ -31,4 +31,7 @@ router.post('/reset-password', AuthController.resetPassword);
 // GET /api/auth/me
 router.get('/me', verifyToken, AuthController.getCurrentUser);
 
+
+router.put('/profile', verifyToken, AuthController.updateProfile);
+
 export default router;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { validateOrganisation, validateUser } from "../utils/validateUser";
+import { validateOrganisation, validateProfileUpdate, validateUser } from "../utils/validateUser";
 import { useAuthStore } from "../store/authStore";
 import { useToastStore } from "../../../store/toastStore";
 import type { ToastMessage } from "../../../types/toastMessage";
@@ -7,7 +7,7 @@ import type { ToastMessage } from "../../../types/toastMessage";
 export const useAdminResgister = () => {
 
     const resgister = useAuthStore((state) => state.register);
-    const {user} = useAuthStore();
+    const {user, updateProfile} = useAuthStore();
     const showToast = useToastStore((state) => state.showToast);
 
 
@@ -100,21 +100,29 @@ export const useAdminResgister = () => {
     };
 
 
-    const handleUserData = (): Boolean => {
-        const {hasErrors, formErrors} = validateUser(userForm);
+    const handleUpdateProfile = async (): Promise<boolean> => {
+        console.log("Form submitted --> ", userForm);
+
+        const { hasErrors, formErrors, data } = validateProfileUpdate(userForm);
         setError(formErrors);
-        if(!hasErrors){
 
-            if(user!.id){
-                console.log("Update user --> ", userForm);
-                return true;
-            }
-
-            return true;
+        if (hasErrors) {
+            console.log("Validation errors:", formErrors);
+            return false;
         }
-        return false;
-        
-    } 
+
+        // Call store to update profile
+        const result = await updateProfile(data);
+        showToast(result);
+
+        if (result.type === "success") {
+            console.log("Profile updated successfully");
+            return true;
+        } else {
+            console.log("Update failed:", result);
+            return false;
+        }
+    };
 
 
     const handleOrgData = async (): Promise<Boolean> => {
@@ -148,7 +156,7 @@ export const useAdminResgister = () => {
         handleChange,
         handleOrgChange,
         
-        handleUserData,
+        handleUpdateProfile,
         handleOrgData
     }
 

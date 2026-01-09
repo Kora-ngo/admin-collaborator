@@ -353,7 +353,7 @@ const User = () => {
                         </>
                         )}
 
-                        {filters.status === "false" && (
+                        {filterMode && filters.status === "false" && (
                         <div className="col-span-1 sm:col-span-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                             <p className="text-sm text-yellow-800 font-medium">
                                 <span className="font-bold">Notice:</span> Deleted records will be permanently removed after 7 days.
