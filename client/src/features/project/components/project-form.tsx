@@ -10,6 +10,7 @@ import { useCollaboratorSelect } from "../hooks/useCollaboratorSelect";
 import { useProject } from "../hooks/useProject";
 import { useProjectImage } from "../hooks/useProjectImage";
 import { getFileIcon } from "../../../utils/fileIcons";
+import { useProjectStore } from "../store/projectStore";
 
 interface ProjectFormProps {
     id: number | any,
@@ -23,6 +24,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
     const {selectedAssistance, availableAssisOptions, handleAddAssistance, handleRemoveAssistance, handleClearAllAssistance} = useAssitanceSelect()
     const {errors, projectForm, handleChange, handleSubmit, updateSelectedMembers, updateSelectedAssitance, handleView} = useProject();
     const {isDragging, uploadedFiles, setUploadedFiles, handleFileChange, handleDragOver, handleDragLeave, handleDrop, handleRemoveFile, formatFileSize } = useProjectImage();
+    const {loading} = useProjectStore();
 
 
     useEffect(() => {
@@ -367,7 +369,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
 
             <div className="border-t-1 border-gray-200 mt-8">
                 <div className="my-4 flex gap-4 justify-end">
-                    <Button onClick={handleValidate}>
+                    <Button onClick={handleValidate} loading={loading}>
                         {id ? "Update" : "Save"}
                     </Button>
                 </div>

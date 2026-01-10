@@ -47,7 +47,17 @@ export const messages: MessageItem[] = [
     { key: "record_already_exists", message: "This record already exists." },
     { key: "done", message: "Operation completed successfully." },
     { key: "foreign_key_constraint", message: "This item is currently in use and cannot be deleted." },
-    { key: "search_query_required", message: "Please enter a search term." }
+    { key: "search_query_required", message: "Please enter a search term." },
+
+
+    // Global / System Errors ---------------------------------------->
+    { key: "file_too_large", message: "The uploaded file is too large." },
+    { key: "database_connection_error", message: "Service is temporarily unavailable. Please try again later." },
+    { key: "request_timeout", message: "The request took too long. Please try again." },
+    { key: "invalid_or_expired_token", message: "Your session has expired. Please log in again." },
+    { key: "internal_server_error", message: "Something went wrong. Please try again." },
+    { key: "unexpected_error", message: "An unexpected error occurred. Please try again." },
+
 
 
 

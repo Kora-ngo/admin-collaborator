@@ -272,11 +272,13 @@ const ProjectController = {
                     project_id: newProject.id,
                     assistance_id: a.assistance_id
                 }));
-                await ProjectAssistanceModel.bulkCreate(assistancesData);
+                await ProjectAssistanceModel.bulkCreate(assistancesData, {transaction});
             }
 
             let uploadedFiles: any[] = [];
             if (body.files && body.files.length > 0) {
+
+                console.log("FILES --> ");
 
                 // Convert base64 files to buffer format
                 const processedFiles = body.files.map((fileData: any) => {
@@ -290,8 +292,9 @@ const ProjectController = {
                     };
                 });
 
+
                 uploadedFiles  = await MediaController.uploadAndLinkFiles(
-                    processedFiles as any,
+                    processedFiles as any[],
                     'project',
                     newProject.id,
                     'document',

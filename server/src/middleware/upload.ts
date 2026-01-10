@@ -3,6 +3,8 @@ import multer from "multer";
 const storage = multer.memoryStorage();
 
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    console.log("Middleware - upload Entrance --> ")
+
     const allowedTypes = [
         // Images
         'image/jpeg',

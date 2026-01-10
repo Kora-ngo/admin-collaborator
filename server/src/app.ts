@@ -1,6 +1,7 @@
 import  express, {type Request, type Response, type NextFunction} from "express";
 import routes from "./routes/index.js";
 import cors from 'cors';
+import { handleGlobalError } from "./utils/handleGlobalError.js";
 
 const app = express();
 
@@ -12,8 +13,10 @@ app.use(cors());
 app.use(express.json());
 
 
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.log(req.path, req.method);
+    // Handle everything else with the utility
+    handleGlobalError(err, req, res);
     next();
 });
 
