@@ -49,12 +49,12 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
 
 
     const handleValidate = async () => {
-        console.log("Images --> ", uploadedFiles);
+        // console.log("Images --> ", uploadedFiles);
         // const isValid = await handleSubmit(id);
-        // const isValid = await handleSubmit(id, uploadedFiles);
-        // if(isValid){
-        //     onSuccess();
-        // }
+        const isValid = await handleSubmit(id, uploadedFiles);
+        if(isValid){
+            onSuccess();
+        }
     }
     
     

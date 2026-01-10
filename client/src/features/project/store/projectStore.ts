@@ -3,6 +3,7 @@ import type { Pagination } from "../../../types/pagination";
 import type { Project } from "../../../types/project";
 import axiosInstance from "../../../utils/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
+import { fileToBase64 } from "../../../utils/fileToBase64";
 
 interface ProjectState {
     data: Project[];
@@ -52,12 +53,22 @@ export const useProjectStore = create<ProjectState>((set) => ({
         try {
             set({ loading: true });
 
+            // Convert files to base64 if any
+            let fileData: any[] = [];
+            if(files && files.length > 0){
+                console.log(`Converting ${files.length} files to base64`);
+                fileData = await Promise.all(
+                    files.map(file => fileToBase64(file))
+                )
+            }
 
-            // console.log("Data --> ", projectData);
+            // send as regular JSON with base64 files
+            const data: any = {
+                ...projectData,
+                files: fileData
+            };
 
-
-
-            const response = await axiosInstance.post(endpoint, projectData);
+            const response = await axiosInstance.post(endpoint, data);
             console.log("Project create:", response.data);
             return response.data;
         } catch (error: any) {
