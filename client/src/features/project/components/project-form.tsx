@@ -246,8 +246,11 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
    
             </div>
 
-
             {/* File Uploader - Images & Documents */}
+            {
+                
+                !id &&
+                (
                 <div className="grid gap-2 mt-8">
                     <Label htmlFor="project_files" required={false}>Project Files</Label>
                     
@@ -366,6 +369,8 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                         </div>
                     )}
                 </div>
+                )
+            }
 
             <div className="border-t-1 border-gray-200 mt-8">
                 <div className="my-4 flex gap-4 justify-end">

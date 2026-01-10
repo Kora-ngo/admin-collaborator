@@ -112,6 +112,20 @@ export default function ProjectActionPopup({
           },
         ];
 
+
+        case "suspended":
+        return [
+          {
+            value: "true",
+            label: "Resume the project",
+            description: "Get back to where you ended.",
+            color: "text-blue-600",
+            bgColor: "bg-blue-50",
+            borderColor: "border-blue-600",
+          },
+        ];
+
+
       default:
         return [];
     }

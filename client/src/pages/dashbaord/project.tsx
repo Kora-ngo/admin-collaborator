@@ -19,6 +19,7 @@ import { useProject } from "../../features/project/hooks/useProject";
 import { SelectInput } from "../../components/widgets/select-input";
 import ProjectView from "../../features/project/components/project-view";
 import ProjectActionPopup from "../../features/project/components/ProjectActionPopup";
+import ProjectViewMedia from "../../features/project/components/project-view-media";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
@@ -37,6 +38,10 @@ const Projects = () => {
         handleStatusUpdate,
         handleView
     } = useProject();
+
+    const [mediaPreviewOpen, setMediaPreviewOpen] = useState(false);
+    const [selectedMedia, setSelectedMedia] = useState<any[]>([]);
+
 
     const [actionPopup, setActionPopup] = useState(false);
     const [deletePopup, setDeletePopUp] = useState(false);
@@ -64,6 +69,18 @@ const Projects = () => {
             setSelectedRecord(null);
             await refreshCurrentPage(pagination!.page);
         }
+    };
+
+    const openMediaPreview = (project: any) => {
+        if (project.mediaLinks?.length > 0) {
+            setSelectedMedia(project.mediaLinks);
+            setMediaPreviewOpen(true);
+        }
+    };
+
+    const closeMediaPreview = () => {
+        setMediaPreviewOpen(false);
+        setSelectedMedia([]);
     };
 
     const openProjectModal = async (mode: 'add' | 'edit' | 'view', id?: number) => {
@@ -201,6 +218,17 @@ const Projects = () => {
                             <ActionIcon name="setting"
                                 onClick={() => openActionPopup(row)}
                             />
+                        }
+
+                        {
+                            row.mediaLinks?.length > 0 ? (
+                                    <ActionIcon
+                                        name="attach"
+                                        onClick={() => openMediaPreview(row)}
+                                    />
+                                ) : (
+                                    <></>
+                                )
                         }
                         
                     </div>
@@ -403,6 +431,19 @@ const Projects = () => {
                             id={selectedRecord != null ? selectedRecord!.id! : 0}
                         />
                     )
+                }
+            />
+
+
+            {/* Media Preview Modal */}
+            <Modal
+                isOpen={mediaPreviewOpen}
+                onClose={closeMediaPreview}
+                title={`Media Attachments - ${selectedRecord?.name || "Project"}`}
+                children={
+                    <ProjectViewMedia 
+                        mediaLinks={selectedMedia} // from your selectedMedia state
+                    />
                 }
             />
 
