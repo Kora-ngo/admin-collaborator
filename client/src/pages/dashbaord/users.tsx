@@ -25,6 +25,7 @@ type ModalMode = 'add' | 'edit' | 'view' | null;
 const User = () => {
     const {data, getData, pagination, loading} = useMembershipStore();
     const userData = useAuthStore((state) => state.user);
+    const {role} = useAuthStore();
 
     const {
         filters,
@@ -82,16 +83,29 @@ const User = () => {
     }, [getData]);
 
 
-    const membershipColumns: TableColumn[] = [
+    const membershipColumns: (TableColumn | null)[] = [
     { key: "id", label: "ID", visibleOn: "always",  render: (_, globalIndex) => formatCode("MB", globalIndex) },
     { key: "user", label: "Member", visibleOn: "always", render: (row) => row.user.name },
-    { key: "email", label: "Email", visibleOn: "md", render: (row) => row.user.email },
+
+    role === "admin" ?
+    { key: "email", label: "Email", visibleOn: "md", render: (row) => row.user.email }:
+    { key: "assigned_project", label: "Assigned project(s)", visibleOn: "md", render: () => "0 Project" },
+
     { key: "role", label: "Role", visibleOn: "sm", render: (row) => {
         const roleText = row.role === "admin" ? "Admin" : row.role === "collaborator" ? "Collaborator" : "Enumerator";
         const color = row.status === "false" ? "red" : row.role === "admin" ? "orange" : row.role === "collaborator" ? "blue" : "yellow";
         return <StatusBadge text={userData?.id === row.user_id ? `${roleText} - You` : roleText} color={color} />;
     }},
-    { key: "date_of", label: "Created At", visibleOn: "lg", render: (row) => formatDate(row.date_of, false) },
+
+    role === "admin" ?
+    { key: "date_of", label: "Created At", visibleOn: "lg", render: (row) => formatDate(row.date_of, false) }:
+    { key: "families_registered", label: "Families registered", visibleOn: "lg", render: () => "0 Families" },
+
+
+    role === "collaborator" ?
+    { key: "deliveries_logged", label: "Deliveries logged", visibleOn: "lg", render: () => "0 Deliveries" }:
+    null,
+
     { key: "status", label: "Status", visibleOn: "always", render: (row) => {
         if(row.status === "false"){
             return <StatusBadge text="Deleted" color="red" />;
@@ -132,37 +146,51 @@ const User = () => {
                         })
                         openMembershipModal('edit', row.id)}}
                 /> */}
+
                 <ActionIcon name="view"
                     onClick={() => {
-                        setSelectedRecord({
-                            id: row.id,
-                            userName: row.user.name,
-                            status: row.status
-                        });
-                        openMembershipModal('view', row.id)}}
+                    setSelectedRecord({
+                        id: row.id,
+                        userName: row.user.name,
+                        status: row.status
+                    });
+                    openMembershipModal('view', row.id)}}
                 />
 
-                <ActionIcon name={row.status === "blocked" ? "unlock" : "lock"}
-                    onClick={() => {
-                        setSelectedRecord({
-                            id: row.id,
-                            userName: row.user.name,
-                            status: row.status
-                        });
-                        setDisableUserPopup(true);
-                    }}
-                />
-                
-                <ActionIcon name="trash"
-                    onClick={() => {
-                        setSelectedRecord({
-                            id: row.id,
-                            userName: row.user.name,
-                            status: row.status
-                        });
-                        setDeletePopUp(true);
-                    }}
-                />
+                {
+                    role === "admin" ?
+                    (
+                        <ActionIcon name={row.status === "blocked" ? "unlock" : "lock"}
+                            onClick={() => {
+                                setSelectedRecord({
+                                    id: row.id,
+                                    userName: row.user.name,
+                                    status: row.status
+                                });
+                                setDisableUserPopup(true);
+                            }}
+                        />
+                    )  :
+                    (<ActionIcon name="assign" onClick={() => {}} />)
+                }
+
+
+                {
+                    role === "admin" ?
+                    (
+                        <ActionIcon name="trash"
+                            onClick={() => {
+                                setSelectedRecord({
+                                    id: row.id,
+                                    userName: row.user.name,
+                                    status: row.status
+                                });
+                                setDeletePopUp(true);
+                            }}
+                        />
+                    )  :
+                    (<ActionIcon name="delivery" onClick={() => {}} />)
+                }
              </div>
           )
     } },
@@ -186,10 +214,15 @@ const User = () => {
                         <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                        <ActionButton onClick={() => refreshCurrentPage(pagination?.page!)} />
-                        <Button className="w-full" onClick={() => openMembershipModal('add')}>
-                            New User
-                        </Button>
+                        <ActionButton className="h-10" onClick={() => refreshCurrentPage(pagination?.page!)} />
+                        {
+                            role === "admin" && (
+                                <Button className="w-full" onClick={() => openMembershipModal('add')}>
+                                    New User
+                                </Button>
+                            )
+                        }
+                        
                     </div>
                 </div>
 

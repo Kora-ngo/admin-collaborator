@@ -1,6 +1,7 @@
 import { Router } from "express";
 import MembershipController from "../controller/membership.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
+import { requireRole } from "../middleware/permission.js";
 
 const router = Router();
 
@@ -14,11 +15,11 @@ router.get('/:id', verifyToken, MembershipController.fetchOne);
 
 router.get('/', verifyToken, MembershipController.fetchAll);
 
-router.post('/', verifyToken, MembershipController.create);
+router.post('/', requireRole('admin'), verifyToken, MembershipController.create);
 
-router.put('/:id', verifyToken, MembershipController.update);
+router.put('/:id', verifyToken, requireRole('admin'), MembershipController.update);
 
-router.put('/toggle/:id', verifyToken, MembershipController.toggleStatus);
+router.put('/toggle/:id', verifyToken, requireRole('admin'), MembershipController.toggleStatus);
 
 
 export default router;

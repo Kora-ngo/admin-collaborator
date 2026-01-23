@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import {MembershipModel, OrganisationModel} from "../models/index.js"
+import {MembershipModel, OrganisationModel, ProjectMemberModel} from "../models/index.js"
 import { cleanupOldDeleted } from "../utils/cleanupOldDeleted.js"
 import UserModel from "../models/User.js";
 import { Op } from 'sequelize';
@@ -13,60 +13,94 @@ const MembershipController = {
         try {
             // await cleanupOldDeleted(MembershipModel, 7)
             const authUser = req.user;
+            const userRole = authUser?.role;
+            const membershipId = authUser?.membershipId;
 
             const status = req.query.status as string;
-
             const currentUserId = authUser?.userId;
 
-            console.log("Current ID --> ", currentUserId);
-            console.log("Status from body --> ", status);
+            // console.log("Current ID --> ", currentUserId);
+            // console.log("User Role --> ", userRole);
+            // console.log("Status from body --> ", status);
 
             const whereClause: any = {};
 
             if (currentUserId) {
-                whereClause.user_id = { [Op.ne]: currentUserId }; // Not Equal
+                whereClause.user_id = { [Op.ne]: currentUserId }; // Exclude current user
             }
 
-            // Check if status is "all"
-            if (status === "all") {
-                // Fetch all except 'false' and 'blocked', no pagination
-                whereClause.status = { [Op.notIn]: ['false', 'blocked'] };
-                whereClause.role = { [Op.ne]: ['admin'] };
+            // === ROLE-BASED LOGIC ===
+            
+            if (userRole === 'collaborator') {
+            // Get all project IDs where this collaborator is assigned
+            const collaboratorProjects = await ProjectMemberModel.findAll({
+                where: { membership_id: membershipId },
+                attributes: ['project_id'],
+                raw: true
+            });
 
-                const rows = await MembershipModel.findAll({
-                    where: whereClause,
-                    order: [['date_of', 'DESC']],
-                    include: [
-                        {
-                            model: UserModel,
-                            as: 'user',
-                            attributes: ['id', 'name', 'email', 'phone', 'status'],
-                            required: true
-                        },
-                        {
-                            model: OrganisationModel,
-                            as: 'organization',
-                            attributes: ['id', 'name'],
-                            required: true
-                        }
-                    ]
-                });
+            const projectIds = collaboratorProjects.map(pm => pm.project_id);
 
+            if (projectIds.length === 0) {
+                // Collaborator is not assigned to any project
                 return res.status(200).json({
                     type: 'success',
-                    data: rows,
-                    pagination: null
+                    data: [],
+                    pagination: status === "all" ? null : {
+                        total: 0,
+                        page: 1,
+                        limit: 5,
+                        totalPages: 0,
+                        hasNext: false,
+                        hasPrev: false
+                    }
                 });
             }
 
-            // Default behavior: paginated with status ['true', 'blocked']
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 5;
-            const offset = (page - 1) * limit;
+            // Get all enumerators in those projects
+            const enumeratorsInProjects = await ProjectMemberModel.findAll({
+                where: {
+                    project_id: { [Op.in]: projectIds },
+                    role_in_project: 'enumerator'
+                },
+                attributes: ['membership_id'],
+                raw: true
+            });
 
-            whereClause.status = ['true', 'blocked'];
+            const enumeratorMembershipIds = [...new Set(enumeratorsInProjects.map(pm => pm.membership_id))];
 
-            const { count, rows } = await MembershipModel.findAndCountAll({
+            if (enumeratorMembershipIds.length === 0) {
+                // No enumerators found in collaborator's projects
+                return res.status(200).json({
+                    type: 'success',
+                    data: [],
+                    pagination: status === "all" ? null : {
+                        total: 0,
+                        page: 1,
+                        limit: 5,
+                        totalPages: 0,
+                        hasNext: false,
+                        hasPrev: false
+                    }
+                });
+            }
+
+            // Filter to only these enumerator memberships
+            whereClause.id = { [Op.in]: enumeratorMembershipIds };
+            whereClause.role = 'enumerator'; // Extra safety to ensure only enumerators
+        } else {
+            // Admin: exclude admin role from results
+            whereClause.role = { [Op.ne]: 'admin' };
+        }
+
+        // === STATUS HANDLING ===
+
+        // Check if status is "all"
+        if (status === "all") {
+            // Fetch all except 'false' and 'blocked', no pagination
+            whereClause.status = { [Op.notIn]: ['false', 'blocked'] };
+
+            const rows = await MembershipModel.findAll({
                 where: whereClause,
                 order: [['date_of', 'DESC']],
                 include: [
@@ -82,25 +116,59 @@ const MembershipController = {
                         attributes: ['id', 'name'],
                         required: true
                     }
-                ],
-                limit,
-                offset
+                ]
             });
 
-            const totalPages = Math.ceil(count / limit);
-
-            res.status(200).json({
+            return res.status(200).json({
                 type: 'success',
                 data: rows,
-                pagination: {
-                    total: count,
-                    page,
-                    limit,
-                    totalPages,
-                    hasNext: page < totalPages,
-                    hasPrev: page > 1
-                }
+                pagination: null
             });
+        }
+
+        // Default behavior: paginated with status ['true', 'blocked']
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 5;
+        const offset = (page - 1) * limit;
+
+        whereClause.status = ['true', 'blocked'];
+
+        const { count, rows } = await MembershipModel.findAndCountAll({
+            where: whereClause,
+            order: [['date_of', 'DESC']],
+            include: [
+                {
+                    model: UserModel,
+                    as: 'user',
+                    attributes: ['id', 'name', 'email', 'phone', 'status'],
+                    required: true
+                },
+                {
+                    model: OrganisationModel,
+                    as: 'organization',
+                    attributes: ['id', 'name'],
+                    required: true
+                }
+            ],
+            limit,
+            offset
+        });
+
+        const totalPages = Math.ceil(count / limit);
+
+        res.status(200).json({
+            type: 'success',
+            data: rows,
+            pagination: {
+                total: count,
+                page,
+                limit,
+                totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1
+            }
+        });
+
 
         } catch (error) {
             console.error("Membership: Fetch_All error:", error);
@@ -365,8 +433,11 @@ const MembershipController = {
 
 
     search: async (req: Request, res: Response) => {
-        try {
+        const authUser = req.user;
+        const userRole = authUser?.role;
+        const membershipId = authUser?.membershipId;
 
+        try {
             const q = (req.query.q as string)?.trim();
             const page = parseInt(req.query.page as string) || 1;
             const limit = 5;
@@ -381,83 +452,208 @@ const MembershipController = {
 
             const where: any = {
                 status: ['true', 'blocked'],
-            }; 
+            };
+
+            // === ROLE-BASED FILTERING ===
+            if (userRole === 'collaborator') {
+                // Get all project IDs where this collaborator is assigned
+                const collaboratorProjects = await ProjectMemberModel.findAll({
+                    where: { membership_id: membershipId },
+                    attributes: ['project_id'],
+                    raw: true
+                });
+
+                const projectIds = collaboratorProjects.map(pm => pm.project_id);
+
+                if (projectIds.length === 0) {
+                    return res.status(200).json({
+                        type: 'success',
+                        data: [],
+                        pagination: {
+                            total: 0,
+                            page,
+                            limit,
+                            totalPages: 0,
+                            hasNext: false,
+                            hasPrev: false
+                        }
+                    });
+                }
+
+                // Get all enumerators in those projects
+                const enumeratorsInProjects = await ProjectMemberModel.findAll({
+                    where: {
+                        project_id: { [Op.in]: projectIds },
+                        role_in_project: 'enumerator'
+                    },
+                    attributes: ['membership_id'],
+                    raw: true
+                });
+
+                const enumeratorMembershipIds = [...new Set(enumeratorsInProjects.map(pm => pm.membership_id))];
+
+                if (enumeratorMembershipIds.length === 0) {
+                    return res.status(200).json({
+                        type: 'success',
+                        data: [],
+                        pagination: {
+                            total: 0,
+                            page,
+                            limit,
+                            totalPages: 0,
+                            hasNext: false,
+                            hasPrev: false
+                        }
+                    });
+                }
+
+                // Filter to only these enumerator memberships
+                where.id = { [Op.in]: enumeratorMembershipIds };
+                where.role = 'enumerator';
+            } else {
+                // Admin: exclude admin role
+                where.role = { [Op.ne]: 'admin' };
+            }
             
             const { count, rows } = await MembershipModel.findAndCountAll({
-            where,
-            order: [['date_of', 'DESC']],
-            include: [
-                {
-                model: UserModel,
-                as: 'user',
-                attributes: ['id', 'name', 'email', 'phone', 'status' ],
-                where: { name: { [Op.like]: `%${q}%` } },
-                required: true,
-                },
-                {
-                model: OrganisationModel,
-                as: 'organization',
-                attributes: ['id', 'name'],
-                required: true,
-                }
-            ],
-            limit,
-            offset,
+                where,
+                order: [['date_of', 'DESC']],
+                include: [
+                    {
+                        model: UserModel,
+                        as: 'user',
+                        attributes: ['id', 'name', 'email', 'phone', 'status'],
+                        where: { name: { [Op.like]: `%${q}%` } },
+                        required: true,
+                    },
+                    {
+                        model: OrganisationModel,
+                        as: 'organization',
+                        attributes: ['id', 'name'],
+                        required: true,
+                    }
+                ],
+                limit,
+                offset,
             });
 
             const totalPages = Math.ceil(count / limit);
 
             res.status(200).json({
-            type: 'success',
-            data: rows,
-            pagination: {
-                total: count,
-                page,
-                limit,
-                totalPages,
-                hasNext: page < totalPages,
-                hasPrev: page > 1,
-            },
+                type: 'success',
+                data: rows,
+                pagination: {
+                    total: count,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNext: page < totalPages,
+                    hasPrev: page > 1,
+                },
             });
 
-        }catch (error) {
+        } catch (error) {
             console.error("Membership: Search error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
 
     filter: async (req: Request, res: Response) => {
+        const authUser = req.user;
+        const userRole = authUser?.role;
+        const membershipId = authUser?.membershipId;
+
         try {
             const page = parseInt(req.query.page as string) || 1;
             const limit = 5;
             const offset = (page - 1) * limit;
 
             // Filters from query
-            const statusFilter = (req.query.status as string)?.trim(); // "true" | "false" | "blocked" | undefined
+            const statusFilter = (req.query.status as string)?.trim();
             const roleFilter = req.query.role ? (req.query.role as string).trim() : undefined;
             const datePreset = (req.query.datePreset as string)?.trim();
 
             console.log("Role --> ", req.query.role);
             console.log("Status --> ", req.query.status);
+            console.log("User Role --> ", userRole);
 
             const where: any = {};
+
+            // === ROLE-BASED FILTERING ===
+            if (userRole === 'collaborator') {
+                // Get all project IDs where this collaborator is assigned
+                const collaboratorProjects = await ProjectMemberModel.findAll({
+                    where: { membership_id: membershipId },
+                    attributes: ['project_id'],
+                    raw: true
+                });
+
+                const projectIds = collaboratorProjects.map(pm => pm.project_id);
+
+                if (projectIds.length === 0) {
+                    return res.status(200).json({
+                        type: 'success',
+                        data: [],
+                        pagination: {
+                            total: 0,
+                            page,
+                            limit,
+                            totalPages: 0,
+                            hasNext: false,
+                            hasPrev: false
+                        }
+                    });
+                }
+
+                // Get all enumerators in those projects
+                const enumeratorsInProjects = await ProjectMemberModel.findAll({
+                    where: {
+                        project_id: { [Op.in]: projectIds },
+                        role_in_project: 'enumerator'
+                    },
+                    attributes: ['membership_id'],
+                    raw: true
+                });
+
+                const enumeratorMembershipIds = [...new Set(enumeratorsInProjects.map(pm => pm.membership_id))];
+
+                if (enumeratorMembershipIds.length === 0) {
+                    return res.status(200).json({
+                        type: 'success',
+                        data: [],
+                        pagination: {
+                            total: 0,
+                            page,
+                            limit,
+                            totalPages: 0,
+                            hasNext: false,
+                            hasPrev: false
+                        }
+                    });
+                }
+
+                // Filter to only these enumerator memberships
+                where.id = { [Op.in]: enumeratorMembershipIds };
+                where.role = 'enumerator'; // Force enumerator role for collaborators
+            } else {
+                // Admin: apply role filter if provided, otherwise exclude admins
+                if (roleFilter) {
+                    where.role = roleFilter;
+                } else {
+                    where.role = { [Op.ne]: 'admin' };
+                }
+            }
 
             // Handle status filter
             if (statusFilter) {
                 if (statusFilter === "true" || statusFilter === "blocked") {
-                    where.status = statusFilter; // exact match
+                    where.status = statusFilter;
                 } else if (statusFilter === "false") {
                     where.status = 'false';
                 }
-                // If invalid, ignore (or you can return error)
             } else {
                 // Default behavior: show active + blocked
                 where.status = ['true', 'false', 'blocked'];
-            }
-
-            // Role filter (assuming role is string: admin/collaborator/enumerator)
-            if (roleFilter) {
-                where.role = roleFilter;
             }
 
             // Date preset filter
