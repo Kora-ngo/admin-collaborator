@@ -40,7 +40,8 @@ export const useLogin = () => {
         }
 
         const toastMessage: ToastMessage = await login(userData.email, userData.password);
-        if(toastMessage.type === "error")
+        console.log("Use Login --> ", toastMessage);
+        if(toastMessage.type === "warning")
         {
             showToast(toastMessage);
             return;

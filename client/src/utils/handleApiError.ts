@@ -3,7 +3,6 @@ import type { ToastMessage } from "../types/toastMessage";
 export const handleApiError = (err: any): ToastMessage => {
     let message = "An unexpected error occurred.";
 
-    console.log("Errror API handle --> ", err);
 
     if(err.response?.data) {
         message = 
@@ -16,8 +15,10 @@ export const handleApiError = (err: any): ToastMessage => {
         message = err.message || message;
     }
 
+    console.log("Errror API handle --> ", err.response?.data.type);
+
     return {
-        type: "error",
+        type: err.response?.data.type || "error",
         message,
         show: true
     };

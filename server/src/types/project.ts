@@ -1,7 +1,7 @@
 export interface ProjectAttributes {
     id: number;
     organisation_id: number;
-    membership_id: number;
+    created_by: number;
     name: string;
     description?: string;
     status: 'true' | 'false' | 'pending' | 'ongoing' | 'done' | 'suspended' | 'overdue';

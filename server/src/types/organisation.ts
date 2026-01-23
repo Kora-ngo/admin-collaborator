@@ -7,6 +7,7 @@ export interface OrganisationAttributes {
   region: string | null;
   email: string;
   phone: string | null;
+  created_by: number;
   status: string;
   date_of?: Date;
   update_of?: Date;

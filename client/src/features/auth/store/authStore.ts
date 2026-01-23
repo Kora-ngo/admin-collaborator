@@ -5,7 +5,6 @@ import axiosInstance from "../../../utils/axiosInstance";
 import type { Subscription } from "../../../types/subscription";
 import type { Organisation } from "../../../types/organisation";
 import type { Membership } from "../../../types/membership";
-
 interface AuthState {
     user: User | null,
     token: string | null,
@@ -76,20 +75,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     password
                 });
 
-                // console.log("AuthStore - Login - Response --> ", response.data);
+                console.log("AuthStore - Login - Response --> ", response.data);
 
                 const fetchData = response.data;
 
                 if(fetchData.token){
                     localStorage.setItem('token', fetchData.token);
                     set({token: fetchData.token});
-                    await get().getCurrentUser();
+                    const response = await get().getCurrentUser();
+                    if(response.type === "error")
+                    {
+                        return {
+                                type: "warning",
+                                message: response.message,
+                                show: true
+                            };
+                    }
                 }
                 
 
             }catch(err: any){
-
-                console.log("Error --> ", err);
 
                 const errorToast = handleApiError(err);
                 return errorToast;
@@ -146,6 +151,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     loading: false
                  });
                 const errorToast = handleApiError(err);
+
+                console.log("Error_Login --> ", errorToast);
+
                 return errorToast;
 
             }

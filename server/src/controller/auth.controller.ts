@@ -174,6 +174,7 @@ const AuthController = {
             country: organisation.country || null,
             region: organisation.region || null,
             email: organisation.email,
+            created_by: newUser.id,
             phone: organisation.phone || null,
             status: 'true',
         }, { transaction });
@@ -399,6 +400,8 @@ const AuthController = {
                         uid: organisation.uid,
                         name: organisation.name,
                         email: organisation.email,
+                        created_by: organisation.created_by,
+                        status: organisation.status,
                         phone: organisation.phone || null,
                         country: organisation.country || null,
                         region: organisation.region || null,

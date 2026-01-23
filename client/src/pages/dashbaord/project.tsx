@@ -20,11 +20,15 @@ import { SelectInput } from "../../components/widgets/select-input";
 import ProjectView from "../../features/project/components/project-view";
 import ProjectActionPopup from "../../features/project/components/ProjectActionPopup";
 import ProjectViewMedia from "../../features/project/components/project-view-media";
+import { useAuthStore } from "../../features/auth/store/authStore";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Projects = () => {
     const { data, getData, pagination, loading } = useProjectStore();
+    const {membership} = useAuthStore();
+
+
     const {
         filters,
         filterMode,
@@ -206,18 +210,24 @@ const Projects = () => {
 
                 return (
                     <div className="flex items-center space-x-3">
-                        <ActionIcon name="edit"
+                        {
+                            membership?.role === "admin" && (<ActionIcon name="edit"
                             onClick={() => openProjectModal('edit', row.id)}
-                        />
+                        />)
+                        }
+                        
                         <ActionIcon name="view"
                             onClick={() => openProjectModal('view', row.id)}
                         />
                         {
-                            row.status === "done" ? 
+                            membership?.role === "admin" &&
+                            (
+                                row.status === "done" ? 
                             <ActionIcon name="disable" />:
                             <ActionIcon name="setting"
                                 onClick={() => openActionPopup(row)}
                             />
+                            )
                         }
 
                         {
@@ -253,10 +263,14 @@ const Projects = () => {
                         <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                        <ActionButton onClick={() => refreshCurrentPage(pagination?.page!)} />
-                        <Button className="w-full" onClick={() => openProjectModal('add')}>
-                            New Project
-                        </Button>
+                        <ActionButton className="h-10" onClick={() => refreshCurrentPage(pagination?.page!)} />
+                        {
+                            membership?.role === "admin" && (
+                                <Button className="w-full" onClick={() => openProjectModal('add')}>
+                                    New Project
+                                </Button>
+                            )
+                        }
                     </div>
                 </div>
 

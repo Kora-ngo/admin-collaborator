@@ -33,6 +33,8 @@ export const messages: MessageItem[] = [
     // Membership  ---------------------------------------------------->
     { key: "invalid_role", message: "Please select a valid role." },
     { key: "user_already_in_organization", message: "This user is already part of this organization." },
+    {key: "invalid_or_inactive_membership", message: "Your account has been blocked. Contact your Administrator for more Information"},
+    {key: "unauthorized_access", message: "You are not authorised to perform this action"},
     
 
 

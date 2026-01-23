@@ -15,6 +15,7 @@ class Organisation extends Model<OrganisationAttributes, OrganisationCreationAtt
   public region!: string | null;
   public email!: string;
   public phone!: string | null;
+  public created_by!: number;
   public status!: string;
   public date_of!: Date;
   public update_of!: Date;
@@ -59,6 +60,9 @@ const OrganisationModel = Organisation.init({
         type: DataTypes.STRING(45),
         allowNull: true,
         defaultValue: null
+    },
+    created_by: {
+        type: DataTypes.INTEGER,
     },
     status: {
         type: DataTypes.STRING(45),

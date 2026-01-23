@@ -11,7 +11,10 @@ import { base64ToBuffer } from '../utils/base64ToBuffer.js';
 const ProjectController = {
     
     fetchAll: async (req: Request, res: Response) => {
-        console.log("Backend fetch --> entrance");
+        const userRole = req.user!.role;
+        const membershipId = req.user!.membershipId;
+
+        console.log("Backend fetch --> entrance", userRole, membershipId);
 
         try {
             // Clean up old deleted projects (7 days)
@@ -21,86 +24,99 @@ const ProjectController = {
             const limit = parseInt(req.query.limit as string) || 5;
             const offset = (page - 1) * limit;
 
-            const { count, rows } = await ProjectModel.findAndCountAll({
-                where: { status: { [Op.ne]: 'false' } },
-                order: [['created_at', 'DESC']],
+            // Build where clause based on role
+            const whereClause: any = { 
+                status: { [Op.ne]: 'false' } 
+            };
+
+            // Build include array - conditionally filter members for collaborators
+            const includeArray: any[] = [
+            {
+                model: ProjectMemberModel,
+                as: 'members',
+                ...(userRole === 'collaborator' && {
+                    where: { membership_id: membershipId },
+                    required: true // INNER JOIN - only fetch projects where user is a member
+                }),
                 include: [
                     {
-                        model: ProjectMemberModel,
-                        as: 'members',
+                        model: MembershipModel,
+                        as: 'membership',
+                        attributes: ['id', 'role'],
                         include: [
                             {
-                                model: MembershipModel,
-                                as: 'membership',
-                                attributes: ['id', 'role'],
-                                include: [
-                                    {
-                                        model: UserModel,
-                                        as: 'user',
-                                        attributes: ['id', 'name', 'email']
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        model: ProjectAssistanceModel,
-                        as: 'assistances',
-                        include: [
-                            {
-                                model: AssistanceModel,
-                                as: 'assistance',
-                                attributes: ['id', 'name']
-                            }
-                        ]
-                    },
-                    {
-                        model: MediaLink,
-                        as: 'mediaLinks',
-                        include: [
-                            {
-                                model: Media,
-                                as: 'media',
-                                attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
+                                model: UserModel,
+                                as: 'user',
+                                attributes: ['id', 'name', 'email']
                             }
                         ]
                     }
-                ],
+                ]
+            },
+            {
+                model: ProjectAssistanceModel,
+                as: 'assistances',
+                include: [
+                    {
+                        model: AssistanceModel,
+                        as: 'assistance',
+                        attributes: ['id', 'name']
+                    }
+                ]
+            },
+            {
+                model: MediaLink,
+                as: 'mediaLinks',
+                include: [
+                    {
+                        model: Media,
+                        as: 'media',
+                        attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
+                    }
+                ]
+            }
+        ];
+
+        const { count, rows } = await ProjectModel.findAndCountAll({
+            where: whereClause,
+            order: [['created_at', 'DESC']],
+            include: includeArray,
+            limit,
+            offset,
+            distinct: true,
+            col: 'id'
+        });
+
+        const totalPages = Math.ceil(count / limit);
+
+        await bulkUpdateProjectStatuses(rows);
+
+        // Convert to plain JSON objects
+        const projectsData = rows.map(p => {
+            const data: any = p.dataValues || p;
+            return {
+                ...data,
+                members: data.members?.map((m: any) => m.dataValues || m) || [],
+                assistances: data.assistances?.map((a: any) => a.dataValues || a) || [],
+                mediaLinks: data.mediaLinks?.map((ml: any) => ml.dataValues || ml) || []
+            };
+        });
+
+        res.status(200).json({
+            type: 'success',
+            data: projectsData,
+            pagination: {
+                total: count,
+                page,
                 limit,
-                offset,
-                distinct: true,
-                col: 'id'
-            });
+                totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1
+            }
+        });
 
-            const totalPages = Math.ceil(count / limit);
 
-            // Update project statuses in database based on dates
-            await bulkUpdateProjectStatuses(rows);
 
-            // Convert to plain JSON objects, handling both dataValues and direct access
-            const projectsData = rows.map(p => {
-                const data: any = p.dataValues || p;
-                return {
-                    ...data,
-                    // Ensure nested associations are also converted
-                    members: data.members?.map((m: any) => m.dataValues || m) || [],
-                    assistances: data.assistances?.map((a: any) => a.dataValues || a) || [],
-                    mediaLinks: data.mediaLinks?.map((ml: any) => ml.dataValues || ml) || []
-                };
-            });
-
-            res.status(200).json({
-                type: 'success',
-                data: projectsData,
-                pagination: {
-                    total: count,
-                    page,
-                    limit,
-                    totalPages,
-                    hasNext: page < totalPages,
-                    hasPrev: page > 1
-                }
-            });
         } catch (error) {
             console.error("Project: Fetch_All error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
@@ -177,7 +193,6 @@ const ProjectController = {
                 data: project.toJSON(),
             });
         } catch (error) {
-            console.error("Project: Fetch_One error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
@@ -243,7 +258,7 @@ const ProjectController = {
             // Create project
             const newProject = await ProjectModel.create({
                 organisation_id: body.organisation_id,
-                membership_id: middlewareAuth?.membershipId!,
+                created_by: middlewareAuth?.membershipId!,
                 name: body.name,
                 description: body.description || '',
                 status: 'pending',
@@ -303,7 +318,6 @@ const ProjectController = {
                     transaction
                 );
 
-                console.log(`✓ Uploaded ${uploadedFiles.length} files successfully`);
             }
 
             await transaction.commit();
@@ -427,6 +441,9 @@ const ProjectController = {
     },
 
     search: async (req: Request, res: Response) => {
+        const userRole = req.user!.role;
+        const membershipId = req.user!.membershipId;
+
         try {
             const q = (req.query.q as string)?.trim();
             const page = parseInt(req.query.page as string) || 1;
@@ -445,30 +462,51 @@ const ProjectController = {
                 name: { [Op.like]: `%${q}%` }
             };
 
+            // Build includes with role-based filtering
+            const includeArray: any[] = [
+                {
+                    model: ProjectMemberModel,
+                    as: 'members',
+                    // Filter by membership_id for collaborators
+                    ...(userRole === 'collaborator' && {
+                        where: { membership_id: membershipId },
+                        required: true
+                    }),
+                    include: [{
+                        model: MembershipModel,
+                        as: 'membership',
+                        attributes: ['id', 'role'],
+                        include: [{ 
+                            model: UserModel, 
+                            as: 'user',
+                            attributes: ['id', 'name', 'email']
+                        }]
+                    }]
+                },
+                {
+                    model: ProjectAssistanceModel,
+                    as: 'assistances',
+                    include: [{ 
+                        model: AssistanceModel, 
+                        as: 'assistance',
+                        attributes: ['id', 'name']
+                    }]
+                },
+                {
+                    model: MediaLink,
+                    as: 'mediaLinks',
+                    include: [{ 
+                        model: Media, 
+                        as: 'media',
+                        attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
+                    }]
+                }
+            ];
+
             const { count, rows } = await ProjectModel.findAndCountAll({
                 where,
                 order: [['created_at', 'DESC']],
-                include: [
-                    {
-                        model: ProjectMemberModel,
-                        as: 'members',
-                        include: [{
-                            model: MembershipModel,
-                            as: 'membership',
-                            include: [{ model: UserModel, as: 'user' }]
-                        }]
-                    },
-                    {
-                        model: ProjectAssistanceModel,
-                        as: 'assistances',
-                        include: [{ model: AssistanceModel, as: 'assistance' }]
-                    },
-                    {
-                        model: MediaLink,
-                        as: 'mediaLinks',
-                        include: [{ model: Media, as: 'media' }]
-                    }
-                ],
+                include: includeArray,
                 limit,
                 offset,
                 distinct: true,
@@ -497,6 +535,9 @@ const ProjectController = {
     },
 
     filter: async (req: Request, res: Response) => {
+        const userRole = req.user!.role;
+        const membershipId = req.user!.membershipId;
+
         try {
             const page = parseInt(req.query.page as string) || 1;
             const limit = 5;
@@ -534,30 +575,51 @@ const ProjectController = {
                 }
             }
 
+            // Build includes with role-based filtering
+            const includeArray: any[] = [
+                {
+                    model: ProjectMemberModel,
+                    as: 'members',
+                    // Filter by membership_id for collaborators
+                    ...(userRole === 'collaborator' && {
+                        where: { membership_id: membershipId },
+                        required: true
+                    }),
+                    include: [{
+                        model: MembershipModel,
+                        as: 'membership',
+                        attributes: ['id', 'role'],
+                        include: [{ 
+                            model: UserModel, 
+                            as: 'user',
+                            attributes: ['id', 'name', 'email']
+                        }]
+                    }]
+                },
+                {
+                    model: ProjectAssistanceModel,
+                    as: 'assistances',
+                    include: [{ 
+                        model: AssistanceModel, 
+                        as: 'assistance',
+                        attributes: ['id', 'name']
+                    }]
+                },
+                {
+                    model: MediaLink,
+                    as: 'mediaLinks',
+                    include: [{ 
+                        model: Media, 
+                        as: 'media',
+                        attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
+                    }]
+                }
+            ];
+
             const { count, rows } = await ProjectModel.findAndCountAll({
                 where,
                 order: [['created_at', 'DESC']],
-                include: [
-                    {
-                        model: ProjectMemberModel,
-                        as: 'members',
-                        include: [{
-                            model: MembershipModel,
-                            as: 'membership',
-                            include: [{ model: UserModel, as: 'user' }]
-                        }]
-                    },
-                    {
-                        model: ProjectAssistanceModel,
-                        as: 'assistances',
-                        include: [{ model: AssistanceModel, as: 'assistance' }]
-                    },
-                    {
-                        model: MediaLink,
-                        as: 'mediaLinks',
-                        include: [{ model: Media, as: 'media' }]
-                    }
-                ],
+                include: includeArray,
                 limit,
                 offset,
                 distinct: true,

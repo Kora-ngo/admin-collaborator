@@ -4,7 +4,7 @@ export interface Membership extends User {
   id: number;
   user_id: number;
   organization_id: number;
-  role: string;
+  role: "admin" | "collaborator";
   status: string;
   date_of?: Date;
   user?: User
