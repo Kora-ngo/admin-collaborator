@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import AuthController from '../controller/auth.controller.js';
 import { verifyToken } from '../middleware/verifyToken.js';
+import { requireRole, requireSuperAdmin } from '../middleware/permission.js';
 
 const router = Router();
 
@@ -34,6 +35,6 @@ router.get('/me', verifyToken, AuthController.getCurrentUser);
 
 router.put('/profile', verifyToken, AuthController.updateProfile);
 
-router.put('/organisation', verifyToken, AuthController.updateOrganisation);
+router.put('/organisation', verifyToken, requireRole('admin'), requireSuperAdmin, AuthController.updateOrganisation);
 
 export default router;

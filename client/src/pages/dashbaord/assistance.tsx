@@ -19,12 +19,14 @@ import AssistanceView from "../../features/assistance/components/assistance-view
 import Popup from "../../components/widgets/popup";
 import { useAssis } from "../../features/assistance/hooks/useAssis";
 import { SelectInput } from "../../components/widgets/select-input";
+import { useAuthStore } from "../../features/auth/store/authStore";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Assistance = () => {
 
     const {data, getData, pagination, loading} = useAssistanceStore();
+    const {role} = useAuthStore();
     const {
             filters,
             filterMode,
@@ -244,7 +246,9 @@ const Assistance = () => {
                     <>
                         {data.length === 0 ? (
                         <div className="w-full bg-gray-50 rounded-md">
-                            <EmptyState title="No Record Found" />
+                            <EmptyState title="No Record Found" 
+                            description={role === "collaborator" ? "You don't have the authorisation to access these Records" : ""}
+                            />
                         </div>
                         ) : (
                         <>

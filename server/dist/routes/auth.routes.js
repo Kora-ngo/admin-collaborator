@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import AuthController from '../controller/auth.controller.js';
 import { verifyToken } from '../middleware/verifyToken.js';
+import { requireRole, requireSuperAdmin } from '../middleware/permission.js';
 const router = Router();
 // POST /api/auth/login
 router.post('/login', AuthController.login);
@@ -21,6 +22,6 @@ router.post('/reset-password', AuthController.resetPassword);
 // GET /api/auth/me
 router.get('/me', verifyToken, AuthController.getCurrentUser);
 router.put('/profile', verifyToken, AuthController.updateProfile);
-router.put('/organisation', verifyToken, AuthController.updateOrganisation);
+router.put('/organisation', verifyToken, requireRole('admin'), requireSuperAdmin, AuthController.updateOrganisation);
 export default router;
 //# sourceMappingURL=auth.routes.js.map

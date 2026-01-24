@@ -26,6 +26,10 @@ function App() {
   }, [token, getCurrentUser, user]);
 
 
+  // Allowed roles for /assistance (add more if needed)
+  const assistanceAllowedRoles = ["admin"];
+
+
   // Step 2: While fetching user → show simple loading
   if (token && loading) {
     return (
@@ -60,7 +64,7 @@ function App() {
               <Route index element={<Dasbaord />} />
               <Route path="projects" element={<Projects />} />
               <Route path="users" element={<Users />} />
-              <Route path="assistance" element={<Assistance />} />
+              <Route path="assistance" element={assistanceAllowedRoles.includes(role) ? (<Assistance />) : (<Navigate to="/dashboard" replace />) } />
               <Route path="families" element={<Families />} />
               <Route path="deliveries" element={<Deliveries />} />
             </Route>

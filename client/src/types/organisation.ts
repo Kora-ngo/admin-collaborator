@@ -7,4 +7,5 @@ export interface Organisation {
     phone: string;  
     name: string;
     description?: string;
+    created_by?: number
 }

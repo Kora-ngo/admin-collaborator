@@ -1,24 +1,25 @@
 import { Router } from "express";
 import AssistanceController from "../controller/assistance.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
+import { requireRole } from "../middleware/permission.js";
 
 const router = Router();
 
 // ASSISTANCE ROUTE ------------------------>
 
-router.get('/search', verifyToken, AssistanceController.search);
+router.get('/search', verifyToken, requireRole('admin'), AssistanceController.search);
 
-router.get('/filter', verifyToken, AssistanceController.filter);
+router.get('/filter', verifyToken, requireRole('admin'), AssistanceController.filter);
 
-router.get('/:id', verifyToken, AssistanceController.fetchOne);
+router.get('/:id', verifyToken, requireRole('admin'), AssistanceController.fetchOne);
 
-router.get('/', verifyToken, AssistanceController.fetchAll);
+router.get('/', verifyToken, requireRole('admin'), AssistanceController.fetchAll);
 
-router.post('/', verifyToken, AssistanceController.create);
+router.post('/', verifyToken, requireRole('admin'), AssistanceController.create);
 
-router.put('/:id', verifyToken, AssistanceController.update);
+router.put('/:id', verifyToken, requireRole('admin'), AssistanceController.update);
 
-router.put('/toggle/:id', verifyToken, AssistanceController.toggleStatus);
+router.put('/toggle/:id', verifyToken, requireRole('admin'), AssistanceController.toggleStatus);
 
 
 

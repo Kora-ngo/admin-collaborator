@@ -11,7 +11,7 @@ interface OrganisationViewProps {
 
 const OrganisationView: React.FC<OrganisationViewProps> = ({onToggle}) => {
 
-        const {organisation} = useAuthStore();
+        const {organisation, user} = useAuthStore();
 
         useEffect(() => {
             console.log("This is the org -->", organisation);
@@ -21,9 +21,13 @@ const OrganisationView: React.FC<OrganisationViewProps> = ({onToggle}) => {
     return ( 
         <div className="relative border rounded-md border-gray-200 p-4">
             {/* Edit button */}
-            <div className="absolute top-4 right-4">
-            <Button variant="link" onClick={onToggle}>Edit</Button>
-            </div>
+            {
+                organisation?.created_by === user?.id && (
+                    <div className="absolute top-4 right-4">
+                        <Button variant="link" onClick={onToggle}>Edit</Button>
+                    </div>
+                )
+            }
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

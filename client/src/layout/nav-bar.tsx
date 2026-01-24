@@ -21,7 +21,7 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
         "/dashbaord/deliveries": "Deliveries",
     };
 
-    const title = titles[location.pathname] || "Not Found"; 
+    let title = titles[location.pathname] || "Not Found"; 
 
     // const [open, setOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
