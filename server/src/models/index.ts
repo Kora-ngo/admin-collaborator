@@ -1,5 +1,9 @@
 import AssistanceModel from "./Assistance.js";
 import AssistanceTypeModel from "./AssistanceType.js";
+import BeneficiaryModel from "./beneficiary.js";
+import BeneficiaryMemberModel from "./BeneficiaryMember.js";
+import DeliveryModel from "./Delivery.js";
+import DeliveryItemModel from "./DeliveryItem.js";
 import Media from "./media.js";
 import MediaLink from "./mediaLink.js";
 import MembershipModel from "./Membership.js";
@@ -7,6 +11,7 @@ import OrganisationModel from "./Organisation.js";
 import ProjectModel from "./project.js";
 import ProjectAssistanceModel from "./projectAssistance.js";
 import ProjectMemberModel from "./projectMember.js";
+import SyncBatchModel from "./SyncBatch.js";
 import UserModel from "./User.js";
 
 // === DEFINE ASSOCIATIONS HERE ===
@@ -150,6 +155,135 @@ ProjectModel.hasMany(MediaLink, {
 
 
 
+
+
+// ========================================
+// BENEFICIARY RELATIONS
+// ========================================
+
+// Beneficiary -> Project
+BeneficiaryModel.belongsTo(ProjectModel, {
+    foreignKey: 'project_id',
+    as: 'project'
+});
+
+ProjectModel.hasMany(BeneficiaryModel, {
+    foreignKey: 'project_id',
+    as: 'beneficiaries'
+});
+
+// Beneficiary -> Creator (Membership)
+BeneficiaryModel.belongsTo(MembershipModel, {
+    foreignKey: 'created_by_membership_id',
+    as: 'createdBy'
+});
+
+// Beneficiary -> Reviewer (Membership)
+BeneficiaryModel.belongsTo(MembershipModel, {
+    foreignKey: 'reviewed_by_membership_id',
+    as: 'reviewedBy'
+});
+
+// Beneficiary -> BeneficiaryMembers
+BeneficiaryModel.hasMany(BeneficiaryMemberModel, {
+    foreignKey: 'beneficiary_id',
+    as: 'members'
+});
+
+BeneficiaryMemberModel.belongsTo(BeneficiaryModel, {
+    foreignKey: 'beneficiary_id',
+    as: 'beneficiary'
+});
+
+// ========================================
+// DELIVERY RELATIONS
+// ========================================
+
+// Delivery -> Project
+DeliveryModel.belongsTo(ProjectModel, {
+    foreignKey: 'project_id',
+    as: 'project'
+});
+
+ProjectModel.hasMany(DeliveryModel, {
+    foreignKey: 'project_id',
+    as: 'deliveries'
+});
+
+// Delivery -> Beneficiary
+DeliveryModel.belongsTo(BeneficiaryModel, {
+    foreignKey: 'beneficiary_id',
+    as: 'beneficiary'
+});
+
+BeneficiaryModel.hasMany(DeliveryModel, {
+    foreignKey: 'beneficiary_id',
+    as: 'deliveries'
+});
+
+// Delivery -> Creator (Membership)
+DeliveryModel.belongsTo(MembershipModel, {
+    foreignKey: 'created_by_membership_id',
+    as: 'createdBy'
+});
+
+// Delivery -> Reviewer (Membership)
+DeliveryModel.belongsTo(MembershipModel, {
+    foreignKey: 'reviewed_by_membership_id',
+    as: 'reviewedBy'
+});
+
+// Delivery -> DeliveryItems
+DeliveryModel.hasMany(DeliveryItemModel, {
+    foreignKey: 'delivery_id',
+    as: 'items'
+});
+
+DeliveryItemModel.belongsTo(DeliveryModel, {
+    foreignKey: 'delivery_id',
+    as: 'delivery'
+});
+
+// DeliveryItem -> Assistance
+DeliveryItemModel.belongsTo(AssistanceModel, {
+    foreignKey: 'assistance_id',
+    as: 'assistance'
+});
+
+AssistanceModel.hasMany(DeliveryItemModel, {
+    foreignKey: 'assistance_id',
+    as: 'deliveryItems'
+});
+
+// ========================================
+// SYNC BATCH RELATIONS
+// ========================================
+
+// SyncBatch -> Project
+SyncBatchModel.belongsTo(ProjectModel, {
+    foreignKey: 'project_id',
+    as: 'project'
+});
+
+ProjectModel.hasMany(SyncBatchModel, {
+    foreignKey: 'project_id',
+    as: 'syncBatches'
+});
+
+// SyncBatch -> Submitter (Membership)
+SyncBatchModel.belongsTo(MembershipModel, {
+    foreignKey: 'submitted_by_membership_id',
+    as: 'submittedBy'
+});
+
+// SyncBatch -> Reviewer (Membership)
+SyncBatchModel.belongsTo(MembershipModel, {
+    foreignKey: 'reviewed_by_membership_id',
+    as:'reviewedBy'
+
+});
+
+
 export {
     AssistanceModel,
     AssistanceTypeModel,
@@ -166,4 +300,11 @@ export {
 
     Media,
     MediaLink,
+
+    BeneficiaryModel,
+    BeneficiaryMemberModel,
+    DeliveryModel,
+    DeliveryItemModel,
+    SyncBatchModel,
+
 };
