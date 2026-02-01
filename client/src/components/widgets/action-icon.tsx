@@ -16,6 +16,7 @@ type IconProps = {
     | "delivery"
     | "assign"
     | "unassign"
+    | "close_red"
     ;
   className?: string;
   onClick?: () => void;
@@ -80,6 +81,12 @@ const icons = {
 
   close: (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4 text-white">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+  </svg>
+  ),
+
+  close_red: (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-primary">
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
   </svg>
   ),
