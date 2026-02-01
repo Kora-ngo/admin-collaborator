@@ -4,12 +4,24 @@ import sequelize from '../config/database.js';
 import { QueryTypes } from 'sequelize';
 
 const VALID_TABLES = [
-  'users',
-  'organisation',
-  'subscription',
-  'membership',
-  'assistance_type',
-  'assistance',
+  "assistance",	 	
+	"assistance_type",	 	
+	"beneficiaries",
+	"beneficiary_members",	 	
+	"deliveries",	 
+	"delivery_items",	 
+	"media",	
+	"media_links",	 	
+	"membership",	 		
+	"organisation",	 		
+	"projects",
+	"project_assistance",	 	
+	"project_members",	 	
+	"sequelizemeta",	
+	"subscription",
+	"sync_batches",	 	
+	"users",
+
 ];
 
 // Format: YYYYMMDDHHMMSS + 4 random digits → e.g., 202512311430251234
