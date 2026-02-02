@@ -148,6 +148,20 @@ const EnumeratorController = {
                                 attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
                             }
                         ]
+                    },
+
+                    {
+                        model: BeneficiaryModel,
+                        as: 'beneficiaries',
+                        where: {
+                            review_status: {
+                                [Op.in]: ['approved', 'rejected']
+                            }
+                        },
+                        required: false,
+                        attributes: [
+                            'id', 'review_status', 'reviewed_at', 'review_note'
+                        ],
                     }
                 ];
 
@@ -209,11 +223,15 @@ const EnumeratorController = {
                         ...data,
                         members: uniqueMembers,
                         assistances: data.assistances?.map((a: any) => a.dataValues || a) || [],
-                        mediaLinks: data.mediaLinks?.map((ml: any) => ml.dataValues || ml) || []
+                        mediaLinks: data.mediaLinks?.map((ml: any) => ml.dataValues || ml) || [],
+                        beneficiaries: data.beneficiaries?.map((b: any) => b.dataValues || b) || []
                     };
                 }));
 
-                console.log(`Mobile - Found ${projectsData.length} projects for user`);
+                console.log(`💚 MOBILE --->`);
+
+
+
 
                 // ========================================
                 // FINAL RESPONSE
@@ -246,10 +264,12 @@ const EnumeratorController = {
                         region: organisation.region || null,
                     },
                     subscription,
-                    projects: projectsData, // Array of affiliated projects
-                    projectsCount: projectsData.length
+                    projects: projectsData,
+                    projectsCount: projectsData.length,
                     }
                 });
+
+                
 
             } catch (error) {
                 console.error('Mobile - Get user data error:', error);
@@ -386,100 +406,132 @@ const EnumeratorController = {
             console.log(`✓ Created sync batch: ${batch_uid} (Server ID: ${syncBatch.id})`);
 
 
-            // STEP 5: PROCESS BENEFICIARIES
+// STEP 5: PROCESS BENEFICIARIES
 
-            const beneficiaryResults: any[] = [];
+const beneficiaryResults: any[] = [];
 
-            if (beneficiaries && beneficiaries.length > 0) {
-                console.log(`Processing ${beneficiaries.length} beneficiaries...`);
+if (beneficiaries && beneficiaries.length > 0) {
+    console.log(`Processing ${beneficiaries.length} beneficiaries...`);
 
-                for(const benef of beneficiaries){
-                       try{
-                            // Validate required fields
-                            if (!benef.uid || !benef.family_code || !benef.head_name) {
-                                beneficiaryResults.push({
-                                    uid: benef.uid || 'unknown',
-                                    status: 'rejected',
-                                    error: 'missing_required_fields'
-                                });
-                                continue;
-                            }
+    for (const benef of beneficiaries) {
+        try {
+            // Validate required fields
+            if (!benef.uid || !benef.family_code || !benef.head_name) {
+                beneficiaryResults.push({
+                    uid: benef.uid || 'unknown',
+                    status: 'rejected',
+                    error: 'missing_required_fields'
+                });
+                continue;
+            }
 
+            let beneficiaryRecord;
+            let isUpdate = false;
 
-                            // Check for duplicate family_code in this project
-                            const existingBeneficiaryModel = await BeneficiaryModel.findOne({
-                                where: {
-                                    project_id: project_id,
-                                    family_code: benef.family_code,
-                                    review_status: { [Op.ne]: 'rejected' }
-                                }
-                            });
+            // Check if this is an existing record (mobile sent server_id)
+            if (benef.server_id) {
+                const existing = await BeneficiaryModel.findByPk(benef.server_id, { transaction });
 
-                            const existingBeneficiary = existingBeneficiaryModel?.dataValues;
+                if (existing) {
+                    // Update existing beneficiary
+                    await existing.update({
+                        family_code: benef.family_code,
+                        head_name: benef.head_name,
+                        phone: benef.phone || null,
+                        region: benef.region || null,
+                        village: benef.village || null,
+                        review_status: 'pending',           // reset to pending
+                        updated_at: new Date(),              // force update timestamp
+                        sync_source: 'mobile'
+                        // IMPORTANT: do NOT update uid, project_id, created_by_membership_id, created_at
+                    }, { transaction });
 
-                            if (existingBeneficiary) {
-                                beneficiaryResults.push({
-                                    uid: benef.uid,
-                                    status: 'rejected',
-                                    error: 'duplicate_family_code'
-                                });
-                                continue;
-                            }
+                    beneficiaryRecord = existing;
+                    isUpdate = true;
 
-                            // Generate server UID
-                            const beneficiaryUid = await generateUniqueUid('beneficiaries');
+                    console.log(`✓ Updated beneficiary: server_id ${benef.server_id} → pending again`);
+                }
+            }
 
-
-
-                            // Create beneficiary
-                            const newBeneficiary = await BeneficiaryModel.create({
-                                uid: beneficiaryUid,
+                    // If not an update → CREATE new
+                    if (!beneficiaryRecord) {
+                        // Duplicate family_code check (only for new records)
+                        const duplicate = await BeneficiaryModel.findOne({
+                            where: {
                                 project_id: project_id,
                                 family_code: benef.family_code,
-                                head_name: benef.head_name,
-                                phone: benef.phone || null,
-                                region: benef.region || null,
-                                village: benef.village || null,
-                                created_by_membership_id: authUser.membershipId,
-                                sync_source: 'mobile',
-                                review_status: 'pending'
-                            }, { transaction });
+                                review_status: { [Op.ne]: 'rejected' }
+                            },
+                            transaction
+                        });
 
-
-                            // Create beneficiary members if provided
-                            if (benef.members && benef.members.length > 0) {
-                                const membersData = benef.members.map((member: any) => ({
-                                    beneficiary_id: newBeneficiary.id,
-                                    full_name: member.full_name,
-                                    gender: member.gender,
-                                    date_of_birth: member.date_of_birth,
-                                    relationship: member.relationship
-                                }));
-
-                                await BeneficiaryMemberModel.bulkCreate(membersData, { transaction });
-                            }
-
-
+                        if (duplicate) {
                             beneficiaryResults.push({
                                 uid: benef.uid,
-                                server_id: newBeneficiary.id,
-                                status: 'pending'
+                                status: 'rejected',
+                                error: 'duplicate_family_code'
                             });
+                            continue;
+                        }
 
-                            console.log(`✓ Beneficiary ${benef.uid} → Server ID: ${newBeneficiary.id}`);
+                        // Generate new UID
+                        const beneficiaryUid = await generateUniqueUid('beneficiaries');
 
-                       } catch (error: any) {
-                        console.error(`Error processing beneficiary ${benef.uid}:`, error);
-                        beneficiaryResults.push({
-                            uid: benef.uid,
-                            status: 'rejected',
-                            error: 'server_error'
-                        });
+                        beneficiaryRecord = await BeneficiaryModel.create({
+                            uid: beneficiaryUid,
+                            project_id: project_id,
+                            family_code: benef.family_code,
+                            head_name: benef.head_name,
+                            phone: benef.phone || null,
+                            region: benef.region || null,
+                            village: benef.village || null,
+                            created_by_membership_id: authUser.membershipId,
+                            sync_source: 'mobile',
+                            review_status: 'pending',
+                        }, { transaction });
+
+                        console.log(`✓ Created new beneficiary: uid ${benef.uid} → server_id ${beneficiaryRecord.id}`);
                     }
 
-                }
+                    // Handle beneficiary members (replace all for updates, create for new)
+                    if (benef.members && benef.members.length > 0) {
+                        // For updates: delete old members first (full replacement)
+                        if (isUpdate) {
+                            await BeneficiaryMemberModel.destroy({
+                                where: { beneficiary_id: benef.server_id },
+                                transaction
+                            });
+                        }
 
+                        const membersData = benef.members.map((member: any) => ({
+                            beneficiary_id: benef.server_id,
+                            full_name: member.full_name,
+                            gender: member.gender,
+                            date_of_birth: member.date_of_birth,
+                            relationship: member.relationship
+                        }));
+
+                        await BeneficiaryMemberModel.bulkCreate(membersData, { transaction });
+
+                        console.log(`✓ ${isUpdate ? 'Replaced' : 'Added'} ${membersData.length} members for beneficiary ${benef.server_id}`);
+                    }
+
+                    beneficiaryResults.push({
+                        uid: benef.uid,
+                        server_id: beneficiaryRecord.id,
+                        status: 'pending'
+                    });
+
+                } catch (error: any) {
+                    console.error(`Error processing beneficiary ${benef.uid || 'unknown'}:`, error);
+                    beneficiaryResults.push({
+                        uid: benef.uid || 'unknown',
+                        status: 'rejected',
+                        error: 'server_error'
+                    });
+                }
             }
+        }
 
 
             // STEP 6: PROCESS DELIVERIES

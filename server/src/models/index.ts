@@ -1,6 +1,6 @@
 import AssistanceModel from "./Assistance.js";
 import AssistanceTypeModel from "./AssistanceType.js";
-import BeneficiaryModel from "./beneficiary.js";
+import BeneficiaryModel from "./Beneficiary.js";
 import BeneficiaryMemberModel from "./BeneficiaryMember.js";
 import DeliveryModel from "./Delivery.js";
 import DeliveryItemModel from "./DeliveryItem.js";

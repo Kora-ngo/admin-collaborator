@@ -11,6 +11,8 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
     const token = authHeader.split(' ')[1];
 
+    console.log("Token ---> ", token);
+
     try {
 
         const payload = jwt.verify(token!, process.env.JWT_SECRET as string) as any;

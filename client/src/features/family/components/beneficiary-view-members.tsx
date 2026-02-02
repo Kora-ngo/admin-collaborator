@@ -87,18 +87,24 @@ const BeneficiaryViewMembers = ({ members }: BeneficiaryViewMembersProps) => {
                                     {member.gender}
                                 </p>
                             </div>
-                            <div>
-                                <p className="text-gray-500">Age</p>
-                                <p className="font-medium text-gray-900">
-                                    {calculateAge(member.date_of_birth)} years
-                                </p>
-                            </div>
-                            <div className="col-span-2">
-                                <p className="text-gray-500">Date of Birth</p>
-                                <p className="font-medium text-gray-900">
-                                    {formatDate(member.date_of_birth.toString(), false)}
-                                </p>
-                            </div>
+                            {
+                                member.date_of_birth &&
+                                <div>
+                                    <p className="text-gray-500">Age</p>
+                                    <p className="font-medium text-gray-900">
+                                        {calculateAge(member.date_of_birth)} years
+                                    </p>
+                                </div>
+                            }
+                            {
+                                member.date_of_birth &&
+                                <div className="col-span-2">
+                                    <p className="text-gray-500">Date of Birth</p>
+                                    <p className="font-medium text-gray-900">
+                                        {formatDate(member.date_of_birth.toString(), false)}
+                                    </p>
+                                </div>
+                            }
                         </div>
                     </div>
                 ))}
