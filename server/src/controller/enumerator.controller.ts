@@ -406,56 +406,104 @@ const EnumeratorController = {
             console.log(`✓ Created sync batch: ${batch_uid} (Server ID: ${syncBatch.id})`);
 
 
-// STEP 5: PROCESS BENEFICIARIES
+            // STEP 5: PROCESS BENEFICIARIES
 
-const beneficiaryResults: any[] = [];
+            const beneficiaryResults: any[] = [];
 
-if (beneficiaries && beneficiaries.length > 0) {
-    console.log(`Processing ${beneficiaries.length} beneficiaries...`);
+            if (beneficiaries && beneficiaries.length > 0) {
+                console.log(`Processing ${beneficiaries.length} beneficiaries sequentially...`);
 
-    for (const benef of beneficiaries) {
-        try {
-            // Validate required fields
-            if (!benef.uid || !benef.family_code || !benef.head_name) {
-                beneficiaryResults.push({
-                    uid: benef.uid || 'unknown',
-                    status: 'rejected',
-                    error: 'missing_required_fields'
-                });
-                continue;
-            }
+                for (const benef of beneficiaries) {
+                    try {
+                        // ────────────────────────────────────
+                        // 1. VALIDATE REQUIRED FIELDS
+                        // ────────────────────────────────────
+                        if (!benef.uid || !benef.family_code || !benef.head_name) {
+                            beneficiaryResults.push({
+                                uid: benef.uid || 'unknown',
+                                status: 'rejected',
+                                error: 'missing_required_fields'
+                            });
+                            console.log(`✗ Beneficiary ${benef.uid || 'unknown'} → missing required fields`);
+                            continue;
+                        }
 
-            let beneficiaryRecord;
-            let isUpdate = false;
+                        console.log(`\n── Processing beneficiary: ${benef.uid} ──`);
 
-            // Check if this is an existing record (mobile sent server_id)
-            if (benef.server_id) {
-                const existing = await BeneficiaryModel.findByPk(benef.server_id, { transaction });
+                        // ────────────────────────────────────
+                        // 2. CHECK IF server_id EXISTS (UPDATE FLOW)
+                        // ────────────────────────────────────
+                        if (benef.server_id) {
+                            console.log(`  → server_id found: ${benef.server_id}, checking DB...`);
 
-                if (existing) {
-                    // Update existing beneficiary
-                    await existing.update({
-                        family_code: benef.family_code,
-                        head_name: benef.head_name,
-                        phone: benef.phone || null,
-                        region: benef.region || null,
-                        village: benef.village || null,
-                        review_status: 'pending',           // reset to pending
-                        updated_at: new Date(),              // force update timestamp
-                        sync_source: 'mobile'
-                        // IMPORTANT: do NOT update uid, project_id, created_by_membership_id, created_at
-                    }, { transaction });
+                            const existing = await BeneficiaryModel.findByPk(benef.server_id, { transaction });
 
-                    beneficiaryRecord = existing;
-                    isUpdate = true;
+                            if (existing) {
+                                // ── UPDATE the existing beneficiary ──
+                                console.log(`  → Record exists, updating...`);
 
-                    console.log(`✓ Updated beneficiary: server_id ${benef.server_id} → pending again`);
-                }
-            }
+                                await existing.update({
+                                    family_code: benef.family_code,
+                                    head_name: benef.head_name,
+                                    phone: benef.phone || null,
+                                    region: benef.region || null,
+                                    village: benef.village || null,
+                                    review_status: 'pending',
+                                    sync_source: 'mobile',
+                                    updated_at: new Date()
+                                }, { transaction });
 
-                    // If not an update → CREATE new
-                    if (!beneficiaryRecord) {
-                        // Duplicate family_code check (only for new records)
+                                console.log(`  ✓ Beneficiary updated, now handling members...`);
+
+                                // ── HANDLE MEMBERS for this updated beneficiary ──
+                                if (benef.members && benef.members.length > 0) {
+                                    // Delete old members first
+                                    await BeneficiaryMemberModel.destroy({
+                                        where: { beneficiary_id: existing.id },
+                                        transaction
+                                    });
+
+                                    console.log(`  → Old members cleared, inserting new ones...`);
+
+                                    // Insert members one by one
+                                    for (const member of benef.members) {
+                                        if (!member.full_name || !member.gender || !member.relationship) {
+                                            console.log(`  ✗ Skipped invalid member: ${member.full_name || 'unknown'} -- ${member.gender} | ${member.relationship}`);
+                                            continue;
+                                        }
+
+                                        await BeneficiaryMemberModel.create({
+                                            beneficiary_id: existing.id,
+                                            full_name: member.full_name,
+                                            gender: member.gender,
+                                            date_of_birth: member.date_of_birth,
+                                            relationship: member.relationship
+                                        }, { transaction });
+
+                                        console.log(`  ✓ Member inserted: ${member.full_name} (${member.relationship})`);
+                                    }
+                                }
+
+                                beneficiaryResults.push({
+                                    uid: benef.uid,
+                                    server_id: existing.id,
+                                    status: 'pending',
+                                    action: 'updated'
+                                });
+
+                                console.log(`  ✓ Beneficiary ${benef.uid} → updated successfully\n`);
+                                continue; // Done with this record, move to the next
+                            }
+
+                            // server_id was sent but not found in DB → treat as new
+                            console.log(`  → server_id ${benef.server_id} not found in DB, treating as new record...`);
+                        }
+
+                        // ────────────────────────────────────
+                        // 3. NEW RECORD FLOW - Check duplicate family_code
+                        // ────────────────────────────────────
+                        console.log(`  → Checking duplicate family_code: ${benef.family_code}...`);
+
                         const duplicate = await BeneficiaryModel.findOne({
                             where: {
                                 project_id: project_id,
@@ -471,13 +519,18 @@ if (beneficiaries && beneficiaries.length > 0) {
                                 status: 'rejected',
                                 error: 'duplicate_family_code'
                             });
-                            continue;
+                            console.log(`  ✗ Beneficiary ${benef.uid} → duplicate family_code "${benef.family_code}"\n`);
+                            continue; // Move to the next beneficiary
                         }
 
-                        // Generate new UID
+                        // ────────────────────────────────────
+                        // 4. ALL CHECKS PASSED → INSERT BENEFICIARY
+                        // ────────────────────────────────────
+                        console.log(`  → All checks passed, inserting beneficiary...`);
+
                         const beneficiaryUid = await generateUniqueUid('beneficiaries');
 
-                        beneficiaryRecord = await BeneficiaryModel.create({
+                        const newBeneficiary = await BeneficiaryModel.create({
                             uid: beneficiaryUid,
                             project_id: project_id,
                             family_code: benef.family_code,
@@ -487,51 +540,62 @@ if (beneficiaries && beneficiaries.length > 0) {
                             village: benef.village || null,
                             created_by_membership_id: authUser.membershipId,
                             sync_source: 'mobile',
-                            review_status: 'pending',
+                            review_status: 'pending'
                         }, { transaction });
 
-                        console.log(`✓ Created new beneficiary: uid ${benef.uid} → server_id ${beneficiaryRecord.id}`);
-                    }
+                        console.log(`  ✓ Beneficiary inserted → server_id: ${newBeneficiary.id}`);
 
-                    // Handle beneficiary members (replace all for updates, create for new)
-                    if (benef.members && benef.members.length > 0) {
-                        // For updates: delete old members first (full replacement)
-                        if (isUpdate) {
-                            await BeneficiaryMemberModel.destroy({
-                                where: { beneficiary_id: benef.server_id },
-                                transaction
-                            });
+                        // ────────────────────────────────────
+                        // 5. BENEFICIARY INSERTED → NOW HANDLE ITS MEMBERS
+                        // ────────────────────────────────────
+                        if (benef.members && benef.members.length > 0) {
+                            console.log(`  → Processing ${benef.members.length} members for beneficiary ${newBeneficiary.id}...`);
+
+                            for (const member of benef.members) {
+                                // Validate each member individually
+                                if (!member.full_name || !member.gender || !member.relationship) {
+                                    console.log(`  ✗ Skipped invalid member: ${member.full_name || 'unknown'}`);
+                                    continue;
+                                }
+
+                                await BeneficiaryMemberModel.create({
+                                    beneficiary_id: newBeneficiary.id,
+                                    full_name: member.full_name,
+                                    gender: member.gender,
+                                    date_of_birth: member.date_of_birth,
+                                    relationship: member.relationship
+                                }, { transaction });
+
+                                console.log(`  ✓ Member inserted: ${member.full_name} (${member.relationship})`);
+                            }
+                        } else {
+                            console.log(`  → No members provided for this beneficiary`);
                         }
 
-                        const membersData = benef.members.map((member: any) => ({
-                            beneficiary_id: benef.server_id,
-                            full_name: member.full_name,
-                            gender: member.gender,
-                            date_of_birth: member.date_of_birth,
-                            relationship: member.relationship
-                        }));
+                        // ────────────────────────────────────
+                        // 6. RECORD COMPLETE → PUSH RESULT, MOVE TO NEXT
+                        // ────────────────────────────────────
+                        beneficiaryResults.push({
+                            uid: benef.uid,
+                            server_id: newBeneficiary.id,
+                            status: 'pending',
+                            action: 'created'
+                        });
 
-                        await BeneficiaryMemberModel.bulkCreate(membersData, { transaction });
+                        console.log(`  ✓ Beneficiary ${benef.uid} → fully processed (created)\n`);
 
-                        console.log(`✓ ${isUpdate ? 'Replaced' : 'Added'} ${membersData.length} members for beneficiary ${benef.server_id}`);
+                    } catch (error: any) {
+                        console.error(`  ✗ Error processing beneficiary ${benef.uid || 'unknown'}:`, error);
+                        beneficiaryResults.push({
+                            uid: benef.uid || 'unknown',
+                            status: 'rejected',
+                            error: 'server_error'
+                        });
                     }
-
-                    beneficiaryResults.push({
-                        uid: benef.uid,
-                        server_id: beneficiaryRecord.id,
-                        status: 'pending'
-                    });
-
-                } catch (error: any) {
-                    console.error(`Error processing beneficiary ${benef.uid || 'unknown'}:`, error);
-                    beneficiaryResults.push({
-                        uid: benef.uid || 'unknown',
-                        status: 'rejected',
-                        error: 'server_error'
-                    });
                 }
+
+                console.log(`\n── Beneficiaries processing complete: ${beneficiaryResults.length} records handled ──\n`);
             }
-        }
 
 
             // STEP 6: PROCESS DELIVERIES
