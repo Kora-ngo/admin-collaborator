@@ -589,7 +589,7 @@ const DeliveryController = {
                 });
             }
 
-            await delivery.update({
+            await deliveryData.update({
                 review_status: action === 'approve' ? 'approved' : 'rejected',
                 reviewed_by_membership_id: membershipId!,
                 reviewed_at: new Date(),

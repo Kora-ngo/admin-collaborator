@@ -162,8 +162,29 @@ const EnumeratorController = {
                         attributes: [
                             'id', 'review_status', 'reviewed_at', 'review_note'
                         ],
+                    },
+
+                    {
+                        model: DeliveryModel,
+                        as: 'deliveries',
+                        where: {
+                            review_status: {
+                                [Op.in]: ['approved', 'rejected']
+                            }
+                        },
+                        required: false,
+                        attributes: [
+                            'id', 'review_status', 'reviewed_at', 'review_note'
+                        ],
+                        include: [
+                            {
+                                model: DeliveryItemModel,
+                                as: 'items',
+                                attributes: ['id', 'assistance_id', 'quantity']
+                            }
+                        ]
                     }
-                ];
+                    ];
 
                 // Fetch projects WITHOUT pagination
                 const projects = await ProjectModel.findAll({
@@ -224,7 +245,10 @@ const EnumeratorController = {
                         members: uniqueMembers,
                         assistances: data.assistances?.map((a: any) => a.dataValues || a) || [],
                         mediaLinks: data.mediaLinks?.map((ml: any) => ml.dataValues || ml) || [],
-                        beneficiaries: data.beneficiaries?.map((b: any) => b.dataValues || b) || []
+                        beneficiaries: data.beneficiaries?.map((b: any) => b.dataValues || b) || [],
+                        deliveries: data.deliveries?.map((d: any) => d.dataValues || d) || [],
+                        // beneficiariesCount: data.beneficiaries?.length || 0,
+                        // deliveriesCount: data.deliveries?.length || 0
                     };
                 }));
 
@@ -600,124 +624,168 @@ const EnumeratorController = {
 
             // STEP 6: PROCESS DELIVERIES
 
-            const deliveryResults: any[] = [];
+const deliveryResults: any[] = [];
 
-             if (deliveries && deliveries.length > 0) {
-                console.log(`Processing ${deliveries.length} deliveries...`);
+if (deliveries && deliveries.length > 0) {
+    console.log(`Processing ${deliveries.length} deliveries...`);
 
-                for (const deliv of deliveries) {
-                    try{
+    for (const deliv of deliveries) {
+        try {
+            // Validate required fields
+            if (!deliv.uid || !deliv.beneficiary_id || !deliv.delivery_date) {
+                deliveryResults.push({
+                    uid: deliv.uid || 'unknown',
+                    status: 'rejected',
+                    error: 'missing_required_fields'
+                });
+                console.log(`✗ Delivery ${deliv.uid || 'unknown'} → missing required fields`);
+                continue;
+            }
 
-                         // Validate required fields
-                        if (!deliv.uid || !deliv.beneficiary_id || !deliv.delivery_date) {
-                            deliveryResults.push({
-                                uid: deliv.uid || 'unknown',
-                                status: 'rejected',
-                                error: 'missing_required_fields'
-                            });
-                            continue;
-                        }
-                        
-                        // Validate items exist
-                        if (!deliv.items || deliv.items.length === 0) {
-                            deliveryResults.push({
-                                uid: deliv.uid,
-                                status: 'rejected',
-                                error: 'no_delivery_items'
-                            });
-                            continue;
-                        }
+            // Validate items exist
+            if (!deliv.items || deliv.items.length === 0) {
+                deliveryResults.push({
+                    uid: deliv.uid,
+                    status: 'rejected',
+                    error: 'no_delivery_items'
+                });
+                console.log(`✗ Delivery ${deliv.uid} → no items`);
+                continue;
+            }
 
+            let deliveryRecord;
+            let isUpdate = false;
 
-                        // Verify beneficiary exists and is approved
-                        const beneficiaryModel = await BeneficiaryModel.findOne({
-                            where: {
-                                id: deliv.beneficiary_id,
-                                project_id: project_id,
-                                review_status: 'approved'
-                            }
-                        });
+            // NEW: Check if this is an existing delivery (mobile sent server_id)
+            if (deliv.server_id) {
+                console.log(`  → server_id found: ${deliv.server_id}, checking DB...`);
 
-                        const beneficiary = beneficiaryModel?.dataValues;
+                const existing = await DeliveryModel.findByPk(deliv.server_id, { transaction });
 
+                if (existing) {
+                    // ── UPDATE the existing delivery ──
+                    console.log(`  → Record exists, updating delivery...`);
 
-                        if (!beneficiary) {
-                            deliveryResults.push({
-                                uid: deliv.uid,
-                                status: 'rejected',
-                                error: 'beneficiary_not_found_or_not_approved'
-                            });
-                            continue;
-                        }
+                    await existing.update({
+                        delivery_date: deliv.delivery_date,
+                        notes: deliv.notes || null,
+                        sync_source: 'mobile',
+                        review_status: 'pending',           // reset to pending
+                        updated_at: new Date()               // force update timestamp
+                        // IMPORTANT: do NOT update uid, project_id, beneficiary_id, created_by_membership_id, created_at
+                    }, { transaction });
 
+                    deliveryRecord = existing;
+                    isUpdate = true;
 
-                         // Validate all assistance items exist in project
-                        const assistanceIds = deliv.items.map((item: any) => item.assistance_id);
-                        const validAssistances = await AssistanceModel.findAll({
-                            where: {
-                                id: { [Op.in]: assistanceIds },
-                                status: 'true'
-                            }
-                        });
-                        
-                        if (validAssistances.length !== assistanceIds.length) {
-                            deliveryResults.push({
-                                uid: deliv.uid,
-                                status: 'rejected',
-                                error: 'invalid_assistance_items'
-                            });
-                            continue;
-                        }
+                    console.log(`  ✓ Delivery updated, now handling items...`);
+                } else {
+                    console.log(`  → server_id ${deliv.server_id} not found, treating as new...`);
+                }
+            }
 
+            // If NOT an update → CREATE new delivery
+            if (!deliveryRecord) {
+                // Verify beneficiary exists and is approved
+                const beneficiaryModel = await BeneficiaryModel.findOne({
+                    where: {
+                        id: deliv.beneficiary_id,
+                        project_id: project_id,
+                        review_status: 'approved'
+                    },
+                    transaction
+                });
 
-                        // Generate server UID
-                        const deliveryUid = await generateUniqueUid('deliveries');
-
-
-                        // Create delivery
-                        const newDelivery = await DeliveryModel.create({
-                            uid: deliveryUid,
-                            project_id: project_id,
-                            beneficiary_id: deliv.beneficiary_id,
-                            delivery_date: deliv.delivery_date,
-                            notes: deliv.notes || null,
-                            created_by_membership_id: authUser.membershipId,
-                            sync_source: 'mobile',
-                            review_status: 'pending'
-                        }, { transaction });
-
-
-
-                        // Create delivery items
-                        const itemsData = deliv.items.map((item: any) => ({
-                            delivery_id: newDelivery.id,
-                            assistance_id: item.assistance_id,
-                            quantity: item.quantity
-                        }));
-
-
-                        await DeliveryItemModel.bulkCreate(itemsData, { transaction });
-
-                        deliveryResults.push({
-                            uid: deliv.uid,
-                            server_id: newDelivery.id,
-                            status: 'pending'
-                        });
-
-                        console.log(`✓ Delivery ${deliv.uid} → Server ID: ${newDelivery.id}`);
-
-
-                    }catch (error: any) {
-                        console.error(`Error processing delivery ${deliv.uid}:`, error);
-                        deliveryResults.push({
-                            uid: deliv.uid,
-                            status: 'rejected',
-                            error: 'server_error'
-                        });
-                    }
+                if (!beneficiaryModel) {
+                    deliveryResults.push({
+                        uid: deliv.uid,
+                        status: 'rejected',
+                        error: 'beneficiary_not_found_or_not_approved'
+                    });
+                    console.log(`✗ Delivery ${deliv.uid} → invalid beneficiary`);
+                    continue;
                 }
 
-             }
+                // Validate all assistance items exist in project
+                const assistanceIds = deliv.items.map((item: any) => item.assistance_id);
+                const validAssistances = await AssistanceModel.findAll({
+                    where: {
+                        id: { [Op.in]: assistanceIds },
+                        status: 'true'
+                    },
+                    transaction
+                });
+
+                if (validAssistances.length !== assistanceIds.length) {
+                    deliveryResults.push({
+                        uid: deliv.uid,
+                        status: 'rejected',
+                        error: 'invalid_assistance_items'
+                    });
+                    console.log(`✗ Delivery ${deliv.uid} → invalid assistance items`);
+                    continue;
+                }
+
+                // Generate new server UID
+                const deliveryUid = await generateUniqueUid('deliveries');
+
+                // Create new delivery
+                deliveryRecord = await DeliveryModel.create({
+                    uid: deliveryUid,
+                    project_id: project_id,
+                    beneficiary_id: deliv.beneficiary_id,
+                    delivery_date: deliv.delivery_date,
+                    notes: deliv.notes || null,
+                    created_by_membership_id: authUser.membershipId,
+                    sync_source: 'mobile',
+                    review_status: 'pending',
+                }, { transaction });
+
+                console.log(`✓ Created new delivery: uid ${deliv.uid} → server_id ${deliveryRecord.id}`);
+            }
+
+            // ── HANDLE DELIVERY ITEMS (replace all for updates, create for new) ──
+            if (deliv.items && deliv.items.length > 0) {
+                // For updates: delete old items first (full replacement)
+                if (isUpdate) {
+                    await DeliveryItemModel.destroy({
+                        where: { delivery_id: deliv.server_id },
+                        transaction
+                    });
+                    console.log(`  → Old items cleared for delivery ${deliv.server_id}`);
+                }
+
+                const itemsData = deliv.items.map((item: any) => ({
+                    delivery_id: deliv.server_id,
+                    assistance_id: item.assistance_id,
+                    quantity: item.quantity
+                }));
+
+                await DeliveryItemModel.bulkCreate(itemsData, { transaction });
+
+                console.log(`  ✓ ${isUpdate ? 'Replaced' : 'Added'} ${itemsData.length} items for delivery ${deliveryRecord.id}`);
+            }
+
+            deliveryResults.push({
+                uid: deliv.uid,
+                server_id: deliveryRecord.id,
+                status: 'pending'
+            });
+
+            console.log(`  ✓ Delivery ${deliv.uid} → fully processed (${isUpdate ? 'updated' : 'created'})\n`);
+
+        } catch (error: any) {
+            console.error(`Error processing delivery ${deliv.uid || 'unknown'}:`, error);
+            deliveryResults.push({
+                uid: deliv.uid || 'unknown',
+                status: 'rejected',
+                error: 'server_error'
+            });
+        }
+    }
+
+    console.log(`\n── Deliveries processing complete: ${deliveryResults.length} records handled ──\n`);
+}
 
 
              // STEP 7: DETERMINE OVERALL STATUS
