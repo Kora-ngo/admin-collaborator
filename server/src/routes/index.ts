@@ -7,6 +7,7 @@ import projectRoute from './project.route.js';
 import dashbaordRoute from './dashbaord.route.js';
 import enumeratorRoute from './enumerator.route.js';
 import beneficiaryRoute from './beneficiary.route.js'
+import deliveryRoute from './delivery.route.js'
 
 
 
@@ -20,6 +21,7 @@ router.use("/membership", membershipRouter);
 router.use("/projects", projectRoute);
 router.use("/dashboard", dashbaordRoute);
 router.use("/beneficiaries", beneficiaryRoute);
+router.use("/deliveries", deliveryRoute);
 
 
 // Mobile-based
