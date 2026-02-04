@@ -171,7 +171,9 @@ const User = () => {
                             }}
                         />
                     )  :
-                    (<ActionIcon name="assign" onClick={() => {}} />)
+                    // (<ActionIcon name="assign" onClick={() => {}} />)
+                    (<></>)
+
                 }
 
 
@@ -189,7 +191,8 @@ const User = () => {
                             }}
                         />
                     )  :
-                    (<ActionIcon name="delivery" onClick={() => {}} />)
+                    // (<ActionIcon name="delivery" onClick={() => {}} />)
+                    (<></>)
                 }
              </div>
           )

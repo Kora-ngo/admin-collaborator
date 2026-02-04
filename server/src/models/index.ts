@@ -1,5 +1,6 @@
 import AssistanceModel from "./Assistance.js";
 import AssistanceTypeModel from "./AssistanceType.js";
+import AuditLogModel from "./AuditLog.js";
 import BeneficiaryModel from "./Beneficiary.js";
 import BeneficiaryMemberModel from "./BeneficiaryMember.js";
 import DeliveryModel from "./Delivery.js";
@@ -284,6 +285,35 @@ SyncBatchModel.belongsTo(MembershipModel, {
 });
 
 
+
+
+
+
+
+
+// AuditLog -> Membership (Actor)
+AuditLogModel.belongsTo(MembershipModel, {
+    foreignKey: 'actor_membership_id',
+    as: 'actor'
+});
+
+MembershipModel.hasMany(AuditLogModel, {
+    foreignKey: 'actor_membership_id',
+    as: 'auditLogs'
+});
+
+// AuditLog -> Organisation
+AuditLogModel.belongsTo(OrganisationModel, {
+    foreignKey: 'organisation_id',
+    as: 'organisation'
+});
+
+OrganisationModel.hasMany(AuditLogModel, {
+    foreignKey: 'organisation_id',
+    as: 'auditLogs'
+});
+
+
 export {
     AssistanceModel,
     AssistanceTypeModel,
@@ -306,5 +336,7 @@ export {
     DeliveryModel,
     DeliveryItemModel,
     SyncBatchModel,
+
+    AuditLogModel,
 
 };

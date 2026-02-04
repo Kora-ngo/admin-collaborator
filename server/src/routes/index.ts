@@ -7,7 +7,8 @@ import projectRoute from './project.route.js';
 import dashbaordRoute from './dashbaord.route.js';
 import enumeratorRoute from './enumerator.route.js';
 import beneficiaryRoute from './beneficiary.route.js'
-import deliveryRoute from './delivery.route.js'
+import deliveryRoute from './delivery.route.js';
+import autditLogRoute from './auth.routes.js';
 
 
 
@@ -22,6 +23,7 @@ router.use("/projects", projectRoute);
 router.use("/dashboard", dashbaordRoute);
 router.use("/beneficiaries", beneficiaryRoute);
 router.use("/deliveries", deliveryRoute);
+router.use("/audit-logs", autditLogRoute);
 
 
 // Mobile-based

@@ -25,19 +25,19 @@ const DetailView = ({
   const isSingle = layout === "single";
 
   return (
-    <div className={`max-w-4xl mx-auto border border-gray-200 rounded-xl ${className}`}>
+    <div className={`max-w-4xl mx-auto border border-gray-200 rounded-md ${className}`}>
 
       <div className="overflow-hidden">
         {/* Header Row - only shown in double layout */}
         {layout === "double" ? (
-          <div className="grid grid-cols-3 gap-4 py-3 bg-gray-100 px-6">
+          <div className="grid grid-cols-3 gap-4 py-3 bg-gray-100 px-6 rounded-t-md">
             <p className="font-semibold text-gray-700">Label</p>
             <p className="col-span-2 font-semibold text-gray-700">Value</p>
           </div>
         )
       : 
       (
-        <div className="grid grid-cols-3 gap-4 py-3 bg-gray-100 px-6">
+        <div className="grid grid-cols-3 gap-4 py-3 bg-gray-100 px-6 rounded-t-md">
             <p className="col-span-2 font-semibold text-gray-700">Value</p>
         </div>
       )
@@ -49,7 +49,7 @@ const DetailView = ({
           {fields.map((field, index) => (
             <div
               key={field.label! + index}
-              className={`px-6 py-4 hover:bg-gray-50 transition-colors ${
+              className={`px-6 py-3 hover:bg-gray-50 transition-colors ${
                 isSingle ? "grid grid-cols-1 gap-1" : "grid grid-cols-3 gap-4"
               }`}
             >

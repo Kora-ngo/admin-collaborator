@@ -19,6 +19,8 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
         "/dashbaord/families": "Families",
         "/dashbaord/assistance": "Assistance",
         "/dashbaord/deliveries": "Deliveries",
+        "/dashbaord/log": "Audit Log",
+        
     };
 
     let title = titles[location.pathname] || "Not Found"; 

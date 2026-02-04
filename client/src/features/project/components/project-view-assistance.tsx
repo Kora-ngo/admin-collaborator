@@ -27,7 +27,7 @@ const ProjectViewAssistance = ({selectedAssistance}: ProjectViewAssistanceProps)
   const fields = selectedAssistance.map((assistances: any) => ({
     value: (
       <div className="space-y-1">
-        <div className="font-semibold text-md text-gray-900">{assistances.assistance.name}</div>
+        <div className="font-semibold text-sm text-gray-900">{assistances.assistance.name}</div>
       </div>
     ),
   }));
