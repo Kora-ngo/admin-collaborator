@@ -106,10 +106,10 @@ const Deliveries = () => {
 
     const deliveryColumns: (TableColumn | null)[] = [
         {
-            key: "uid",
-            label: "Ref",
-            visibleOn: "always",
-            render: (row) => `#${row.uid}`
+            key: "project",
+            label: "Project",
+            visibleOn: "lg",
+            render: (row) => row.project?.name || "-"
         },
         {
             key: "beneficiary",
@@ -120,20 +120,8 @@ const Deliveries = () => {
                 : "-"
         },
         {
-            key: "project",
-            label: "Project",
-            visibleOn: "lg",
-            render: (row) => row.project?.name || "-"
-        },
-        {
-            key: "delivery_date",
-            label: "Delivery Date",
-            visibleOn: "md",
-            render: (row) => formatDate(row.delivery_date, false)
-        },
-        {
             key: "items_count",
-            label: "Items",
+            label: "Assistance",
             visibleOn: "sm",
             render: (row) => `${row.items?.length || 0} items`
         },
@@ -155,12 +143,25 @@ const Deliveries = () => {
                 );
             }
         },
+        
         {
-            key: "created_at",
-            label: "Created",
+            key: "created_by",
+            label: "Created By",
             visibleOn: "lg",
-            render: (row) => formatDate(row.created_at, false)
+            render: (row) => `${row.createdBy?.user?.name  || "--"}`
         },
+
+        !isCollaborator ?
+        { key: "reviewed_by_membership_id", label: "Reviewed By", visibleOn: "lg", render: (row) =>   `${row.reviewedBy?.user?.name  || "--"}` }:
+        null,
+
+        {
+            key: "delivery_date",
+            label: "Delivery Date",
+            visibleOn: "md",
+            render: (row) => formatDate(row.delivery_date, false)
+        },
+
         {
             key: "action",
             label: "Action",

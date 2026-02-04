@@ -43,7 +43,7 @@ const [generalData, setGeneralData] = useState({
         const fetchedData = await fetchOneData(id);
         setData(fetchedData as ProjectFormData);
 
-        console.log("Data --> ", data);
+        console.log("Data --> ", fetchedData);
         setGeneralData({
             name: fetchedData.name,
             description: fetchedData!.description!,
@@ -117,13 +117,13 @@ const [generalData, setGeneralData] = useState({
       case "general":
         return <ProjectViewGeneral data={generalData} />;
       case "families":
-        return <ProjectViewFamilies />;
+        return <ProjectViewFamilies selectedFamily={data?.beneficiaries} />;
       case "assistances":
         return <ProjectViewAssistance selectedAssistance={data?.assistances} />;
       case "members":
         return <ProjectViewMembers selectedMembers={data?.members} />;
       case "deliveries":
-        return <ProjectViewDeliverires />;
+        return <ProjectViewDeliverires selectedDelivery={data?.deliveries} />;
       default:
         return null;
     }

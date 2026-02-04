@@ -1,6 +1,6 @@
 import { type Request, type Response } from 'express';
 import { Op } from 'sequelize';
-import { ProjectModel, ProjectMemberModel, ProjectAssistanceModel, MembershipModel, AssistanceModel, UserModel, MediaLink, Media } from '../models/index.js';
+import { ProjectModel, ProjectMemberModel, ProjectAssistanceModel, MembershipModel, AssistanceModel, UserModel, MediaLink, Media, BeneficiaryModel, AssistanceTypeModel, DeliveryItemModel, DeliveryModel, BeneficiaryMemberModel } from '../models/index.js';
 import type { ProjectCreationAttributes } from '../types/project.js';
 import { cleanupOldDeleted } from '../utils/cleanupOldDeleted.js';
 import { bulkUpdateProjectStatuses, updateProjectStatusInDB } from '../helpers/projectStatus.js';
@@ -31,51 +31,97 @@ const ProjectController = {
 
             // Build include array - conditionally filter members for collaborators
             const includeArray: any[] = [
-            {
-                model: ProjectMemberModel,
-                as: 'members',
-                ...(userRole === 'collaborator' && {
-                    where: { membership_id: membershipId },
-                    required: true // INNER JOIN - only fetch projects where user is a member
-                }),
-                include: [
-                    {
-                        model: MembershipModel,
-                        as: 'membership',
-                        attributes: ['id', 'role'],
-                        include: [
-                            {
-                                model: UserModel,
-                                as: 'user',
-                                attributes: ['id', 'name', 'email']
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                model: ProjectAssistanceModel,
-                as: 'assistances',
-                include: [
-                    {
-                        model: AssistanceModel,
-                        as: 'assistance',
-                        attributes: ['id', 'name']
-                    }
-                ]
-            },
-            {
-                model: MediaLink,
-                as: 'mediaLinks',
-                include: [
-                    {
-                        model: Media,
-                        as: 'media',
-                        attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
-                    }
-                ]
-            }
-        ];
+                {
+                    model: ProjectMemberModel,
+                    as: 'members',
+                    ...(userRole === 'collaborator' && {
+                        where: { membership_id: membershipId },
+                        required: true // INNER JOIN - only fetch projects where user is a member
+                    }),
+                    include: [
+                        {
+                            model: MembershipModel,
+                            as: 'membership',
+                            attributes: ['id', 'role'],
+                            include: [
+                                {
+                                    model: UserModel,
+                                    as: 'user',
+                                    attributes: ['id', 'name', 'email']
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    model: ProjectAssistanceModel,
+                    as: 'assistances',
+                    include: [
+                        {
+                            model: AssistanceModel,
+                            as: 'assistance',
+                            attributes: ['id', 'name']
+                        }
+                    ]
+                },
+                {
+                    model: MediaLink,
+                    as: 'mediaLinks',
+                    include: [
+                        {
+                            model: Media,
+                            as: 'media',
+                            attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
+                        }
+                    ]
+                },
+                // APPROVED BENEFICIARIES with their members
+                {
+                    model: BeneficiaryModel,
+                    as: 'beneficiaries',
+                    where: { review_status: 'approved' },
+                    required: false, // LEFT JOIN - projects without approved beneficiaries will still be shown
+                    include: [
+                        {
+                            model: BeneficiaryMemberModel,
+                            as: 'members',
+                            attributes: ['id', 'full_name', 'gender', 'date_of_birth', 'relationship']
+                        }
+                    ]
+                },
+                // APPROVED DELIVERIES with their items
+                {
+                    model: DeliveryModel,
+                    as: 'deliveries',
+                    where: { review_status: 'approved' },
+                    required: false, // LEFT JOIN - projects without approved deliveries will still be shown
+                    include: [
+                        {
+                            model: DeliveryItemModel,
+                            as: 'items',
+                            include: [
+                                {
+                                    model: AssistanceModel,
+                                    as: 'assistance',
+                                    attributes: ['id', 'name', 'assistance_id'],
+                                    include: [
+                                        {
+                                            model: AssistanceTypeModel,
+                                            as: 'assistanceType',
+                                            attributes: ['id', 'name', 'unit']
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            model: BeneficiaryModel,
+                            as: 'beneficiary',
+                            attributes: ['id', 'family_code', 'head_name', 'phone']
+                        }
+                    ]
+                }
+            ];
 
         const { count, rows } = await ProjectModel.findAndCountAll({
             where: whereClause,
@@ -98,6 +144,8 @@ const ProjectController = {
                 ...data,
                 members: data.members?.map((m: any) => m.dataValues || m) || [],
                 assistances: data.assistances?.map((a: any) => a.dataValues || a) || [],
+                beneficiaries: data.beneficiaries?.map((b: any) => b.dataValues || b) || [],
+                deliveries: data.deliveries?.map((d: any) => d.dataValues || d) || [],
                 mediaLinks: data.mediaLinks?.map((ml: any) => ml.dataValues || ml) || []
             };
         });
@@ -174,7 +222,67 @@ const ProjectController = {
                                 attributes: ['id', 'file_name', 'file_type', 'storage_path', 'size', 'created_at']
                             }
                         ]
-                    }
+                    },
+
+                                    // APPROVED BENEFICIARIES with their members
+                {
+                    model: BeneficiaryModel,
+                    as: 'beneficiaries',
+                    where: { review_status: 'approved' },
+                    required: false, // LEFT JOIN - projects without approved beneficiaries will still be shown
+                    include: [
+                        {
+                            model: BeneficiaryMemberModel,
+                            as: 'members',
+                            attributes: ['id', 'full_name', 'gender', 'date_of_birth', 'relationship']
+                        },
+                        {
+                            model: MembershipModel,
+                            as: 'createdBy',
+                            attributes: ['id', 'role'],
+                            include: [
+                                {
+                                    model: UserModel,
+                                    as: 'user',
+                                    attributes: ['id', 'name', 'email']
+                                }
+                            ]
+                        },
+                    ]
+                },
+                // APPROVED DELIVERIES with their items
+                {
+                    model: DeliveryModel,
+                    as: 'deliveries',
+                    where: { review_status: 'approved' },
+                    required: false, // LEFT JOIN - projects without approved deliveries will still be shown
+                    include: [
+                        {
+                            model: DeliveryItemModel,
+                            as: 'items',
+                            include: [
+                                {
+                                    model: AssistanceModel,
+                                    as: 'assistance',
+                                    attributes: ['id', 'name', 'assistance_id'],
+                                    include: [
+                                        {
+                                            model: AssistanceTypeModel,
+                                            as: 'assistanceType',
+                                            attributes: ['id', 'name', 'unit']
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            model: BeneficiaryModel,
+                            as: 'beneficiary',
+                            attributes: ['id', 'family_code', 'head_name', 'phone']
+                        }
+                    ]
+                }
+
                 ]
             });
 

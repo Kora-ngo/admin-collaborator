@@ -101,19 +101,11 @@ const Families = () => {
     };
 
     const beneficiaryColumns: (TableColumn | null)[] = [
+        { key: "project",  label: "Project",  visibleOn: "lg", render: (row) => row.project?.name || "-" },
         { key: "family_code", label: "Family Code", visibleOn: "always" },
         { key: "head_name", label: "Head of Family", visibleOn: "always" },
-        { key: "phone", label: "Phone", visibleOn: "md", render: (row) => row.phone || "-" },
-        { 
-            key: "project", 
-            label: "Project", 
-            visibleOn: "lg", 
-            render: (row) => row.project?.name || "-" 
-        },
-        {
-            key: "review_status",
-            label: "Status",
-            visibleOn: "always",
+        { key: "members_count", label: "Members", visibleOn: "sm", render: (row) => `${row.members?.length || 0} members`},
+        { key: "review_status", label: "Status", visibleOn: "always",
             render: (row) => {
                 const statusColors: any = {
                     pending: "yellow",
@@ -128,20 +120,16 @@ const Families = () => {
                 );
             }
         },
+        { key: "created_by", label: "Created By", visibleOn: "sm", render: (row) => `${row.createdBy?.user?.name  || "--"}`},
         !isCollaborator ?
-        { key: "reviewed_by_membership_id", label: "Reviewed By", visibleOn: "lg", render: (row) =>  "--" }:
+        { key: "reviewed_by_membership_id", label: "Reviewed By", visibleOn: "lg", render: (row) =>   `${row.reviewedBy?.user?.name  || "--"}` }:
         null,
+
         {
-            key: "members_count",
-            label: "Members",
-            visibleOn: "sm",
-            render: (row) => `${row.members?.length || 0} members`
-        },
-        {
-            key: "created_at",
-            label: "Created",
+            key: "updated_at",
+            label: "Last Update",
             visibleOn: "lg",
-            render: (row) => formatDate(row.created_at, false)
+            render: (row) => formatDate(row.updated_at, false)
         },
         {
             key: "action",

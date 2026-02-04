@@ -36,6 +36,8 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
                 pagination: data.pagination
             });
 
+            console.log("Bene --> data", data);
+
             return data;
         } catch (error: any) {
             const errorToast = handleApiError(error);
