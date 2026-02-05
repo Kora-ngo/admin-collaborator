@@ -12,6 +12,7 @@ interface SubTile {
 interface AccordionItem {
   title: string;
   subtitle?: string;
+  iconTitleLeading?: React.ReactNode;
   count?: number;           // optional badge
   subTiles: SubTile[];      // array of sub-tiles to show when expanded
 }
@@ -53,24 +54,28 @@ const Accordion = ({
             {/* Big Tile Header (clickable) */}
             <button
               onClick={() => toggle(itemId)}
-              className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors text-left group"
+              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors text-left group"
             >
-              <div className=" items-center gap-4">
-                <span className="font-bold text-md text-gray-900">
-                  {item.title}
-                </span>
+              <div className="flex space-x-3">
+                {
+                  item.iconTitleLeading &&
+                  (
+                    <div className="flex items-center">
+                      {item.iconTitleLeading}
+                    </div>
+                  )
+                }
+                <div className=" items-center gap-4">
+                    <span className="font-bold text-md text-gray-900">
+                      {item.title}
+                    </span>
 
-                {item.subtitle && (
-                  <p className="text-sm text-gray-400 font-medium">
-                    {item.subtitle}
-                  </p>
-                )}
-
-                {/* {item.count !== undefined && (
-                  <span className="bg-primary text-white text-sm font-medium px-3 py-1 rounded-full">
-                    {item.count}
-                  </span>
-                )} */}
+                    {item.subtitle && (
+                      <p className="text-sm text-gray-400 font-medium">
+                        {item.subtitle}
+                      </p>
+                    )}
+                    </div>
               </div>
 
               {/* Pure Tailwind chevron (no icon library) */}

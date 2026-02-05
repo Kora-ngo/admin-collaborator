@@ -7,5 +7,6 @@ const router = Router();
 // DASHBOARD ROUTES
 router.get('/key-metrics', verifyToken, DashboardController.adminKeyMetrics);
 router.get('/project-progress', verifyToken, DashboardController.adminProjectProgress);
+router.get('/project-alert', verifyToken, DashboardController.adminAlerts);
 
 export default router;

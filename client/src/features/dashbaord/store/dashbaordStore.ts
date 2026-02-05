@@ -20,18 +20,27 @@ interface ProjectProgress {
     membersCount: number;
 }
 
+interface ProjectAlert {
+    type: string;
+    alerts: [],
+    summary: {}
+}
+
 interface DashboardState {
     keyMetrics: KeyMetrics | null;
     projectProgress: ProjectProgress[];
+    projectAlert: ProjectAlert | null;
     loading: boolean;
     getKeyMetrics: () => Promise<any>;
     getProjectProgress: () => Promise<any>;
+    getProjectAlert: () => Promise<any>;
 }
 
 const endpoint = "dashboard";
 
 export const useDashboardStore = create<DashboardState>((set) => ({
     keyMetrics: null,
+    projectAlert: null,
     projectProgress: [],
     loading: false,
 
@@ -66,6 +75,27 @@ export const useDashboardStore = create<DashboardState>((set) => ({
             });
 
             console.log("Dashboard - Project Progress response:", data);
+            return data;
+        } catch (error: any) {
+            const errorToast = handleApiError(error);
+            return errorToast;
+        } finally {
+            set({ loading: false });
+        }
+    },
+
+
+    getProjectAlert: async () => {
+        try {
+            set({ loading: true });
+
+            const { data } = await axiosInstance.get(`${endpoint}/project-alert`);
+
+            set({
+                projectAlert: data
+            });
+
+            console.log("Dashboard - Project Alert response:", data);
             return data;
         } catch (error: any) {
             const errorToast = handleApiError(error);
