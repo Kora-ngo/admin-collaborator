@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Button } from "./button";
 import { SelectInput } from "./select-input";
-import Modal from "./modal";
+import Popup from "./popup";
 
-interface ExportModalProps {
+interface ExportPopupProps {
     isOpen: boolean;
     onClose: () => void;
     onExport: (period: string) => Promise<void>;
     title: string;
 }
 
-const ExportModal = ({ isOpen, onClose, onExport, title }: ExportModalProps) => {
+const ExportPopup = ({ isOpen, onClose, onExport, title }: ExportPopupProps) => {
     const [period, setPeriod] = useState("all");
     const [loading, setLoading] = useState(false);
 
@@ -28,7 +28,7 @@ const ExportModal = ({ isOpen, onClose, onExport, title }: ExportModalProps) => 
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={title}>
+        <Popup open={isOpen} showFooter={false} onClose={onClose} title={title} confirmText="Export to CSV">
             <div className="space-y-6">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -47,7 +47,7 @@ const ExportModal = ({ isOpen, onClose, onExport, title }: ExportModalProps) => 
                     />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t">
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                     <Button
                         variant="ghost"
                         onClick={onClose}
@@ -56,8 +56,8 @@ const ExportModal = ({ isOpen, onClose, onExport, title }: ExportModalProps) => 
                         Cancel
                     </Button>
                     <Button
-                        onClick={handleExport}
                         disabled={loading}
+                        onClick={handleExport}
                     >
                         {loading ? (
                             <span className="flex items-center gap-2">
@@ -73,8 +73,8 @@ const ExportModal = ({ isOpen, onClose, onExport, title }: ExportModalProps) => 
                     </Button>
                 </div>
             </div>
-        </Modal>
+        </Popup>
     );
 };
 
-export default ExportModal;
+export default ExportPopup;

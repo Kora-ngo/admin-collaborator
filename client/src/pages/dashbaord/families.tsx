@@ -20,7 +20,7 @@ import BeneficiaryView from "../../features/family/components/beneficiary-view";
 import { useToastStore } from "../../store/toastStore";
 import { exportBeneficiariesToCSV } from "../../utils/exportUtil";
 import { Button } from "../../components/widgets/button";
-import ExportModal from "../../components/widgets/export-modal";
+import ExportPopup from "../../components/widgets/export-modal";
 
 type ModalMode = 'view' | 'review' | null;
 
@@ -382,11 +382,12 @@ const Families = () => {
             </Modal>
 
             {/* Export Modal */}
-            <ExportModal
+            <ExportPopup
                 isOpen={exportModal}
                 onClose={() => setExportModal(false)}
                 onExport={handleExport}
                 title="Export Beneficiaries"
+                
             />
 
             {/* Review Popup */}
