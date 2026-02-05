@@ -8,7 +8,7 @@ import dashbaordRoute from './dashbaord.route.js';
 import enumeratorRoute from './enumerator.route.js';
 import beneficiaryRoute from './beneficiary.route.js'
 import deliveryRoute from './delivery.route.js';
-import autditLogRoute from './auth.routes.js';
+import autditLogRoute from './audit-log.route.js';
 
 
 

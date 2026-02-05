@@ -15,6 +15,7 @@ import { SelectInput } from "../../components/widgets/select-input";
 import { useAuditLogStore } from "../../features/audit/store/auditLogStore";
 import { useAuditLog } from "../../features/audit/hooks/useAuditLog";
 import AuditLogView from "../../features/audit/components/audit-log-view";
+import ActionIcon from "../../components/widgets/action-icon";
 
 const AuditLogs = () => {
     const { data, getData, pagination, loading } = useAuditLogStore();
@@ -54,12 +55,7 @@ const AuditLogs = () => {
     };
 
     const auditLogColumns: (TableColumn | null)[] = [
-        {
-            key: "created_at",
-            label: "Timestamp",
-            visibleOn: "always",
-            render: (row) => formatDate(row.created_at, true)
-        },
+ 
         {
             key: "actor",
             label: "Actor",
@@ -67,6 +63,15 @@ const AuditLogs = () => {
             render: (row) => (
                 <div>
                     <p className="font-medium">{row.actor?.user?.name || "Unknown"}</p>
+                </div>
+            )
+        },
+        {
+            key: "role",
+            label: "Role",
+            visibleOn: "always",
+            render: (row) => (
+                <div>
                     <StatusBadge
                         text={row.actor_role}
                         color={getRoleBadgeColor(row.actor_role)}
@@ -87,9 +92,11 @@ const AuditLogs = () => {
         },
         {
             key: "entity_type",
-            label: "Entity",
+            label: "Module",
             visibleOn: "md",
-            render: (row) => row.entity_type
+            render: (row) => (
+                <span>{row.entity_type.toString().toUpperCase()}</span>
+            )
         },
         {
             key: "platform",
@@ -103,25 +110,20 @@ const AuditLogs = () => {
             )
         },
         {
-            key: "ip_address",
-            label: "IP Address",
-            visibleOn: "lg",
-            render: (row) => row.ip_address || "-"
+            key: "created_at",
+            label: "Created At",
+            visibleOn: "always",
+            render: (row) => formatDate(row.created_at, true)
         },
         {
             key: "action_col",
             label: "Details",
             visibleOn: "always",
             render: (row) => (
-                    <button
-                        onClick={() => {
+                    <ActionIcon name="view" onClick={() => {
                         setSelectedLog(row);
                         setViewModal(true);
-                        }}
-                        className="text-primary hover:text-primary/80 font-medium text-sm"
-                    >
-                    View Details
-                    </button>
+                    }} />
                     )
                     }
                     ];

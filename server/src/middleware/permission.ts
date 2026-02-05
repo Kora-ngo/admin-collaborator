@@ -15,6 +15,8 @@ export const requireRole = (...allowedRoles: Role[]) => {
 
     const userRole = req.user.role as Role;
 
+    console.log("Role --> ", userRole);
+
     // Check if user's role is in the allowed list
     if (!allowedRoles.includes(userRole)) {
         console.log("Permission --> Middleware")

@@ -6,6 +6,7 @@ import { Op } from 'sequelize';
 import type { MembershipCreationAttributes } from "../types/memebership.js";
 import { generateUniqueUid } from "../utils/generateUniqueUid.js";
 import bcrypt from "bcryptjs";
+import { logAudit } from "../utils/auditLogger.js";
 
 const MembershipController = {
 
@@ -88,9 +89,10 @@ const MembershipController = {
             // Filter to only these enumerator memberships
             whereClause.id = { [Op.in]: enumeratorMembershipIds };
             whereClause.role = 'enumerator'; // Extra safety to ensure only enumerators
+            whereClause.role = { [Op.ne]: 'admin' };
+
         } else {
             // Admin: exclude admin role from results
-            whereClause.role = { [Op.ne]: 'admin' };
         }
 
         // === STATUS HANDLING ===
@@ -318,6 +320,20 @@ const MembershipController = {
             ],
         });
 
+
+        await logAudit({
+            req,
+            action: "Create",
+            entityType: "user",
+            entityId: newMembership.id,
+            metadata: {
+                name: body.name,
+                email: body.email,
+                role: body.role,
+                status: "true"
+            }
+        });
+
         res.status(201).json({
             type: 'success',
             message: 'done',
@@ -410,9 +426,30 @@ const MembershipController = {
                 });
             }
 
-            await membershipData.update({
+            const membershipDataResult = await membershipData.update({
                 status: status,
             }); 
+
+
+            const getUserData = await UserModel.findByPk(membershipDataResult.dataValues.user_id);
+            const useData = getUserData?.dataValues;
+
+            console.log("UserData --> ", useData);
+            console.log("User ID --> ", membershipDataResult.dataValues.user_id);
+
+
+            await logAudit({
+                req,
+                action: status == "true" ? "Enabled" : status == "blocked" ? "Blocked" : "Deleted",
+                entityType: "user",
+                entityId: membershipDataResult.id,
+                metadata: {
+                    name: useData?.name,
+                    email: useData?.email,
+                    role: membershipDataResult.dataValues.role,
+                    status,
+                }
+            });
 
 
             res.status(200).json({

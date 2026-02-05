@@ -29,6 +29,8 @@ export const useAuditLogStore = create<AuditLogState>((set) => ({
 
             const { data } = await axiosInstance.get(getEndpoint, { params });
 
+            console.log("Get audit --> ", data);
+
             set({
                 data: data.data,
                 pagination: data.pagination

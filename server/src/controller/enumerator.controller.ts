@@ -8,6 +8,7 @@ import { AssistanceModel, AssistanceTypeModel, BeneficiaryMemberModel, Beneficia
 import { bulkUpdateProjectStatuses } from "../helpers/projectStatus.js";
 import sequelize from "../config/database.js";
 import { generateUniqueUid } from "../utils/generateUniqueUid.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 const EnumeratorController = {
     getMobileUserData: async (req: Request, res: Response) => {
@@ -253,8 +254,6 @@ const EnumeratorController = {
                 }));
 
                 console.log(`💚 MOBILE --->`);
-
-
 
 
                 // ========================================
@@ -596,6 +595,9 @@ const EnumeratorController = {
                             console.log(`  → No members provided for this beneficiary`);
                         }
 
+
+                        
+
                         // ────────────────────────────────────
                         // 6. RECORD COMPLETE → PUSH RESULT, MOVE TO NEXT
                         // ────────────────────────────────────
@@ -604,6 +606,18 @@ const EnumeratorController = {
                             server_id: newBeneficiary.id,
                             status: 'pending',
                             action: 'created'
+                        });
+
+
+                        await logAudit({
+                            req,
+                            action: 'Synched',
+                            entityType: "beneficiary",
+                            entityId: newBeneficiary.id,
+                            metadata: {
+                                status: 'pending',
+                                length: beneficiaryResults.length
+                            }
                         });
 
                         console.log(`  ✓ Beneficiary ${benef.uid} → fully processed (created)\n`);
@@ -772,6 +786,17 @@ if (deliveries && deliveries.length > 0) {
                 status: 'pending'
             });
 
+
+            await logAudit({
+                req,
+                action: 'Synched',
+                entityType: "delivery",
+                entityId: deliveryRecord.id,
+                metadata: {
+                    status: 'pending',
+                    length: deliveryResults.length
+                }
+            });
             console.log(`  ✓ Delivery ${deliv.uid} → fully processed (${isUpdate ? 'updated' : 'created'})\n`);
 
         } catch (error: any) {

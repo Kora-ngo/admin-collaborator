@@ -15,7 +15,7 @@ router.get('/:id', verifyToken, MembershipController.fetchOne);
 
 router.get('/', verifyToken, MembershipController.fetchAll);
 
-router.post('/', requireRole('admin'), verifyToken, MembershipController.create);
+router.post('/', verifyToken, requireRole('admin'), MembershipController.create);
 
 router.put('/:id', verifyToken, requireRole('admin'), MembershipController.update);
 

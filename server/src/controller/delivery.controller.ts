@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { AssistanceModel, AssistanceTypeModel, BeneficiaryModel, DeliveryItemModel, DeliveryModel, MembershipModel, ProjectMemberModel, ProjectModel, UserModel } from "../models/index.js";
 import { Op } from "sequelize";
+import { logAudit } from "../utils/auditLogger.js";
 
 const DeliveryController = { 
 
@@ -595,6 +596,21 @@ const DeliveryController = {
                 reviewed_at: new Date(),
                 review_note: review_note?.trim() || null,
                 updated_at: new Date()
+            });
+
+
+            const getUserData = await UserModel.findByPk(authUser?.userId);
+    
+    
+            await logAudit({
+                req,
+                action: action === 'approve' ? 'approved' : 'rejected',
+                entityType: "delivery",
+                entityId: delivery.project_id,
+                metadata: {
+                    "Delivery Date": delivery?.delivery_date,
+                    "Note": delivery?.notes,
+                }
             });
 
             res.status(200).json({

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import ProjectMemberModel from "../models/projectMember.js";
 import { Op } from "sequelize";
 import { BeneficiaryMemberModel, BeneficiaryModel, MembershipModel, ProjectModel, UserModel } from "../models/index.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 const BeneficiaryController = {
 
@@ -548,6 +549,20 @@ reviewBeneficiary: async (req: Request, res: Response) => {
             reviewed_at: new Date(),
             review_note: review_note?.trim() || null,
             updated_at: new Date()
+        });
+
+        const getUserData = await UserModel.findByPk(authUser?.userId);
+
+
+        await logAudit({
+            req,
+            action: action === 'approve' ? 'approved' : 'rejected',
+            entityType: "beneficiary",
+            entityId: beneficiary.project_id,
+            metadata: {
+                "Family Code": beneficiary?.family_code,
+                "Family Head": beneficiary?.head_name,
+            }
         });
 
         res.status(200).json({

@@ -15,7 +15,7 @@ export const handleApiError = (err: any): ToastMessage => {
         message = err.message || message;
     }
 
-    console.log("Errror API handle --> ", err.response?.data.type);
+    console.log("Errror API handle --> ", err.response?.data);
 
     return {
         type: err.response?.data.type || "error",

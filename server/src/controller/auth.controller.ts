@@ -8,6 +8,7 @@ import OrganisationModel from '../models/Organisation.js';
 import sequelize from '../config/database.js';
 import MembershipModel from '../models/Membership.js';
 import User from '../models/User.js';
+import { logAudit } from '../utils/auditLogger.js';
 
 
 const AuthController = {
@@ -87,6 +88,18 @@ const AuthController = {
                 process.env.JWT_SECRET as string,
                 { expiresIn: '30d' }
             );
+
+            await logAudit({
+                req,
+                action: "Logged In",
+                entityType: "auth",
+                entityId: userExist.id,
+                metadata: {
+                    name: userExist?.name,
+                    email: userExist?.email,
+                    role: memberships?.role,
+                }
+            });
 
             return res.status(200).json({
                 type: 'success',
