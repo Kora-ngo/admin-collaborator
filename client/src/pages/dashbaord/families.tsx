@@ -17,6 +17,10 @@ import { useBeneficiaryStore } from "../../features/family/store/beneficiaryStor
 import { useAuthStore } from "../../features/auth/store/authStore";
 import { useBeneficiary } from "../../features/family/hooks/useBeneficiary";
 import BeneficiaryView from "../../features/family/components/beneficiary-view";
+import { useToastStore } from "../../store/toastStore";
+import { exportBeneficiariesToCSV } from "../../utils/exportUtil";
+import { Button } from "../../components/widgets/button";
+import ExportModal from "../../components/widgets/export-modal";
 
 type ModalMode = 'view' | 'review' | null;
 
@@ -100,6 +104,33 @@ const Families = () => {
         }
     };
 
+
+
+    // Export module...
+    const [exportModal, setExportModal] = useState(false);
+    const showToast = useToastStore((state) => state.showToast);
+    const isAdmin = membership?.role === 'admin';
+
+
+    const handleExport = async (period: string) => {
+        try {
+            await exportBeneficiariesToCSV(period);
+            showToast({
+                type: 'success',
+                message: 'Export successful',
+                details: 'Beneficiaries exported to CSV'
+            });
+        } catch (error) {
+            showToast({
+                type: 'error',
+                message: 'Export failed',
+                details: 'Could not export beneficiaries'
+            });
+        }
+    };
+
+
+
     const beneficiaryColumns: (TableColumn | null)[] = [
         { key: "project",  label: "Project",  visibleOn: "lg", render: (row) => row.project?.name || "-" },
         { key: "family_code", label: "Family Code", visibleOn: "always" },
@@ -181,6 +212,18 @@ const Families = () => {
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                         <ActionButton onClick={() => refreshCurrentPage(pagination?.page || 1)} />
+                        {isAdmin && (
+                            <Button
+                                variant="ghost"
+                                onClick={() => setExportModal(true)}
+                                className="flex items-center gap-2"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                </svg>
+                                Export CSV
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -337,6 +380,14 @@ const Families = () => {
                     id={selectedRecord?.id || 0}
                 />
             </Modal>
+
+            {/* Export Modal */}
+            <ExportModal
+                isOpen={exportModal}
+                onClose={() => setExportModal(false)}
+                onExport={handleExport}
+                title="Export Beneficiaries"
+            />
 
             {/* Review Popup */}
            <Popup

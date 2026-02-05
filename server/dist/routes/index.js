@@ -9,6 +9,7 @@ import enumeratorRoute from './enumerator.route.js';
 import beneficiaryRoute from './beneficiary.route.js';
 import deliveryRoute from './delivery.route.js';
 import autditLogRoute from './audit-log.route.js';
+import exportRoute from './export.route.js';
 const router = Router();
 // Web-based
 router.use("/auth", authRouter);
@@ -20,6 +21,7 @@ router.use("/dashboard", dashbaordRoute);
 router.use("/beneficiaries", beneficiaryRoute);
 router.use("/deliveries", deliveryRoute);
 router.use("/audit-logs", autditLogRoute);
+router.use("/export", exportRoute);
 // Mobile-based
 router.use("/mobile", enumeratorRoute);
 export default router;
