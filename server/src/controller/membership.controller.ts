@@ -88,7 +88,7 @@ const MembershipController = {
 
             // Filter to only these enumerator memberships
             whereClause.id = { [Op.in]: enumeratorMembershipIds };
-            whereClause.role = 'enumerator'; // Extra safety to ensure only enumerators
+            whereClause.role = 'enumerator';
             whereClause.role = { [Op.ne]: 'admin' };
 
         } else {

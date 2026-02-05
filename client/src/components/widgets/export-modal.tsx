@@ -28,7 +28,7 @@ const ExportPopup = ({ isOpen, onClose, onExport, title }: ExportPopupProps) => 
     };
 
     return (
-        <Popup open={isOpen} showFooter={false} onClose={onClose} title={title} confirmText="Export to CSV">
+        <Popup open={isOpen} showFooter={false} onClose={onClose} title={title} confirmText="Export to Excel">
             <div className="space-y-6">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -68,7 +68,7 @@ const ExportPopup = ({ isOpen, onClose, onExport, title }: ExportPopupProps) => 
                                 Exporting...
                             </span>
                         ) : (
-                            'Export to CSV'
+                            'Export to Excel'
                         )}
                     </Button>
                 </div>

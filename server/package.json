@@ -16,7 +16,8 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
     "mysql2": "^3.16.0",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -25,6 +26,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.2",
     "@types/sequelize": "^4.28.20",
+    "@types/xlsx": "^0.0.35",
     "concurrently": "^9.2.1",
     "nodemon": "^3.1.11",
     "rimraf": "^6.1.2",

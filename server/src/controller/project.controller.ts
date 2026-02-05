@@ -29,13 +29,32 @@ const ProjectController = {
                 status: { [Op.ne]: 'false' } 
             };
 
+            let includeArray: any[] = [];
+            let projectIds;
+
             // Build include array - conditionally filter members for collaborators
-            const includeArray: any[] = [
+            if(userRole === "collaborator"){
+
+                const collaboratorProjects = await ProjectMemberModel.findAll({
+                    where: { membership_id: membershipId },
+                    attributes: ['project_id'],
+                    raw: true
+                });
+
+                projectIds = collaboratorProjects.map(pm => pm.project_id);
+
+                }
+
+                
+                 includeArray = [
                 {
                     model: ProjectMemberModel,
                     as: 'members',
                     ...(userRole === 'collaborator' && {
-                        where: { membership_id: membershipId },
+                        where: { 
+                            project_id: { [Op.in]: projectIds },
+                            role_in_project: ['enumerator', 'collaborator']
+                         },
                         required: true // INNER JOIN - only fetch projects where user is a member
                     }),
                     include: [
@@ -122,6 +141,7 @@ const ProjectController = {
                     ]
                 }
             ];
+            
 
         const { count, rows } = await ProjectModel.findAndCountAll({
             where: whereClause,

@@ -16,6 +16,7 @@ import { useAuditLogStore } from "../../features/audit/store/auditLogStore";
 import { useAuditLog } from "../../features/audit/hooks/useAuditLog";
 import AuditLogView from "../../features/audit/components/audit-log-view";
 import ActionIcon from "../../components/widgets/action-icon";
+import { useAuthStore } from "../../features/auth/store/authStore";
 
 const AuditLogs = () => {
     const { data, getData, pagination, loading } = useAuditLogStore();
@@ -34,6 +35,20 @@ const AuditLogs = () => {
 
     const [viewModal, setViewModal] = useState(false);
     const [selectedLog, setSelectedLog] = useState<any>(null);
+    const {role} = useAuthStore();
+
+    const adminDrop = [
+            { label: "All Roles", value: "" },
+            { label: "Admin", value: "admin" },
+            { label: "Collaborator", value: "collaborator" },
+            { label: "Enumerator", value: "enumerator" }
+    ];
+
+    
+    const collDrop = [
+            { label: "Collaborator", value: "collaborator" },
+            { label: "Enumerator", value: "enumerator" }
+    ];
 
     useEffect(() => {
         getData();
@@ -167,12 +182,7 @@ const AuditLogs = () => {
 
                                         <div className="w-full sm:w-auto flex-1 min-w-[200px]">
                                             <SelectInput
-                                                options={[
-                                                    { label: "All Roles", value: "" },
-                                                    { label: "Admin", value: "admin" },
-                                                    { label: "Collaborator", value: "collaborator" },
-                                                    { label: "Enumerator", value: "enumerator" }
-                                                ]}
+                                                options={role === "admin" ? adminDrop : collDrop}
                                                 value={filters.actorRole}
                                                 onChange={(e) => handleActorRoleChange(e.target.value)}
                                             />

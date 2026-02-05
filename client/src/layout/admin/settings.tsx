@@ -95,7 +95,7 @@ const Settings = () => {
           </li>
 
           {/* Notifications */}
-          <li>
+          {/* <li>
             <button
               onClick={() => setActiveTab("notifications")}
               className={activeTab === "notifications" ? activeMenu : unActiveMenu}
@@ -118,10 +118,10 @@ const Settings = () => {
                 Notifications
               </span>
             </button>
-          </li>
+          </li> */}
 
           {/* Data Privacy */}
-          <li>
+          {/* <li>
             <button
               onClick={() => setActiveTab("data-privacy")}
               className={activeTab === "data-privacy" ? activeMenu : unActiveMenu}
@@ -144,7 +144,7 @@ const Settings = () => {
                 Data Privacy
               </span>
             </button>
-          </li>
+          </li> */}
 
           {/* Subscription & Billing */}
           {
@@ -211,7 +211,7 @@ const Settings = () => {
             </button>
           </li>
         </ul>
-        <div className="w-full mt-20 px-4">
+        <div className="w-full mt-40 px-4">
           <img  src={brandImg} className="h-8 opacity-50" />
           <p className="font-semibold text-sm px-7 text-gray-300">v1.0.1</p>
         </div>

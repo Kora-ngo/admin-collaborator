@@ -18,9 +18,9 @@ import { useAuthStore } from "../../features/auth/store/authStore";
 import { useBeneficiary } from "../../features/family/hooks/useBeneficiary";
 import BeneficiaryView from "../../features/family/components/beneficiary-view";
 import { useToastStore } from "../../store/toastStore";
-import { exportBeneficiariesToCSV } from "../../utils/exportUtil";
 import { Button } from "../../components/widgets/button";
 import ExportPopup from "../../components/widgets/export-modal";
+import { exportBeneficiariesToExcel } from "../../utils/exportUtil";
 
 type ModalMode = 'view' | 'review' | null;
 
@@ -114,7 +114,7 @@ const Families = () => {
 
     const handleExport = async (period: string) => {
         try {
-            await exportBeneficiariesToCSV(period);
+            await exportBeneficiariesToExcel (period);
             showToast({
                 type: 'success',
                 message: 'Export successful',
@@ -221,7 +221,7 @@ const Families = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                                 </svg>
-                                Export CSV
+                                Export Excel
                             </Button>
                         )}
                     </div>

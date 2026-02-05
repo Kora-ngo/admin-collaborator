@@ -244,32 +244,39 @@ const User = () => {
                             />
                     </div>
 
-                    <div className="w-50">
-                        <SelectInput
-                            options={[
-                                { label: "All Roles", value: "" },
-                                { label: "Admin", value: "admin" },
-                                { label: "Collaborator", value: "collaborator" },
-                                { label: "Enumerator", value: "enumerator" },
-                            ]}
-                            value={filters.role}
-                            onChange={(e) => handleRoleChange(e.target.value)}
-                        />
-                    </div>
+                    {
+                        role === "admin" &&
+                        (
+                            <>
+                                <div className="w-50">
+                                    <SelectInput
+                                        options={[
+                                            { label: "All Roles", value: "" },
+                                            { label: "Admin", value: "admin" },
+                                            { label: "Collaborator", value: "collaborator" },
+                                            { label: "Enumerator", value: "enumerator" },
+                                        ]}
+                                        value={filters.role}
+                                        onChange={(e) => handleRoleChange(e.target.value)}
+                                    />
+                                </div>
 
-                    <div className="w-50">
-                        <SelectInput
-                            options={[
-                                { label: "All Time", value: "all" },
-                                { label: "Today", value: "today" },
-                                { label: "This Week", value: "this_week" },
-                                { label: "This Month", value: "this_month" },
-                                { label: "This Year", value: "this_year" },
-                            ]}
-                            value={filters.datePreset}
-                            onChange={(e) => handleDatePresetChange(e.target.value)}
-                        />
-                    </div>
+                                <div className="w-50">
+                                    <SelectInput
+                                        options={[
+                                            { label: "All Time", value: "all" },
+                                            { label: "Today", value: "today" },
+                                            { label: "This Week", value: "this_week" },
+                                            { label: "This Month", value: "this_month" },
+                                            { label: "This Year", value: "this_year" },
+                                        ]}
+                                        value={filters.datePreset}
+                                        onChange={(e) => handleDatePresetChange(e.target.value)}
+                                    />
+                                </div>                         
+                            </>
+                        )
+                    }
                 </div>
                 )}
 

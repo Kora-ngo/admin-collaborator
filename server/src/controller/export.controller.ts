@@ -1,20 +1,22 @@
-import type { Request, Response } from "express";
-import { Op } from "sequelize";
-import BeneficiaryModel from "../models/Beneficiary.js";
-import ProjectModel from "../models/project.js";
-import BeneficiaryMemberModel from "../models/BeneficiaryMember.js";
-import { generateCSV } from "../utils/csvGenerator.js";
-import { logAudit } from "../utils/auditLogger.js";
-import MembershipModel from "../models/Membership.js";
-import UserModel from "../models/User.js";
-import DeliveryModel from "../models/Delivery.js";
-import DeliveryItemModel from "../models/DeliveryItem.js";
-import AssistanceModel from "../models/Assistance.js";
-import AssistanceTypeModel from "../models/AssistanceType.js";
+import { type Request, type Response } from 'express';
+import { Op } from 'sequelize';
+import * as XLSX from 'xlsx';
+import {
+    BeneficiaryModel,
+    BeneficiaryMemberModel,
+    DeliveryModel,
+    DeliveryItemModel,
+    ProjectModel,
+    MembershipModel,
+    UserModel,
+    AssistanceModel,
+    AssistanceTypeModel
+} from '../models/index.js';
+import { logAudit } from '../utils/auditLogger.js';
 
 const ExportController = {
 
-     exportBeneficiaries: async (req: Request, res: Response) => {
+    exportBeneficiaries: async (req: Request, res: Response) => {
         const authUser = req.user;
         const userRole = authUser?.role;
 
@@ -73,50 +75,109 @@ const ExportController = {
                         model: BeneficiaryMemberModel,
                         as: 'members',
                         attributes: ['id']
+                    },
+                    {
+                        model: MembershipModel,
+                        as: 'createdBy',
+                        attributes: ['id'],
+                        include: [
+                            {
+                                model: UserModel,
+                                as: 'user',
+                                attributes: ['name']
+                            }
+                        ]
                     }
                 ]
             });
 
-            // Prepare CSV headers
-            const headers = [
-                'Family Code',
-                'Head of Household',
-                'Phone',
-                'Region',
-                'Village',
-                'Project',
-                'Number of Members',
-                'Created Date',
-                'Validation Status',
-                'Reviewed Date',
-                'Sync Source'
-            ];
-
-            // Prepare CSV rows
-            const rows = beneficiaries.map(b => {
-                const data: any = b.toJSON();
-                return [
-                    data.family_code,
-                    data.head_name,
-                    data.phone || '-',
-                    data.region || '-',
-                    data.village || '-',
-                    data.project?.name || '-',
-                    data.members?.length || 0,
-                    new Date(data.created_at).toLocaleDateString('en-US'),
-                    data.review_status,
-                    data.reviewed_at ? new Date(data.reviewed_at).toLocaleDateString('en-US') : '-',
-                    data.sync_source
-                ];
+            // Prepare data for Excel
+            const data = beneficiaries.map((b, index) => {
+                const beneficiary: any = b.toJSON();
+                return {
+                    '#': index + 1,
+                    'Family Code': beneficiary.family_code,
+                    'Head of Household': beneficiary.head_name,
+                    'Phone': beneficiary.phone || '-',
+                    'Region': beneficiary.region || '-',
+                    'Village': beneficiary.village || '-',
+                    'Project': beneficiary.project?.name || '-',
+                    'Number of Members': beneficiary.members?.length || 0,
+                    'Created By': beneficiary.createdBy?.user?.name || '-',
+                    'Created Date': new Date(beneficiary.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    }),
+                    'Validation Status': beneficiary.review_status.toUpperCase(),
+                    'Reviewed Date': beneficiary.reviewed_at 
+                        ? new Date(beneficiary.reviewed_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        })
+                        : '-',
+                    'Sync Source': beneficiary.sync_source.toUpperCase()
+                };
             });
 
-            // Generate CSV
-            const csv = generateCSV(headers, rows);
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(data);
+
+            // Set column widths
+            const colWidths = [
+                { wch: 5 },   // #
+                { wch: 15 },  // Family Code
+                { wch: 25 },  // Head of Household
+                { wch: 15 },  // Phone
+                { wch: 15 },  // Region
+                { wch: 15 },  // Village
+                { wch: 25 },  // Project
+                { wch: 18 },  // Number of Members
+                { wch: 20 },  // Created By
+                { wch: 15 },  // Created Date
+                { wch: 18 },  // Validation Status
+                { wch: 15 },  // Reviewed Date
+                { wch: 12 }   // Sync Source
+            ];
+            ws['!cols'] = colWidths;
+
+            // Style the header row
+            const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+            for (let col = range.s.c; col <= range.e.c; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (!ws[cellAddress]) continue;
+                
+                ws[cellAddress].s = {
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    fill: { fgColor: { rgb: "4F46E5" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+            }
+
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Beneficiaries');
+
+            // Add summary sheet
+            const summary = [
+                { 'Metric': 'Total Records', 'Value': beneficiaries.length },
+                { 'Metric': 'Export Period', 'Value': period.replace('_', ' ').toUpperCase() },
+                { 'Metric': 'Export Date', 'Value': new Date().toLocaleDateString('en-US') },
+                { 'Metric': 'Exported By', 'Value': authUser?.role || 'Admin' }
+            ];
+
+            const wsSummary = XLSX.utils.json_to_sheet(summary);
+            wsSummary['!cols'] = [{ wch: 20 }, { wch: 30 }];
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+            // Generate buffer
+            const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
             // Log audit
             await logAudit({
                 req,
-                action: 'beneficiary - exported',
+                action: 'beneficiary.exported',
                 entityType: 'beneficiary',
                 metadata: {
                     period,
@@ -125,18 +186,18 @@ const ExportController = {
             });
 
             // Set response headers
-            const filename = `beneficiaries_${period}_${new Date().toISOString().split('T')[0]}.csv`;
-            res.setHeader('Content-Type', 'text/csv');
+            const filename = `Beneficiaries_${period}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.setHeader('Content-Length', buffer.length);
 
-            res.status(200).send(csv);
+            res.status(200).send(buffer);
 
         } catch (error) {
             console.error("Export Beneficiaries error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
-
 
     exportDeliveries: async (req: Request, res: Response) => {
         const authUser = req.user;
@@ -231,70 +292,126 @@ const ExportController = {
                 ]
             });
 
-            // Prepare CSV headers
-            const headers = [
-                'Delivery ID',
-                'Project',
-                'Beneficiary',
-                'Family Code',
-                'Assistance Type',
-                'Assistance Name',
-                'Quantity',
-                'Unit',
-                'Delivery Date',
-                'Enumerator',
-                'Validation Status',
-                'Reviewed Date',
-                'Notes'
-            ];
-
-            // Prepare CSV rows (one row per delivery item)
-            const rows: any[] = [];
+            // Prepare data for Excel (one row per delivery item)
+            const data: any[] = [];
+            let rowNumber = 1;
 
             deliveries.forEach(d => {
-                const data: any = d.toJSON();
+                const delivery: any = d.toJSON();
                 
-                if (data.items && data.items.length > 0) {
-                    // Create a row for each item
-                    data.items.forEach((item: any) => {
-                        rows.push([
-                            data.uid,
-                            data.project?.name || '-',
-                            data.beneficiary?.head_name || '-',
-                            data.beneficiary?.family_code || '-',
-                            item.assistance?.assistanceType?.name || '-',
-                            item.assistance?.name || '-',
-                            item.quantity,
-                            item.assistance?.assistanceType?.unit || '-',
-                            new Date(data.delivery_date).toLocaleDateString('en-US'),
-                            data.createdBy?.user?.name || '-',
-                            data.review_status,
-                            data.reviewed_at ? new Date(data.reviewed_at).toLocaleDateString('en-US') : '-',
-                            data.notes || '-'
-                        ]);
+                if (delivery.items && delivery.items.length > 0) {
+                    delivery.items.forEach((item: any) => {
+                        data.push({
+                            '#': rowNumber++,
+                            'Delivery ID': `#${delivery.uid}`,
+                            'Project': delivery.project?.name || '-',
+                            'Beneficiary': delivery.beneficiary?.head_name || '-',
+                            'Family Code': delivery.beneficiary?.family_code || '-',
+                            'Assistance Type': item.assistance?.assistanceType?.name || '-',
+                            'Assistance Name': item.assistance?.name || '-',
+                            'Quantity': item.quantity,
+                            'Unit': item.assistance?.assistanceType?.unit || '-',
+                            'Delivery Date': new Date(delivery.delivery_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            }),
+                            'Enumerator': delivery.createdBy?.user?.name || '-',
+                            'Validation Status': delivery.review_status.toUpperCase(),
+                            'Reviewed Date': delivery.reviewed_at 
+                                ? new Date(delivery.reviewed_at).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                })
+                                : '-',
+                            'Notes': delivery.notes || '-'
+                        });
                     });
                 } else {
-                    // Delivery with no items
-                    rows.push([
-                        data.uid,
-                        data.project?.name || '-',
-                        data.beneficiary?.head_name || '-',
-                        data.beneficiary?.family_code || '-',
-                        '-',
-                        '-',
-                        0,
-                        '-',
-                        new Date(data.delivery_date).toLocaleDateString('en-US'),
-                        data.createdBy?.user?.name || '-',
-                        data.review_status,
-                        data.reviewed_at ? new Date(data.reviewed_at).toLocaleDateString('en-US') : '-',
-                        data.notes || '-'
-                    ]);
+                    data.push({
+                        '#': rowNumber++,
+                        'Delivery ID': `#${delivery.uid}`,
+                        'Project': delivery.project?.name || '-',
+                        'Beneficiary': delivery.beneficiary?.head_name || '-',
+                        'Family Code': delivery.beneficiary?.family_code || '-',
+                        'Assistance Type': '-',
+                        'Assistance Name': '-',
+                        'Quantity': 0,
+                        'Unit': '-',
+                        'Delivery Date': new Date(delivery.delivery_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        }),
+                        'Enumerator': delivery.createdBy?.user?.name || '-',
+                        'Validation Status': delivery.review_status.toUpperCase(),
+                        'Reviewed Date': delivery.reviewed_at 
+                            ? new Date(delivery.reviewed_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            })
+                            : '-',
+                        'Notes': delivery.notes || '-'
+                    });
                 }
             });
 
-            // Generate CSV
-            const csv = generateCSV(headers, rows);
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(data);
+
+            // Set column widths
+            const colWidths = [
+                { wch: 5 },   // #
+                { wch: 12 },  // Delivery ID
+                { wch: 25 },  // Project
+                { wch: 25 },  // Beneficiary
+                { wch: 15 },  // Family Code
+                { wch: 18 },  // Assistance Type
+                { wch: 25 },  // Assistance Name
+                { wch: 10 },  // Quantity
+                { wch: 8 },   // Unit
+                { wch: 15 },  // Delivery Date
+                { wch: 20 },  // Enumerator
+                { wch: 18 },  // Validation Status
+                { wch: 15 },  // Reviewed Date
+                { wch: 30 }   // Notes
+            ];
+            ws['!cols'] = colWidths;
+
+            // Style the header row
+            const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+            for (let col = range.s.c; col <= range.e.c; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (!ws[cellAddress]) continue;
+                
+                ws[cellAddress].s = {
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    fill: { fgColor: { rgb: "4F46E5" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+            }
+
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Deliveries');
+
+            // Add summary sheet
+            const summary = [
+                { 'Metric': 'Total Deliveries', 'Value': deliveries.length },
+                { 'Metric': 'Total Items', 'Value': data.length },
+                { 'Metric': 'Export Period', 'Value': period.replace('_', ' ').toUpperCase() },
+                { 'Metric': 'Export Date', 'Value': new Date().toLocaleDateString('en-US') },
+                { 'Metric': 'Exported By', 'Value': authUser?.role || 'Admin' }
+            ];
+
+            const wsSummary = XLSX.utils.json_to_sheet(summary);
+            wsSummary['!cols'] = [{ wch: 20 }, { wch: 30 }];
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+            // Generate buffer
+            const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
             // Log audit
             await logAudit({
@@ -304,23 +421,23 @@ const ExportController = {
                 metadata: {
                     period,
                     deliveries_count: deliveries.length,
-                    items_count: rows.length
+                    items_count: data.length
                 }
             });
 
             // Set response headers
-            const filename = `deliveries_${period}_${new Date().toISOString().split('T')[0]}.csv`;
-            res.setHeader('Content-Type', 'text/csv');
+            const filename = `Deliveries_${period}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.setHeader('Content-Length', buffer.length);
 
-            res.status(200).send(csv);
+            res.status(200).send(buffer);
 
         } catch (error) {
             console.error("Export Deliveries error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     }
-
-}
+};
 
 export default ExportController;
