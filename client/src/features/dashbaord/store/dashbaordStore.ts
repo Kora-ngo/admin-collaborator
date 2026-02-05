@@ -2,63 +2,48 @@ import { create } from "zustand";
 import axiosInstance from "../../../utils/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
 
-interface KeyMetrics {
-    activeProjects: number;
-    totalFamilies: number;
-    totalDeliveries: number;
-    activeFieldUsers: number;
-}
-
-interface ProjectProgress {
-    id: number;
-    name: string;
-    familiesRegistered: number;
-    deliveriesCompleted: number;
-    daysLeft: number;
-    startDate: Date;
-    endDate: Date;
-    membersCount: number;
-}
-
-interface ProjectAlert {
-    type: string;
-    alerts: [],
-    summary: {}
-}
-
 interface DashboardState {
-    keyMetrics: KeyMetrics | null;
-    projectProgress: ProjectProgress[];
-    projectAlert: ProjectAlert | null;
+    // Admin data
+    keyMetrics: any;
+    projectProgress: any[];
+    projectAlert: any;
+    
+    // Collaborator data
+    collaboratorMetrics: any;
+    enumeratorActivity: any[];
+    validationQueue: any;
+    
     loading: boolean;
+    
+    // Admin methods
     getKeyMetrics: () => Promise<any>;
     getProjectProgress: () => Promise<any>;
     getProjectAlert: () => Promise<any>;
+    
+    // Collaborator methods
+    getCollaboratorMetrics: () => Promise<any>;
+    getEnumeratorActivity: () => Promise<any>;
+    getValidationQueue: () => Promise<any>;
 }
-
-const endpoint = "dashboard";
 
 export const useDashboardStore = create<DashboardState>((set) => ({
     keyMetrics: null,
-    projectAlert: null,
     projectProgress: [],
+    projectAlert: null,
+    collaboratorMetrics: null,
+    enumeratorActivity: [],
+    validationQueue: null,
     loading: false,
 
+    // Admin methods
     getKeyMetrics: async () => {
         try {
             set({ loading: true });
-
-            const { data } = await axiosInstance.get(`${endpoint}/key-metrics`);
-
-            set({
-                keyMetrics: data.data
-            });
-
-            console.log("Dashboard - Key Metrics response:", data);
+            const { data } = await axiosInstance.get('/dashboard/admin/key-metrics');
+            set({ keyMetrics: data.data });
             return data;
         } catch (error: any) {
-            const errorToast = handleApiError(error);
-            return errorToast;
+            return handleApiError(error);
         } finally {
             set({ loading: false });
         }
@@ -67,41 +52,66 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     getProjectProgress: async () => {
         try {
             set({ loading: true });
-
-            const { data } = await axiosInstance.get(`${endpoint}/project-progress`);
-
-            set({
-                projectProgress: data.data
-            });
-
-            console.log("Dashboard - Project Progress response:", data);
+            const { data } = await axiosInstance.get('/dashboard/admin/project-progress');
+            set({ projectProgress: data.data });
             return data;
         } catch (error: any) {
-            const errorToast = handleApiError(error);
-            return errorToast;
+            return handleApiError(error);
         } finally {
             set({ loading: false });
         }
     },
-
 
     getProjectAlert: async () => {
         try {
             set({ loading: true });
-
-            const { data } = await axiosInstance.get(`${endpoint}/project-alert`);
-
-            set({
-                projectAlert: data
-            });
-
-            console.log("Dashboard - Project Alert response:", data);
+            const { data } = await axiosInstance.get('/dashboard/admin/alerts');
+            set({ projectAlert: data });
             return data;
         } catch (error: any) {
-            const errorToast = handleApiError(error);
-            return errorToast;
+            return handleApiError(error);
         } finally {
             set({ loading: false });
         }
     },
+
+    // Collaborator methods
+    getCollaboratorMetrics: async () => {
+        try {
+            set({ loading: true });
+            const { data } = await axiosInstance.get('/dashboard/collaborator/key-metrics');
+            set({ collaboratorMetrics: data.data });
+            return data;
+        } catch (error: any) {
+            return handleApiError(error);
+        } finally {
+            set({ loading: false });
+        }
+    },
+
+    getEnumeratorActivity: async () => {
+        try {
+            set({ loading: true });
+            const { data } = await axiosInstance.get('/dashboard/collaborator/enumerator-activity');
+            set({ enumeratorActivity: data.data });
+            return data;
+        } catch (error: any) {
+            return handleApiError(error);
+        } finally {
+            set({ loading: false });
+        }
+    },
+
+    getValidationQueue: async () => {
+        try {
+            set({ loading: true });
+            const { data } = await axiosInstance.get('/dashboard/collaborator/validation-queue');
+            set({ validationQueue: data.data });
+            return data;
+        } catch (error: any) {
+            return handleApiError(error);
+        } finally {
+            set({ loading: false });
+        }
+    }
 }));

@@ -379,6 +379,354 @@ const DashboardController = {
             console.error("adminAlerts error:", error);
             return res.status(500).json({ type: 'error', message: 'server_error' });
         }
+    },
+
+
+    // ========================================
+    // COLLABORATOR DASHBOARD METHODS
+    // ========================================
+
+    collaboratorKeyMetrics: async (req: Request, res: Response) => {
+        console.log("Backend collaboratorKeyMetrics --> entrance");
+
+        try {
+            const authUser = req.user;
+            const membershipId = authUser?.membershipId;
+
+            if (!membershipId) {
+                return res.status(401).json({
+                    type: 'error',
+                    message: 'unauthorized',
+                });
+            }
+
+            // Get collaborator's projects
+            const collaboratorProjects = await ProjectMemberModel.findAll({
+                where: {
+                    membership_id: membershipId,
+                    role_in_project: 'collaborator'
+                },
+                attributes: ['project_id'],
+                raw: true
+            });
+
+            const projectIds = collaboratorProjects.map(pm => pm.project_id);
+
+            if (projectIds.length === 0) {
+                return res.status(200).json({
+                    type: 'success',
+                    data: {
+                        assignedProjects: 0,
+                        familiesInProjects: 0,
+                        pendingBeneficiaries: 0,
+                        pendingDeliveries: 0
+                    }
+                });
+            }
+
+            // 1. Assigned Projects (ongoing/overdue only)
+            const assignedProjects = await ProjectModel.count({
+                where: {
+                    id: { [Op.in]: projectIds },
+                    status: { [Op.in]: ['ongoing', 'overdue'] }
+                }
+            });
+
+            // 2. Families in My Projects (approved only)
+            const familiesInProjects = await BeneficiaryModel.count({
+                where: {
+                    project_id: { [Op.in]: projectIds },
+                    review_status: 'approved'
+                }
+            });
+
+            // 3. Pending Beneficiary Validations
+            const pendingBeneficiaries = await BeneficiaryModel.count({
+                where: {
+                    project_id: { [Op.in]: projectIds },
+                    review_status: 'pending'
+                }
+            });
+
+            // 4. Pending Delivery Validations
+            const pendingDeliveries = await DeliveryModel.count({
+                where: {
+                    project_id: { [Op.in]: projectIds },
+                    review_status: 'pending'
+                }
+            });
+
+            res.status(200).json({
+                type: 'success',
+                data: {
+                    assignedProjects,
+                    familiesInProjects,
+                    pendingBeneficiaries,
+                    pendingDeliveries
+                }
+            });
+
+        } catch (error) {
+            console.error("Dashboard: collaboratorKeyMetrics error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
+    collaboratorEnumeratorActivity: async (req: Request, res: Response) => {
+        console.log("Backend collaboratorEnumeratorActivity --> entrance");
+
+        try {
+            const authUser = req.user;
+            const membershipId = authUser?.membershipId;
+
+            if (!membershipId) {
+                return res.status(401).json({
+                    type: 'error',
+                    message: 'unauthorized',
+                });
+            }
+
+            // Get collaborator's projects
+            const collaboratorProjects = await ProjectMemberModel.findAll({
+                where: {
+                    membership_id: membershipId,
+                    role_in_project: 'collaborator'
+                },
+                attributes: ['project_id'],
+                raw: true
+            });
+
+            const projectIds = collaboratorProjects.map(pm => pm.project_id);
+
+            if (projectIds.length === 0) {
+                return res.status(200).json({
+                    type: 'success',
+                    data: []
+                });
+            }
+
+            // Get all enumerators in these projects
+            const enumeratorsInProjects = await ProjectMemberModel.findAll({
+                where: {
+                    project_id: { [Op.in]: projectIds },
+                    role_in_project: 'enumerator'
+                },
+                include: [
+                    {
+                        model: MembershipModel,
+                        as: 'membership',
+                        attributes: ['id', 'role'],
+                        include: [
+                            {
+                                model: UserModel,
+                                as: 'user',
+                                attributes: ['id', 'name', 'email']
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            // Get unique enumerators
+            const uniqueEnumerators = new Map();
+            enumeratorsInProjects.forEach((pm: any) => {
+                const data = pm.toJSON();
+                const membershipId = data.membership_id;
+                if (!uniqueEnumerators.has(membershipId)) {
+                    uniqueEnumerators.set(membershipId, data.membership);
+                }
+            });
+
+            // Calculate activity for each enumerator
+            const enumeratorActivity = await Promise.all(
+                Array.from(uniqueEnumerators.values()).map(async (enumerator: any) => {
+                    // Count families registered (approved only)
+                    const familiesRegistered = await BeneficiaryModel.count({
+                        where: {
+                            created_by_membership_id: enumerator.id,
+                            project_id: { [Op.in]: projectIds },
+                            review_status: 'approved'
+                        }
+                    });
+
+                    // Count deliveries logged (approved only)
+                    const deliveriesLogged = await DeliveryModel.count({
+                        where: {
+                            created_by_membership_id: enumerator.id,
+                            project_id: { [Op.in]: projectIds },
+                            review_status: 'approved'
+                        }
+                    });
+
+                    // Get last sync date (most recent beneficiary or delivery)
+                    const lastBeneficiary = await BeneficiaryModel.findOne({
+                        where: {
+                            created_by_membership_id: enumerator.id,
+                            project_id: { [Op.in]: projectIds }
+                        },
+                        order: [['created_at', 'DESC']],
+                        attributes: ['created_at'],
+                        raw: true
+                    });
+
+                    const lastDelivery = await DeliveryModel.findOne({
+                        where: {
+                            created_by_membership_id: enumerator.id,
+                            project_id: { [Op.in]: projectIds }
+                        },
+                        order: [['created_at', 'DESC']],
+                        attributes: ['created_at'],
+                        raw: true
+                    });
+
+                    const lastSyncDate = [
+                        lastBeneficiary?.created_at,
+                        lastDelivery?.created_at
+                    ]
+                        .filter(Boolean)
+                        .map(d => new Date(d as any))
+                        .sort((a, b) => b.getTime() - a.getTime())[0];
+
+                    return {
+                        id: enumerator.id,
+                        name: enumerator.user?.name || 'Unknown',
+                        email: enumerator.user?.email || '-',
+                        familiesRegistered,
+                        deliveriesLogged,
+                        lastSyncDate: lastSyncDate || null
+                    };
+                })
+            );
+
+            // Sort by last sync date (most recent first)
+            enumeratorActivity.sort((a, b) => {
+                if (!a.lastSyncDate) return 1;
+                if (!b.lastSyncDate) return -1;
+                return new Date(b.lastSyncDate).getTime() - new Date(a.lastSyncDate).getTime();
+            });
+
+            res.status(200).json({
+                type: 'success',
+                data: enumeratorActivity
+            });
+
+        } catch (error) {
+            console.error("Dashboard: collaboratorEnumeratorActivity error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
+    collaboratorValidationQueue: async (req: Request, res: Response) => {
+        console.log("Backend collaboratorValidationQueue --> entrance");
+
+        try {
+            const authUser = req.user;
+            const membershipId = authUser?.membershipId;
+
+            if (!membershipId) {
+                return res.status(401).json({
+                    type: 'error',
+                    message: 'unauthorized',
+                });
+            }
+
+            // Get collaborator's projects
+            const collaboratorProjects = await ProjectMemberModel.findAll({
+                where: {
+                    membership_id: membershipId,
+                    role_in_project: 'collaborator'
+                },
+                attributes: ['project_id'],
+                raw: true
+            });
+
+            const projectIds = collaboratorProjects.map(pm => pm.project_id);
+
+            if (projectIds.length === 0) {
+                return res.status(200).json({
+                    type: 'success',
+                    data: {
+                        pendingBeneficiaries: [],
+                        pendingDeliveries: []
+                    }
+                });
+            }
+
+            // Pending Beneficiaries
+            const pendingBeneficiaries = await BeneficiaryModel.findAll({
+                where: {
+                    project_id: { [Op.in]: projectIds },
+                    review_status: 'pending'
+                },
+                order: [['created_at', 'DESC']],
+                limit: 20,
+                include: [
+                    {
+                        model: ProjectModel,
+                        as: 'project',
+                        attributes: ['id', 'name']
+                    },
+                    {
+                        model: MembershipModel,
+                        as: 'createdBy',
+                        attributes: ['id'],
+                        include: [
+                            {
+                                model: UserModel,
+                                as: 'user',
+                                attributes: ['name']
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            // Pending Deliveries
+            const pendingDeliveries = await DeliveryModel.findAll({
+                where: {
+                    project_id: { [Op.in]: projectIds },
+                    review_status: 'pending'
+                },
+                order: [['created_at', 'DESC']],
+                limit: 20,
+                include: [
+                    {
+                        model: ProjectModel,
+                        as: 'project',
+                        attributes: ['id', 'name']
+                    },
+                    {
+                        model: BeneficiaryModel,
+                        as: 'beneficiary',
+                        attributes: ['id', 'family_code', 'head_name']
+                    },
+                    {
+                        model: MembershipModel,
+                        as: 'createdBy',
+                        attributes: ['id'],
+                        include: [
+                            {
+                                model: UserModel,
+                                as: 'user',
+                                attributes: ['name']
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            res.status(200).json({
+                type: 'success',
+                data: {
+                    pendingBeneficiaries: pendingBeneficiaries.map(b => b.toJSON()),
+                    pendingDeliveries: pendingDeliveries.map(d => d.toJSON())
+                }
+            });
+
+        } catch (error) {
+            console.error("Dashboard: collaboratorValidationQueue error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
     }
 };
 
