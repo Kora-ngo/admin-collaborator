@@ -14,6 +14,7 @@ router.get('/', verifyToken, ProjectController.fetchAll);
 // File upload route - accepts multiple files with field name 'files'
 router.post('/', verifyToken, requireRole('admin'), upload.array('files', 10), ProjectController.create);
 router.put('/:id', verifyToken, requireRole('admin'), ProjectController.update);
+router.get('/:id/can-delete', requireRole('admin'), ProjectController.canDelete);
 router.put('/toggle/:id', verifyToken, requireRole('admin'), ProjectController.toggleStatus);
 
 export default router;

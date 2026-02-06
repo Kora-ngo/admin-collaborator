@@ -20,7 +20,7 @@ const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar, onLogoutClick, 
             }`} aria-label="Sidebar">
                 <div className="h-full px-3 py-2 overflow-y-auto bg-white">
 
-                    <div className="flex py-3 items-center mx-2 mr-6 mb-4">
+                    <div className="flex pt-3 items-center mx-2">
                         <button type="button" className="block sm:hidden  mr-2 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" onClick={toggleSideBar}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 ">
                                 <path fillRule="evenodd" d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
@@ -34,10 +34,21 @@ const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar, onLogoutClick, 
                             </div>
                             <div className="flex flex-col">
                                 <span className="font-semibold text-[14px]">{organisation?.name}</span>
-                                <span className="text-[12px] font-medium text-gray-500">{subscription?.plan ? subscription?.plan.charAt(0).toUpperCase() + subscription?.plan.slice(1) : "Test"} Plan</span>
+                                <div className="flex space-x-2">
+                                    <span className="text-[12px] font-medium text-gray-500">{subscription?.plan ? subscription?.plan.charAt(0).toUpperCase() + subscription?.plan.slice(1) : "Test"} Plan</span>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    {/* <div className="mt-3 mx-2 border border-amber-400 rounded-sm bg-amber-50">
+                        <div className="flex items-center space-x-2 p-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-amber-500">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                            </svg>
+                            <p className="text-[12px] font-semibold text-amber-500"> You're on Test-Mode</p>
+                        </div>
+                    </div> */}
+                    <br />
                     {/* <div className="flex py-3 items-center px-2 mb-4">
                         <button type="button" className="block sm:hidden  mr-2 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" onClick={toggleSideBar}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 ">

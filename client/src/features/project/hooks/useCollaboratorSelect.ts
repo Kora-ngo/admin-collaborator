@@ -69,6 +69,9 @@ export const useCollaboratorSelect = () => {
         handleRemoveEnumerator,
         handleClearAllEnumerators,
 
+        setSelectedCollaborator,
+        setSelectedEnumerators,
+
         // Collaborators (single selection)
         collaborators,
         selectedCollaborator,

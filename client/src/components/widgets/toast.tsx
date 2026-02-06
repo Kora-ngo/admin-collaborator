@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export type ToastVariant = 'success' | 'error' | 'warning' | 'info';
+export type ToastVariant = 'success' | 'error' | 'warning' | 'info' | 'no_network';
 
 export interface ToastProps {
   title: string;
@@ -41,6 +41,13 @@ const variantStyles: Record<ToastVariant, {
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     iconPath: 'M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 13.5a.75.75 0 0 1-.75-.75v-3a.75.75 0 0 1 1.5 0v3a.75.75 0 0 1-.75.75Zm0-6.75a.75.75 0 1 1 1.5 0V9a.75.75 0 0 1-1.5 0V8.25Z',
+  },
+
+  no_network: {
+    iconColor: 'text-gray-600',
+    bgColor: 'bg-gray-50',
+    borderColor: 'border-blue-200',
+    iconPath: 'm3 3 8.735 8.735m0 0a.374.374 0 1 1 .53.53m-.53-.53.53.53m0 0L21 21M14.652 9.348a3.75 3.75 0 0 1 0 5.304m2.121-7.425a6.75 6.75 0 0 1 0 9.546m2.121-11.667c3.808 3.807 3.808 9.98 0 13.788m-9.546-4.242a3.733 3.733 0 0 1-1.06-2.122m-1.061 4.243a6.75 6.75 0 0 1-1.625-6.929m-.496 9.05c-3.068-3.067-3.664-7.67-1.79-11.334M12 12h.008v.008H12V12Z',
   },
 };
 
@@ -88,6 +95,7 @@ const Toast: React.FC<ToastProps> = ({
       <div
         className={`flex items-center gap-4 rounded-xl shadow-xl px-5 py-4 border ${styles.bgColor} ${styles.borderColor}`}
       >
+
         {/* Icon */}
         <svg
           xmlns="http://www.w3.org/2000/svg"

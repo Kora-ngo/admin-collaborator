@@ -13,8 +13,9 @@ interface ProjectState {
     getData: (page?: number, searchTerm?: string) => Promise<any>;
     fetchOneData: (id: number) => Promise<Project>;
     filterData: (page: number, filters: any) => Promise<any>;
-    updateData: (id: number, data: any) => Promise<any>;
+    updateData: (id: number, data: any, files?: File[]) => Promise<any>;
     toggleData: (id: number, status: string) => Promise<any>;
+    // checkCanDelete: (id: number) => Promise<any>;
 }
 
 const endpoint = "projects";
@@ -39,7 +40,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
                 pagination: data.pagination
             });
 
-            console.log("Project - Fetch response:", data);
+            // console.log("Project - Fetch response:", data);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -49,7 +50,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
     },
 
 
-      createData: async (projectData, files) => {
+    createData: async (projectData, files) => {
         try {
             set({ loading: true });
 
@@ -90,18 +91,47 @@ export const useProjectStore = create<ProjectState>((set) => ({
         }
     },
 
-    updateData: async (id, projectData) => {
+    updateData: async (id: number, data: any, files?: File[]) => {
+        console.log(" File  here ---> ");
+        set({ loading: true });
         try {
-            set({ loading: true });
+            // Convert new files to base64 if present
+            let filesData: any[] = [];
+            if (files && files.length > 0) {
+                filesData = await Promise.all(
+                    files.map(file => {
+                        return new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                                resolve({
+                                    name: file.name,
+                                    base64: reader.result as string,
+                                    type: file.type,
+                                    size: file.size
+                                });
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    })
+                );
+            }
 
-            const response = await axiosInstance.put(`${endpoint}/${id}`, projectData);
-            console.log("Project update:", response.data);
+            console.log(" File ---> ", files);
+
+            const response = await axiosInstance.put(`/${endpoint}/${id}`, {
+                ...data,
+                files: filesData
+            });
+
+            set({ loading: false });
             return response.data;
         } catch (error: any) {
-            const errorToast = handleApiError(error);
-            return errorToast;
-        } finally {
+            console.error('Failed to update project:', error);
             set({ loading: false });
+            return {
+                type: 'error',
+                message: error.response?.data?.message || 'server_error'
+            };
         }
     },
 
@@ -141,6 +171,30 @@ export const useProjectStore = create<ProjectState>((set) => ({
         }
     },
 
+    // checkCanDelete: async (id: number) => {
+    //     try {
+    //         const response = await axiosInstance.get(`${endpoint}/${id}/can-delete`);
+            
+    //         if (response.data.type === 'success') {
+    //             return response.data.data;
+    //         }
+            
+    //         return {
+    //             canDelete: false,
+    //             beneficiaryCount: 0,
+    //             deliveryCount: 0,
+    //             message: 'Failed to check delete status'
+    //         };
+    //     } catch (error: any) {
+    //         console.error('Failed to check if project can be deleted:', error);
+    //         return {
+    //             canDelete: false,
+    //             beneficiaryCount: 0,
+    //             deliveryCount: 0,
+    //             message: error.response?.data?.message || 'server_error'
+    //         };
+    //     }
+    // }
 
 
 }))

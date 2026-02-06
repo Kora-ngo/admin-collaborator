@@ -30,6 +30,11 @@ export const useProject = () => {
         selectedAssistances: [],
     });
 
+    const [editMetadata, setEditMetadata] = useState<{
+        lockedMembers: { membership_id: number }[];
+        lockedAssistances: { assistance_id: number }[];
+    } | null>(null);
+
     const [errors, setErrors] = useState({
         name: false,
         organisation_id: false,
@@ -154,13 +159,14 @@ export const useProject = () => {
             selectedMembers: [],
             selectedAssistances: [],
         });
+        setEditMetadata(null);
     };
 
     const refreshCurrentPage = (page: number) => {
         filterMode ? filterData(page, filters) : getData(page, searchTerm);
     };
 
-    const handleSubmit = async (id?: number, files?: File[]): Promise<boolean> => {
+    const handleSubmit = async (id?: number, files?: File[], filesToDelete?: number[]): Promise<boolean> => {
         const { hasErrors, errors: validationErrors } = validateProject(projectForm);
 
         if (hasErrors) {
@@ -180,13 +186,14 @@ export const useProject = () => {
                 end_date: projectForm.end_date,
                 status: projectForm.status,
                 selectedMembers: projectForm.selectedMembers,
-                selectedAssistances: projectForm.selectedAssistances
+                selectedAssistances: projectForm.selectedAssistances,
+                filesToDelete: filesToDelete || []
             };
 
             console.log("Submitting project data:", submitData);
 
             if (id) {
-                result = await updateData(id, submitData);
+                result = await updateData(id, submitData, files);
             } else {
                 result = await createData(submitData, files);
             }
@@ -211,6 +218,19 @@ export const useProject = () => {
             return false;
         }
 
+        // Check if project can be deleted
+        // if (status !== 'false') {
+        //     const canDeleteResult = await checkCanDelete(id);
+            
+        //     if (!canDeleteResult.canDelete) {
+        //         showToast({
+        //             type: 'error',
+        //             message: `Cannot delete: ${canDeleteResult.beneficiaryCount} beneficiaries, ${canDeleteResult.deliveryCount} deliveries exist`
+        //         });
+        //         return false;
+        //     }
+        // }
+
         const result = await toggleData(id, status);
         showToast(result);
         await getData();
@@ -219,9 +239,15 @@ export const useProject = () => {
 
     const handleView = async (id: number): Promise<any> => {
         const response = await fetchOneData(id) as any;
-        console.log(" Response --> ", response);
+        console.log("Response --> ", response);
+        
+        // Set edit metadata
+        if (response.editMetadata) {
+            setEditMetadata(response.editMetadata);
+        }
+
         setProjectForm({
-            organisation_id: response.id,
+            organisation_id: response.organisation_id,
             name: response.name,
             description: response.description,
             status: response.status,
@@ -230,9 +256,9 @@ export const useProject = () => {
             selectedMembers: response.members,
             selectedAssistances: response.assistances,
         });
+        
         return response;
     };
-
 
     const handleStatusUpdate = async (id: number, newStatus: string): Promise<boolean> => {
         if (!id || id <= 0) {
@@ -250,12 +276,22 @@ export const useProject = () => {
         }
     };
 
+    // const handleCheckCanDelete = async (id: number): Promise<{
+    //     canDelete: boolean;
+    //     beneficiaryCount: number;
+    //     deliveryCount: number;
+    //     message: string;
+    // }> => {
+    //     return await checkCanDelete(id);
+    // };
+
     return {
         errors,
         projectForm,
         searchTerm,
         filterMode,
         filters,
+        editMetadata,
 
         handleChange,
         handleSubmit,
@@ -271,6 +307,7 @@ export const useProject = () => {
         handleStatusChange,
         handleDatePresetChange,
         handleStatusUpdate,
+        // handleCheckCanDelete,
 
         updateSelectedMembers,
         updateSelectedAssitance

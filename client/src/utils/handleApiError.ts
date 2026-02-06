@@ -1,25 +1,83 @@
 import type { ToastMessage } from "../types/toastMessage";
 
+let lastNetworkToastTime = 0;
+const NETWORK_TOAST_COOLDOWN_MS = 5000;
+
+
 export const handleApiError = (err: any): ToastMessage => {
-    let message = "An unexpected error occurred.";
+
+    let toast: ToastMessage = {
+        type: 'error',
+        message: 'An unexpected error occurred.',
+        show: true,
+    };
 
 
-    if(err.response?.data) {
-        message = 
-        err.response.data.message ||
-        err.response.data.error ||
-        (typeof err.response.data === "string" ? err.response.data : message);
-    }else if(err.request) {
-        message = "Network error. Please check your connection.";
-    }else {
-        message = err.message || message;
+    if (!err.response && err.request) {
+        // This is the classic "no internet" or "server unreachable" case
+        const now = Date.now();
+        if (now - lastNetworkToastTime < NETWORK_TOAST_COOLDOWN_MS) {
+            // Silent during cooldown
+            return { type: 'no_network', message: '', show: false };
+        }
+
+        lastNetworkToastTime = now;
+
+        return {
+            type: 'no_network',
+            title: 'No Internet Connection',
+            message: 'Please check your network and try again.',
+            show: true,
+            autoClose: false,          // don't auto-dismiss
+        };
     }
 
-    console.log("Errror API handle --> ", err.response?.data);
+    // 2. Timeout (client-side or server 504)
+    if (err.code === 'ECONNABORTED' || err.response?.status === 504) {
 
-    return {
-        type: err.response?.data.type || "error",
-        message,
-        show: true
-    };
+        return {
+            type: 'warning',
+            title: 'Request Timed Out',
+            message: 'The operation took too long. Please try again.',
+            show: true,
+            autoClose: 8000,
+        };
+    }
+
+
+  // 3. Backend known responses 
+    if (err.response?.data) {
+        const backend = err.response.data;
+
+        // Prefer backend-provided type/message if available
+        toast.type = backend.type || 'error';
+        toast.message = backend.message || backend.error || toast.message;
+        toast.title = backend.title; // optional
+
+        // Special backend cases
+        if (err.response.status === 503) {
+            toast.type = 'no_network';
+            toast.message = 'Service temporarily unavailable. Please try again later.';
+        }
+
+        if (err.response.status === 401 || err.response.status === 403) {
+            toast.type = 'error';
+            toast.message = backend.message || 'Session expired or unauthorized. Please log in again.';
+            // Optional: trigger logout
+        }
+    }
+
+    // Fallback message
+    if (!toast.message) {
+        toast.message = err.message || 'Something went wrong.';
+    }
+
+    console.error('[API Error]', {
+        status: err.response?.status,
+        code: err.code,
+        message: toast.message,
+        fullError: err,
+    });
+
+    return toast;
 };

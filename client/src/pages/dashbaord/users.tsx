@@ -87,9 +87,8 @@ const User = () => {
     { key: "id", label: "ID", visibleOn: "always",  render: (_, globalIndex) => formatCode("MB", globalIndex) },
     { key: "user", label: "Member", visibleOn: "always", render: (row) => row.user.name },
 
-    role === "admin" ?
-    { key: "email", label: "Email", visibleOn: "md", render: (row) => row.user.email }:
-    { key: "assigned_project", label: "Assigned project(s)", visibleOn: "md", render: () => "0 Project" },
+    
+    { key: "email", label: "Email", visibleOn: "md", render: (row) => row.user.email },
 
     { key: "role", label: "Role", visibleOn: "sm", render: (row) => {
         const roleText = row.role === "admin" ? "Admin" : row.role === "collaborator" ? "Collaborator" : "Enumerator";
@@ -98,13 +97,8 @@ const User = () => {
     }},
 
     role === "admin" ?
-    { key: "date_of", label: "Created At", visibleOn: "lg", render: (row) => formatDate(row.date_of, false) }:
-    { key: "families_registered", label: "Families registered", visibleOn: "lg", render: () => "0 Families" },
+    { key: "date_of", label: "Created At", visibleOn: "lg", render: (row) => formatDate(row.date_of, false) }: null,
 
-
-    role === "collaborator" ?
-    { key: "deliveries_logged", label: "Deliveries logged", visibleOn: "lg", render: () => "0 Deliveries" }:
-    null,
 
     { key: "status", label: "Status", visibleOn: "always", render: (row) => {
         if(row.status === "false"){

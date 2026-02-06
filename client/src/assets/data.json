@@ -1,0 +1,214 @@
+{
+    "id": 2,
+    "organisation_id": 2,
+    "created_by": null,
+    "name": "Scholarship Project II",
+    "description": "This is an intersting project",
+    "status": "overdue",
+    "start_date": "2026-01-04T00:00:00.000Z",
+    "end_date": "2026-01-07T00:00:00.000Z",
+    "target_families": null,
+    "created_at": "2026-01-04T23:04:22.000Z",
+    "updated_at": null,
+    "members": [
+        {
+            "id": 11,
+            "project_id": 2,
+            "membership_id": 10,
+            "role_in_project": "enumerator",
+            "assigned_at": "2026-01-05T01:33:15.000Z",
+            "membership": {
+                "id": 10,
+                "role": "enumerator",
+                "user": {
+                    "id": 17,
+                    "name": "frank njou"
+                }
+            }
+        },
+        {
+            "id": 12,
+            "project_id": 2,
+            "membership_id": 9,
+            "role_in_project": "collaborator",
+            "assigned_at": "2026-01-05T01:33:15.000Z",
+            "membership": {
+                "id": 9,
+                "role": "collaborator",
+                "user": {
+                    "id": 16,
+                    "name": "lucy mbou"
+                }
+            }
+        },
+        {
+            "id": 13,
+            "project_id": 2,
+            "membership_id": 6,
+            "role_in_project": "collaborator",
+            "assigned_at": "2026-01-05T01:33:15.000Z",
+            "membership": {
+                "id": 6,
+                "role": "collaborator",
+                "user": {
+                    "id": 13,
+                    "name": "Marie Louis"
+                }
+            }
+        }
+    ],
+    "assistances": [
+        {
+            "id": 7,
+            "project_id": 2,
+            "assistance_id": 40,
+            "assistance": {
+                "id": 40,
+                "name": "The National Stem"
+            }
+        },
+        {
+            "id": 8,
+            "project_id": 2,
+            "assistance_id": 38,
+            "assistance": {
+                "id": 38,
+                "name": "Aviva Day 2"
+            }
+        },
+        {
+            "id": 9,
+            "project_id": 2,
+            "assistance_id": 37,
+            "assistance": {
+                "id": 37,
+                "name": "6-10 Diet Portocol"
+            }
+        }
+    ],
+    "mediaLinks": [],
+    "beneficiaries": [
+        {
+            "id": 13,
+            "uid": "202602030042189472",
+            "project_id": 2,
+            "family_code": "Straw hat",
+            "head_name": "Luffy",
+            "phone": "655513399",
+            "region": "merry",
+            "village": null,
+            "created_by_membership_id": 10,
+            "created_at": "2026-02-03T00:42:18.000Z",
+            "updated_at": "2026-02-03T00:42:47.000Z",
+            "sync_source": "mobile",
+            "review_status": "approved",
+            "reviewed_by_membership_id": 9,
+            "reviewed_at": "2026-02-03T00:42:47.000Z",
+            "review_note": null,
+            "members": [
+                {
+                    "id": 26,
+                    "full_name": "zorro",
+                    "gender": "male",
+                    "date_of_birth": "2000-03-09T23:00:00.000Z",
+                    "relationship": "Parent"
+                },
+                {
+                    "id": 27,
+                    "full_name": "Nami",
+                    "gender": "female",
+                    "date_of_birth": "2013-02-27T23:00:00.000Z",
+                    "relationship": "Child"
+                },
+                {
+                    "id": 28,
+                    "full_name": "Ussop",
+                    "gender": "male",
+                    "date_of_birth": "1990-11-06T23:00:00.000Z",
+                    "relationship": "Sibling"
+                },
+                {
+                    "id": 29,
+                    "full_name": "Chopper",
+                    "gender": "male",
+                    "date_of_birth": "2006-02-24T23:00:00.000Z",
+                    "relationship": "Sibling"
+                },
+                {
+                    "id": 30,
+                    "full_name": "Brook",
+                    "gender": "male",
+                    "date_of_birth": "2006-02-11T23:00:00.000Z",
+                    "relationship": "Parent"
+                }
+            ],
+            "createdBy": {
+                "id": 10,
+                "role": "enumerator",
+                "user": {
+                    "id": 17,
+                    "name": "frank njou",
+                    "email": "frank.njou@demo.com"
+                }
+            }
+        }
+    ],
+    "deliveries": [
+        {
+            "id": 3,
+            "uid": "202602030413407488",
+            "project_id": 2,
+            "beneficiary_id": 13,
+            "delivery_date": "2026-02-03T01:41:28.000Z",
+            "notes": "I've been from the inside",
+            "created_by_membership_id": 10,
+            "created_at": "2026-02-03T04:13:40.000Z",
+            "updated_at": "2026-02-03T04:29:26.000Z",
+            "sync_source": "mobile",
+            "review_status": "approved",
+            "reviewed_by_membership_id": 9,
+            "reviewed_at": "2026-02-03T04:29:26.000Z",
+            "review_note": null,
+            "items": [
+                {
+                    "id": 7,
+                    "delivery_id": 3,
+                    "assistance_id": 38,
+                    "quantity": "69.00",
+                    "assistance": {
+                        "id": 38,
+                        "name": "Aviva Day 2",
+                        "assistance_id": 1,
+                        "assistanceType": {
+                            "id": 1,
+                            "name": "Monetary",
+                            "unit": "FCFA"
+                        }
+                    }
+                },
+                {
+                    "id": 8,
+                    "delivery_id": 3,
+                    "assistance_id": 40,
+                    "quantity": "200.00",
+                    "assistance": {
+                        "id": 40,
+                        "name": "The National Stem",
+                        "assistance_id": 15,
+                        "assistanceType": {
+                            "id": 15,
+                            "name": "Aids",
+                            "unit": "Health"
+                        }
+                    }
+                }
+            ],
+            "beneficiary": {
+                "id": 13,
+                "family_code": "Straw hat",
+                "head_name": "Luffy",
+                "phone": "655513399"
+            }
+        }
+    ]
+}

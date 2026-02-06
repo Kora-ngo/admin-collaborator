@@ -1,4 +1,3 @@
-// src/utils/handleGlobalError.ts
 import type { Request, Response } from 'express';
 
 export const handleGlobalError = (
@@ -18,6 +17,49 @@ export const handleGlobalError = (
     stack: err.stack,
     status: err.status || 500,
   });
+
+  // 1. NETWORK / INTERNET / EXTERNAL SERVICE FAILURES
+
+  const isNetworkError =
+    err.code === 'ENOTFOUND' ||           // DNS failure
+    err.code === 'ECONNREFUSED' ||        // Connection refused
+    err.code === 'ETIMEDOUT' ||           // Timeout connecting
+    err.code === 'ECONNRESET' ||          // Connection reset by peer
+    err.code === 'EHOSTUNREACH' ||        // Host unreachable
+    err.message?.includes('network') ||
+    err.message?.includes('internet') ||
+    err.message?.includes('connect') ||
+    err.message?.includes('fetch failed') ||
+    err.name === 'FetchError' ||
+    err.name === 'TypeError' && err.message?.includes('fetch');
+
+  if (isNetworkError) {
+    return res.status(503).json({
+      type: 'no_network',
+      message: 'network_unavailable',
+      details: isDev ? err.message : undefined,
+      retryAfter: 30, // seconds
+    });
+  }
+
+
+  // REQUEST / EXECUTION TIMEOUT (server-side)
+
+  if (
+    err.message?.includes('timeout') ||
+    err.code === 'ETIMEDOUT' ||
+    err.name === 'TimeoutError' ||
+    err.message?.includes('execution time exceeded') ||
+    err.message?.includes('took too long')
+  ) {
+    return res.status(504).json({
+      type: 'error',
+      message: 'request_timeout',
+      details: isDev ? err.message : undefined,
+    });
+  }
+
+
 
   // Specific error handling
   if (err.type === 'entity.too.large') {

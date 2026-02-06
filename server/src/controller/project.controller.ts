@@ -7,9 +7,151 @@ import { bulkUpdateProjectStatuses, updateProjectStatusInDB } from '../helpers/p
 import sequelize from '../config/database.js';
 import MediaController from './media.controller.js';
 import { base64ToBuffer } from '../utils/base64ToBuffer.js';
+import { getProjectEditMetadata } from '../helpers/getProjectEditMetadata.js';
 
 const ProjectController = {
     
+    create: async (req: Request, res: Response) => {
+        const transaction = await sequelize.transaction();
+
+
+        try {
+            const body = req.body;
+            const middlewareAuth = req.user;
+
+            if (!body.name || !body.organisation_id || !body.start_date || !body.end_date || !body.selectedMembers?.length) {
+                res.status(400).json({
+                    type: 'error',
+                    message: 'fields_required',
+                });
+                return;
+            }
+
+
+            // Parse selectedMembers and selectedAssistances if they're strings (from FormData)
+            const selectedMembers = typeof body.selectedMembers === 'string' 
+                ? JSON.parse(body.selectedMembers) 
+                : body.selectedMembers;
+
+
+            const selectedAssistances = typeof body.selectedAssistances === 'string'
+                ? JSON.parse(body.selectedAssistances)
+                : body.selectedAssistances;
+
+            if (!selectedMembers?.length) {
+                await transaction.rollback();
+                res.status(400).json({
+                    type: 'error',
+                    message: 'members_required',
+                });
+                return;
+            }
+
+
+
+            // Check for duplicate project name in the same organisation
+            const existingProject = await ProjectModel.findOne({
+                where: { 
+                    name: body.name, 
+                    organisation_id: body.organisation_id, 
+                    status: { [Op.ne]: 'false' } 
+                }
+            });
+
+    
+
+            if (existingProject) {
+                res.status(409).json({
+                    type: 'error',
+                    message: 'record_already_exists',
+                });
+                return;
+            }
+        
+
+            // Create project
+            const newProject = await ProjectModel.create({
+                organisation_id: body.organisation_id,
+                created_by: middlewareAuth?.membershipId!,
+                name: body.name,
+                description: body.description || '',
+                status: 'pending',
+                start_date: body.start_date,
+                end_date: body.end_date,
+                target_families: body.target_families
+            }, {transaction});
+
+
+
+            // Add members
+            if (body.selectedMembers?.length > 0) {
+                const membersData = body.selectedMembers.map((m: any) => ({
+                    project_id: newProject.id,
+                    membership_id: m.membership_id,
+                    role_in_project: m.role_in_project
+                }));
+                await ProjectMemberModel.bulkCreate(membersData, {transaction});
+            }
+
+
+
+            // Add assistances
+            if (body.selectedAssistances?.length > 0) {
+                const assistancesData = body.selectedAssistances.map((a: any) => ({
+                    project_id: newProject.id,
+                    assistance_id: a.assistance_id
+                }));
+                await ProjectAssistanceModel.bulkCreate(assistancesData, {transaction});
+            }
+
+            let uploadedFiles: any[] = [];
+            if (body.files && body.files.length > 0) {
+
+                console.log("FILES --> ");
+
+                // Convert base64 files to buffer format
+                const processedFiles = body.files.map((fileData: any) => {
+                    const { buffer, mimetype, size } = base64ToBuffer(fileData.base64);
+                    
+                    return {
+                        buffer,
+                        mimetype,
+                        originalname: fileData.name,
+                        size
+                    };
+                });
+
+
+                uploadedFiles  = await MediaController.uploadAndLinkFiles(
+                    processedFiles as any[],
+                    'project',
+                    newProject.id,
+                    'document',
+                    body.organisation_id,
+                    middlewareAuth?.membershipId || 0,
+                    transaction
+                );
+
+            }
+
+            await transaction.commit();
+            console.log("✅ Transaction committed successfully");
+
+            res.status(201).json({
+                type: 'success',
+                message: 'done',
+                data: {
+                    project: newProject,
+                    uploadedFiles: uploadedFiles
+                },
+            });
+        } catch (error: any) {
+            console.error("Project: Create error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
+
     fetchAll: async (req: Request, res: Response) => {
         const userRole = req.user!.role;
         const membershipId = req.user!.membershipId;
@@ -191,6 +333,7 @@ const ProjectController = {
         }
     },
 
+
     fetchOne: async (req: Request, res: Response) => {
         console.log("Backend fetchOne --> entrance");
         
@@ -325,154 +468,25 @@ const ProjectController = {
         }
     },
 
-    create: async (req: Request, res: Response) => {
-        const transaction = await sequelize.transaction();
 
 
-        try {
-            const body = req.body;
-            const middlewareAuth = req.user;
-
-            if (!body.name || !body.organisation_id || !body.start_date || !body.end_date || !body.selectedMembers?.length) {
-                res.status(400).json({
-                    type: 'error',
-                    message: 'fields_required',
-                });
-                return;
-            }
-
-
-            // Parse selectedMembers and selectedAssistances if they're strings (from FormData)
-            const selectedMembers = typeof body.selectedMembers === 'string' 
-                ? JSON.parse(body.selectedMembers) 
-                : body.selectedMembers;
-
-
-            const selectedAssistances = typeof body.selectedAssistances === 'string'
-                ? JSON.parse(body.selectedAssistances)
-                : body.selectedAssistances;
-
-            if (!selectedMembers?.length) {
-                await transaction.rollback();
-                res.status(400).json({
-                    type: 'error',
-                    message: 'members_required',
-                });
-                return;
-            }
-
-
-
-            // Check for duplicate project name in the same organisation
-            const existingProject = await ProjectModel.findOne({
-                where: { 
-                    name: body.name, 
-                    organisation_id: body.organisation_id, 
-                    status: { [Op.ne]: 'false' } 
-                }
-            });
-
-    
-
-            if (existingProject) {
-                res.status(409).json({
-                    type: 'error',
-                    message: 'record_already_exists',
-                });
-                return;
-            }
-        
-
-            // Create project
-            const newProject = await ProjectModel.create({
-                organisation_id: body.organisation_id,
-                created_by: middlewareAuth?.membershipId!,
-                name: body.name,
-                description: body.description || '',
-                status: 'pending',
-                start_date: body.start_date,
-                end_date: body.end_date,
-                target_families: body.target_families
-            }, {transaction});
-
-
-
-            // Add members
-            if (body.selectedMembers?.length > 0) {
-                const membersData = body.selectedMembers.map((m: any) => ({
-                    project_id: newProject.id,
-                    membership_id: m.membership_id,
-                    role_in_project: m.role_in_project
-                }));
-                await ProjectMemberModel.bulkCreate(membersData, {transaction});
-            }
-
-
-
-            // Add assistances
-            if (body.selectedAssistances?.length > 0) {
-                const assistancesData = body.selectedAssistances.map((a: any) => ({
-                    project_id: newProject.id,
-                    assistance_id: a.assistance_id
-                }));
-                await ProjectAssistanceModel.bulkCreate(assistancesData, {transaction});
-            }
-
-            let uploadedFiles: any[] = [];
-            if (body.files && body.files.length > 0) {
-
-                console.log("FILES --> ");
-
-                // Convert base64 files to buffer format
-                const processedFiles = body.files.map((fileData: any) => {
-                    const { buffer, mimetype, size } = base64ToBuffer(fileData.base64);
-                    
-                    return {
-                        buffer,
-                        mimetype,
-                        originalname: fileData.name,
-                        size
-                    };
-                });
-
-
-                uploadedFiles  = await MediaController.uploadAndLinkFiles(
-                    processedFiles as any[],
-                    'project',
-                    newProject.id,
-                    'document',
-                    body.organisation_id,
-                    middlewareAuth?.membershipId || 0,
-                    transaction
-                );
-
-            }
-
-            await transaction.commit();
-            console.log("✅ Transaction committed successfully");
-
-            res.status(201).json({
-                type: 'success',
-                message: 'done',
-                data: {
-                    project: newProject,
-                    uploadedFiles: uploadedFiles
-                },
-            });
-        } catch (error: any) {
-            console.error("Project: Create error:", error);
-            res.status(500).json({ type: 'error', message: 'server_error' });
-        }
-    },
 
     update: async (req: Request, res: Response) => {
+        const transaction = await sequelize.transaction();
+        
         try {
             const { id } = req.params;
             const updates = req.body;
+            const middlewareAuth = req.user;
+
+            // console.log("Updates --> ", updates);
 
             const project = await ProjectModel.findByPk(id);
 
-            if (!project) {
+            console.log("Updates --> ", project?.dataValues);
+
+            if (!project?.dataValues) {
+                await transaction.rollback();
                 res.status(404).json({
                     type: 'error',
                     message: 'record_not_found',
@@ -481,6 +495,7 @@ const ProjectController = {
             }
 
             if (updates.name === '' || (updates.description === '' && updates.description !== undefined)) {
+                await transaction.rollback();
                 res.status(400).json({
                     type: 'error',
                     message: 'fields_required',
@@ -488,50 +503,173 @@ const ProjectController = {
                 return;
             }
 
+            // Update basic project info
             await project.update({
                 name: updates.name,
                 description: updates.description,
-                start_date: updates.start_date,
-                end_date: updates.end_date,
-                status: updates.status,
-                target_families: updates.target_families
-            });
+                // start_date: updates.start_date,
+                // end_date: updates.end_date,
+                // status: updates.status,
+                // target_families: updates.target_families
+            }, { transaction });
 
+            // Handle members update (only update unlocked ones)
             if (updates.selectedMembers !== undefined) {
-                await ProjectMemberModel.destroy({ where: { project_id: id } });
+                const metadata = await getProjectEditMetadata(Number(id));
                 
-                if (updates.selectedMembers.length > 0) {
-                    const membersData = updates.selectedMembers.map((m: any) => ({
+                // Get current members
+                const currentMembers = await ProjectMemberModel.findAll({
+                    where: { project_id: id }
+                });
+
+                // Keep locked members, replace unlocked ones
+                const lockedMemberIds = metadata.lockedMembers.map((m: any) => m.membership_id);
+                const lockedMembers = currentMembers.filter(m => 
+                    lockedMemberIds.includes(m.membership_id)
+                );
+
+                // Remove all unlocked members
+                await ProjectMemberModel.destroy({
+                    where: {
+                        project_id: id,
+                        membership_id: { [Op.notIn]: lockedMemberIds }
+                    },
+                    transaction
+                });
+
+                // Add new members (excluding those already locked)
+                const newMembers = updates.selectedMembers.filter((m: any) => 
+                    !lockedMemberIds.includes(m.membership_id)
+                );
+
+                if (newMembers.length > 0) {
+                    const membersData = newMembers.map((m: any) => ({
                         project_id: id,
                         membership_id: m.membership_id,
                         role_in_project: m.role_in_project
                     }));
-                    await ProjectMemberModel.bulkCreate(membersData);
+                    await ProjectMemberModel.bulkCreate(membersData, { transaction });
                 }
             }
 
+            // Handle assistances update (only update unlocked ones)
             if (updates.selectedAssistances !== undefined) {
-                await ProjectAssistanceModel.destroy({ where: { project_id: id } });
+                const metadata = await getProjectEditMetadata(Number(id));
                 
-                if (updates.selectedAssistances.length > 0) {
-                    const assistancesData = updates.selectedAssistances.map((a: any) => ({
+                // Keep locked assistances, replace unlocked ones
+                const lockedAssistanceIds = metadata.lockedAssistances.map((a: any) => a.assistance_id);
+
+                // Remove all unlocked assistances
+                await ProjectAssistanceModel.destroy({
+                    where: {
+                        project_id: id,
+                        assistance_id: { [Op.notIn]: lockedAssistanceIds }
+                    },
+                    transaction
+                });
+
+                // Add new assistances (excluding those already locked)
+                const newAssistances = updates.selectedAssistances.filter((a: any) => 
+                    !lockedAssistanceIds.includes(a.assistance_id)
+                );
+
+                if (newAssistances.length > 0) {
+                    const assistancesData = newAssistances.map((a: any) => ({
                         project_id: id,
                         assistance_id: a.assistance_id
                     }));
-                    await ProjectAssistanceModel.bulkCreate(assistancesData);
+                    await ProjectAssistanceModel.bulkCreate(assistancesData, { transaction });
                 }
             }
+
+            // Handle file updates
+            if (updates.filesToDelete && updates.filesToDelete.length > 0) {
+                // Delete specified media files
+                for (const mediaId of updates.filesToDelete) {
+                    await MediaController.deleteMedia(mediaId, res);
+                }
+            }
+
+            // Handle new file uploads
+            let uploadedFiles: any[] = [];
+            if (updates.files && updates.files.length > 0) {
+                const processedFiles = updates.files.map((fileData: any) => {
+                    const { buffer, mimetype, size } = base64ToBuffer(fileData.base64);
+                    return {
+                        buffer,
+                        mimetype,
+                        originalname: fileData.name,
+                        size
+                    };
+                });
+
+                uploadedFiles = await MediaController.uploadAndLinkFiles(
+                    processedFiles as any[],
+                    'project',
+                    project.dataValues.id,
+                    'document',
+                    updates.organisation_id,
+                    middlewareAuth?.membershipId || 0,
+                    transaction
+                );
+            }
+
+            await transaction.commit();
 
             res.status(200).json({
                 type: 'success',
                 message: 'done',
-                data: project,
+                data: {
+                    project,
+                    uploadedFiles
+                },
             });
         } catch (error: any) {
-            console.error("Project: Update error:", error);
+            await transaction.rollback();
+            console.error("Project: Update error:", error.message);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
+
+
+    // New method: Check if project can be deleted
+    canDelete: async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
+
+            const beneficiaryCount = await BeneficiaryModel.count({
+                where: { 
+                    project_id: id,
+                    review_status: { [Op.ne]: 'false' }
+                }
+            });
+
+            const deliveryCount = await DeliveryModel.count({
+                where: { 
+                    project_id: id,
+                    review_status: { [Op.ne]: 'false' }
+                }
+            });
+
+            const canDelete = beneficiaryCount === 0 && deliveryCount === 0;
+
+            res.status(200).json({
+                type: 'success',
+                data: {
+                    canDelete,
+                    beneficiaryCount,
+                    deliveryCount,
+                    message: canDelete 
+                        ? 'Project can be deleted'
+                        : `Cannot delete: ${beneficiaryCount} beneficiaries, ${deliveryCount} deliveries`
+                }
+            });
+        } catch (error) {
+            console.error("Project: Can Delete check error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
 
     toggleStatus: async (req: Request, res: Response) => {
         try {
@@ -774,6 +912,8 @@ const ProjectController = {
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
+
+
 };
 
 

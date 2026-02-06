@@ -28,7 +28,6 @@ const Projects = () => {
     const { data, getData, pagination, loading } = useProjectStore();
     const {membership} = useAuthStore();
 
-
     const {
         filters,
         filterMode,
@@ -40,7 +39,8 @@ const Projects = () => {
         handleToggle,
         handleDatePresetChange,
         handleStatusUpdate,
-        handleView
+        handleView,
+        // handleCheckCanDelete
     } = useProject();
 
     const [mediaPreviewOpen, setMediaPreviewOpen] = useState(false);
@@ -54,7 +54,33 @@ const Projects = () => {
         id: number;
         name: string;
         status: string;
+        beneficiaryCount?: number;
+        deliveryCount?: number;
     } | null>(null);
+
+       // State to track if a project can be deleted
+    const [canDeleteMap, setCanDeleteMap] = useState<Record<number, boolean>>({});
+
+
+    // Check which projects can be deleted (only for admin)
+    useEffect(() => {
+        if (membership?.role === 'admin' && data.length > 0) {
+            const checkDeletability = async () => {
+                const results: Record<number, boolean> = {};
+                
+                // for (const project of data) {
+                //     const result = await handleCheckCanDelete(project.id!);
+                //     results[project.id!] = result.canDelete;
+                // }
+                
+                setCanDeleteMap(results);
+            };
+
+            checkDeletability();
+        }
+    }, [data, membership?.role]);
+
+
 
     const handleActionConfirm = async (action: string) => {
         if (!selectedRecord) return;
@@ -74,6 +100,8 @@ const Projects = () => {
             await refreshCurrentPage(pagination!.page);
         }
     };
+
+
 
     const openMediaPreview = (project: any) => {
         if (project.mediaLinks?.length > 0) {
@@ -116,8 +144,12 @@ const Projects = () => {
         setSelectedRecord({
             id: project.id,
             name: project.name,
-            status: project.status
+            status: project.status,
+            beneficiaryCount: project.beneficiaries?.length, 
+            deliveryCount: project.deliveries?.length
         });
+        console.log("Select ---> ", project.beneficiaries?.length);
+        console.log("Select ---> ", project.deliveries?.length);
         setActionPopup(true);
     };
 
@@ -211,16 +243,16 @@ const Projects = () => {
                 return (
                     <div className="flex items-center space-x-3">
                         {
-                            membership?.role === "admin" && (<ActionIcon name="edit"
+                            membership?.role === "admin" && row.status != "done" ? (<ActionIcon name="edit"
                             onClick={() => openProjectModal('edit', row.id)}
-                        />)
+                        />) : (<ActionIcon name="disable" />)
                         }
                         
                         <ActionIcon name="view"
                             onClick={() => openProjectModal('view', row.id)}
                         />
                         {
-                            membership?.role === "admin" &&
+                            membership?.role === "admin" && 
                             (
                                 row.status === "done" ? 
                             <ActionIcon name="disable" />:
@@ -229,6 +261,13 @@ const Projects = () => {
                             />
                             )
                         }
+
+                         {/* {canDeleteMap[row.id] && (
+                            <ActionIcon 
+                                name="trash"
+                                onClick={() => openDeletePopup(row)}
+                            />
+                        )} */}
 
                         {
                             row.mediaLinks?.length > 0 ? (
@@ -461,7 +500,7 @@ const Projects = () => {
                 }
             />
 
-            <ProjectActionPopup
+           <ProjectActionPopup
                 open={actionPopup}
                 onClose={() => {
                     setActionPopup(false);
@@ -469,9 +508,13 @@ const Projects = () => {
                 }}
                 projectStatus={selectedRecord?.status || ''}
                 projectName={selectedRecord?.name || ''}
+                beneficiaryCount={selectedRecord?.beneficiaryCount || 0}
+                deliveryCount={selectedRecord?.deliveryCount || 0}     
                 onConfirm={handleActionConfirm}
             />
 
+
+            
             
 
             <Popup

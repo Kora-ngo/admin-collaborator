@@ -45,6 +45,8 @@ export const useAssitanceSelect = () => {
     selectedAssistance,
     availableAssisOptions,
 
+    setSelectedAssistance,
+
     handleAddAssistance,
     handleRemoveAssistance,
     handleClearAllAssistance,
