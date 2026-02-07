@@ -10,6 +10,7 @@ import beneficiaryRoute from './beneficiary.route.js'
 import deliveryRoute from './delivery.route.js';
 import autditLogRoute from './audit-log.route.js';
 import exportRoute from './export.route.js';
+import subscriptionRoute from './subscription.routes.js';
 
 
 
@@ -26,6 +27,7 @@ router.use("/beneficiaries", beneficiaryRoute);
 router.use("/deliveries", deliveryRoute);
 router.use("/audit-logs", autditLogRoute);
 router.use("/export", exportRoute);
+router.use("/subscription", subscriptionRoute);
 
 
 // Mobile-based

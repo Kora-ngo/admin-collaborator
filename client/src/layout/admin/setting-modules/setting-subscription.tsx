@@ -6,9 +6,14 @@ import StatusBadge from "../../../components/widgets/status-badge";
 import { formatDate } from "../../../utils/formatDate";
 import { getDaysLeftForSubscription } from "../../../utils/differenceInDays";
 import Table from "../../../components/widgets/table"; 
+import { useSubscription } from "../../../features/settings/hooks/useSubscription";
+import Loading from "../../../components/widgets/loading";
+import EmptyState from "../../../components/widgets/empty";
+import type { Subscription } from "../../../types/subscription";
 
 const SettingSubscription = () => {
   const { subscription } = useAuthStore(); // assume you add history to store later
+  const { history, loading, pagination, loadPage } = useSubscription();
 
   let subscriptionHistory;
 
@@ -35,6 +40,32 @@ const SettingSubscription = () => {
       ),
     },
   ];
+
+
+
+   // Get status badge color and text
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { text: string; color: string }> = {
+      'active': { text: 'Active', color: 'green' },
+      'expired': { text: 'Expired', color: 'red' },
+      'cancelled': { text: 'Cancelled', color: 'orange' },
+      'pending': { text: 'Pending', color: 'yellow' },
+      'true': { text: 'Active', color: 'green' },
+      'false': { text: 'Inactive', color: 'gray' }
+    };
+
+    return statusMap[status.toLowerCase()] || { text: status, color: 'gray' };
+  };
+
+  // Get plan badge color
+  const getPlanColor = (plan: string) => {
+    const planColors: Record<string, string> = {
+      'free': 'bg-gray-100 text-gray-800',
+      'pro': 'bg-blue-100 text-blue-800',
+      'enterprise': 'bg-purple-100 text-purple-800'
+    };
+    return planColors[plan.toLowerCase()] || 'bg-gray-100 text-gray-800';
+  };
 
   // Current Subscription Tab Content
   const renderCurrent = () => (
@@ -84,12 +115,22 @@ const SettingSubscription = () => {
 
   // History Tab Content (placeholder table - replace with real data later)
   const renderHistory = () => {
-    // Mock data - replace with real subscriptionHistory from store
-    const history: any = [
-    //   { plan: "free", started: "2025-01-01", ended: "2025-01-31", status: "expired" },
-    //   { plan: "basic", started: "2025-02-01", ended: "2025-04-30", status: "expired" },
-    //   { plan: "premium", started: "2025-05-01", ended: "2025-12-31", status: "active" },
-    ];
+
+     if (loading) {
+      return (
+        <div className="flex justify-center items-center py-12">
+          <Loading text="Loading subscription history..." />
+        </div>
+      );
+    }
+
+    if (history.length === 0) {
+      return (
+        <div className="py-10">
+          <EmptyState title="No subscription history" />
+        </div>
+      );
+    }
 
     return (
       <div>
@@ -111,26 +152,35 @@ const SettingSubscription = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {history.map((item: any, index: number) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.plan.charAt(0).toUpperCase() + item.plan.slice(1)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(item.started, false)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(item.ended, false)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <StatusBadge 
-                        text={item.status.charAt(0).toUpperCase() + item.status.slice(1)} 
-                        color={item.status === "active" ? "green" : "gray"} 
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                  {history.map((item: any) => {
+                    const badge = getStatusBadge(item.status);
+                    const durationDays = Math.ceil(
+                      (new Date(item.ends_at).getTime() - new Date(item.started_at).getTime()) / (1000 * 60 * 60 * 24)
+                    );
+
+                    return (
+                      <tr key={item.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlanColor(item.plan)}`}>
+                            {item.plan.charAt(0).toUpperCase() + item.plan.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(item.started_at, false)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(item.ends_at, false)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {durationDays} days
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <StatusBadge text={badge.text} color={badge.color as any} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
             </table>
           </div>
         )}

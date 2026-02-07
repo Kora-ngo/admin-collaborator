@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { checkAndUpdateSubscription } from '../helpers/checkSubscription.js';
 
 export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
@@ -22,6 +23,19 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
         if (!payload.userId || !payload.organizationId || !payload.role) {
            return res.status(401).json({ type: 'error', message: 'invalid_token_payload' });
         }
+
+
+        // Check & update subscription status
+        // const { isActive, subscription, message } = await checkAndUpdateSubscription(payload.organizationId);
+
+        // if (!isActive) {
+        // return res.status(403).json({
+        //     type: 'error',
+        //     message: message || 'subscription_expired_or_inactive',
+        //     subscriptionStatus: subscription?.status || 'none',
+        //     expiresAt: subscription?.ends_at || null,
+        // });
+        // }
 
 
         req.user = {

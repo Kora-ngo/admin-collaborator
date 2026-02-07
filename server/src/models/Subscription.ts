@@ -7,7 +7,7 @@ class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAtt
   public id!: number;
   public uid!: number;
   public organization_id!: number;
-  public plan!: string;
+  public plan!: 'test' | 'free' | 'pro' | 'enterprise';
   public started_at!: Date;
   public ends_at!: Date;
   public status!: string;

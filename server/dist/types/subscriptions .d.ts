@@ -2,7 +2,7 @@ export interface SubscriptionAttributes {
     id: number;
     uid: number;
     organization_id: number;
-    plan: string;
+    plan: 'test' | 'free' | 'pro' | 'enterprise';
     started_at?: Date;
     ends_at?: Date;
     status: string;

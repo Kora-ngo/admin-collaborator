@@ -13,6 +13,37 @@ export const handleApiError = (err: any): ToastMessage => {
     };
 
 
+
+    // Subscription expired / inactive (403 from backend)
+    if (err.response?.status === 403) {
+        const backend = err.response.data;
+
+        // Check for subscription-related error
+        if (
+        backend?.message?.toLowerCase().includes('subscription') ||
+        backend?.subscriptionStatus === false ||
+        backend?.subscriptionStatus === 'expired' ||
+        backend?.subscriptionStatus === 'suspended'
+        ) {
+        // Show warning toast
+        toast = {
+            type: 'warning',
+            title: 'Subscription Inactive',
+            message: 'Your subscription has expired or is inactive. Please renew to continue.',
+            show: true,
+            autoClose: 8000,
+        };
+
+        // Reload window after a short delay so user sees the toast
+        setTimeout(() => {
+            window.location.reload();
+        }, 3000); // 3 seconds delay — adjust if needed
+
+        return toast;
+        }
+    }
+
+
     if (!err.response && err.request) {
         // This is the classic "no internet" or "server unreachable" case
         const now = Date.now();

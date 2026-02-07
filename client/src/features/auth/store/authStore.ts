@@ -10,6 +10,7 @@ interface AuthState {
     token: string | null,
     role: "admin" | "collaborator" | "",
     subscription: Subscription | null,
+    subscriptionStatus: "active" | "expired" | "suspended" | "",
     organisation: Organisation | null,
     membership: Membership | null,
     loading: boolean,
@@ -34,6 +35,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     loading: false,
     role: "",
     showToastMessage: false,
+    subscriptionStatus: "",
 
         register: async (users, organisation) => {
 
@@ -122,6 +124,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     organisation: null,
                     subscription: null, 
                     membership: null,
+                    subscriptionStatus: ""
                  });
                 return;
             }
@@ -136,7 +139,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     organisation: data.organisation,
                     subscription: data.subscription, 
                     membership: data.membership,
-                    loading: false
+                    loading: false,
+                    subscriptionStatus: data.subscription.status === "true" ? "active" : data.subscription.status
                 });
             }catch(err: any){
                 console.log("Error --> ", err);
@@ -148,7 +152,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     role: "",
                     organisation: null,
                     subscription: null, 
-                    loading: false
+                    loading: false,
+                    subscriptionStatus: ""
                  });
                 const errorToast = handleApiError(err);
 
