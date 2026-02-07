@@ -7,6 +7,7 @@ import type { MembershipCreationAttributes } from "../types/memebership.js";
 import { generateUniqueUid } from "../utils/generateUniqueUid.js";
 import bcrypt from "bcryptjs";
 import { logAudit } from "../utils/auditLogger.js";
+import { validateMemberDeletion } from "../utils/validateMemberDeletion.js";
 
 const MembershipController = {
 
@@ -411,7 +412,20 @@ const MembershipController = {
                     type: 'error',
                     message: 'record_not_found',
                 });
-            }     
+            }
+            
+            if (status === 'false') {
+                const validationResult = await validateMemberDeletion(membership.id, membership.role, membership.organization_id);
+                
+                if (!validationResult.canDelete) {
+                    return res.status(400).json({
+                        type: 'warning',
+                        message: 'cannot_delete_member_with_data',
+                        details: validationResult.details
+                    });
+                }
+            }
+
             
             // Only update if the status actually changes (optional, but good practice)
             if (membershipData.status === status) {

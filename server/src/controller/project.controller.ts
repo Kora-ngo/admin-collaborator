@@ -8,6 +8,7 @@ import sequelize from '../config/database.js';
 import MediaController from './media.controller.js';
 import { base64ToBuffer } from '../utils/base64ToBuffer.js';
 import { getProjectEditMetadata } from '../helpers/getProjectEditMetadata.js';
+import { validateMemberDeletion } from '../utils/validateMemberDeletion.js';
 
 const ProjectController = {
     
@@ -675,6 +676,16 @@ const ProjectController = {
         try {
             const { id } = req.params;
 
+            const membershipData = await MembershipModel.findByPk(id);
+            const membership = membershipData?.dataValues;
+
+            if (!membership) {
+                return res.status(404).json({
+                    type: 'error',
+                    message: 'record_not_found',
+                });
+            }
+
             const projectData = await ProjectModel.findByPk(id);
             const project = projectData?.dataValues;
 
@@ -686,6 +697,7 @@ const ProjectController = {
             }
 
             const newStatus = project.status === 'false' ? 'pending' : 'false';
+
 
             await projectData.update({
                 status: newStatus

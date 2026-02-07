@@ -35,6 +35,7 @@ export const messages: MessageItem[] = [
     { key: "user_already_in_organization", message: "This user is already part of this organization." },
     {key: "invalid_or_inactive_membership", message: "Your account has been blocked. Contact your Administrator for more Information"},
     {key: "unauthorized_access", message: "You are not authorised to perform this action"},
+    {key: "cannot_delete_member_with_data", message: "This member is active in a project, hence can't be deleted"},
     
 
 

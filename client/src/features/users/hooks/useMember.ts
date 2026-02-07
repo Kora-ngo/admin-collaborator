@@ -171,6 +171,9 @@ export const useMembership = () => {
         }
 
         const result = await toggleData(id, status);
+
+        console.log("Result --> ", result);
+
         showToast(result);
         await getData();
         return result.type === "success";
