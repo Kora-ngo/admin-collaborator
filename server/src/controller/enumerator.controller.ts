@@ -476,13 +476,13 @@ const EnumeratorController = {
                                     updated_at: new Date()
                                 }, { transaction });
 
-                                console.log(`  ✓ Beneficiary updated, now handling members...`);
+                                console.log(`  ✓ Beneficiary updated, now handling members... ${benef.server_id}`);
 
                                 // ── HANDLE MEMBERS for this updated beneficiary ──
                                 if (benef.members && benef.members.length > 0) {
                                     // Delete old members first
                                     await BeneficiaryMemberModel.destroy({
-                                        where: { beneficiary_id: existing.id },
+                                        where: { beneficiary_id: benef.server_id },
                                         transaction
                                     });
 
@@ -496,7 +496,7 @@ const EnumeratorController = {
                                         }
 
                                         await BeneficiaryMemberModel.create({
-                                            beneficiary_id: existing.id,
+                                            beneficiary_id: benef.server_id,
                                             full_name: member.full_name,
                                             gender: member.gender,
                                             date_of_birth: member.date_of_birth,
@@ -770,7 +770,7 @@ if (deliveries && deliveries.length > 0) {
                 }
 
                 const itemsData = deliv.items.map((item: any) => ({
-                    delivery_id: deliv.server_id,
+                    delivery_id: deliv.server_id ?? deliveryRecord.id,
                     assistance_id: item.assistance_id,
                     quantity: item.quantity
                 }));

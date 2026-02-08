@@ -5,6 +5,7 @@ const NETWORK_TOAST_COOLDOWN_MS = 5000;
 
 
 export const handleApiError = (err: any): ToastMessage => {
+    console.log("Hello");
 
     let toast: ToastMessage = {
         type: 'error',
@@ -57,7 +58,7 @@ export const handleApiError = (err: any): ToastMessage => {
         return {
             type: 'no_network',
             title: 'No Internet Connection',
-            message: 'Please check your network and try again.',
+            message: 'no_internet',
             show: true,
             autoClose: false,          // don't auto-dismiss
         };
@@ -88,7 +89,7 @@ export const handleApiError = (err: any): ToastMessage => {
         // Special backend cases
         if (err.response.status === 503) {
             toast.type = 'no_network';
-            toast.message = 'Service temporarily unavailable. Please try again later.';
+            toast.message = 'no_internet';
         }
 
         if (err.response.status === 401 || err.response.status === 403) {

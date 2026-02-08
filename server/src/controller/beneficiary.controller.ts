@@ -54,6 +54,7 @@ const BeneficiaryController = {
 
                 // Only show beneficiaries from collaborator's projects
                 whereClause.project_id = { [Op.in]: projectIds };
+                whereClause.review_status = { [Op.ne]: 'false' };
 
             }
 
@@ -472,110 +473,178 @@ const BeneficiaryController = {
     },
 
 
+    reviewBeneficiary: async (req: Request, res: Response) => {
+        const authUser = req.user;
+        const userRole = authUser?.role;
+        const membershipId = authUser?.membershipId;
 
-reviewBeneficiary: async (req: Request, res: Response) => {
-    const authUser = req.user;
-    const userRole = authUser?.role;
-    const membershipId = authUser?.membershipId;
+        try {
+            const { id } = req.params;
+            const { action, review_note } = req.body;
 
-    try {
-        const { id } = req.params;
-        const { action, review_note } = req.body;
-
-        // Only collaborators can review
-        if (userRole !== 'collaborator') {
-            return res.status(403).json({
-                type: 'error',
-                message: 'collaborator_role_required'
-            });
-        }
-
-        if (!action || (action !== 'approve' && action !== 'reject')) {
-            return res.status(400).json({
-                type: 'error',
-                message: 'invalid_action'
-            });
-        }
-
-        // ENFORCE: Rejection must have a note
-        if (action === 'reject' && (!review_note || review_note.trim() === "")) {
-            return res.status(400).json({
-                type: 'error',
-                message: 'rejection_note_required'
-            });
-        }
-
-        const beneficiaryData = await BeneficiaryModel.findByPk(id);
-
-        const beneficiary = beneficiaryData?.dataValues;
-
-        if (!beneficiary) {
-            return res.status(404).json({
-                type: 'error',
-                message: 'record_not_found'
-            });
-        }
-
-        // Verify collaborator has access to this project
-        const hasAccessData = await ProjectMemberModel.findOne({
-            where: {
-                project_id: beneficiary.project_id,
-                membership_id: membershipId,
-                role_in_project: 'collaborator'
+            // Only collaborators can review
+            if (userRole !== 'collaborator') {
+                return res.status(403).json({
+                    type: 'error',
+                    message: 'collaborator_role_required'
+                });
             }
-        });
 
-        const hasAccess = hasAccessData?.dataValues;
-
-        if (!hasAccess) {
-            return res.status(403).json({
-                type: 'error',
-                message: 'access_denied'
-            });
-        }
-
-        // Check if already reviewed
-        if (beneficiary.review_status !== 'pending') {
-            return res.status(400).json({
-                type: 'error',
-                message: 'already_reviewed'
-            });
-        }
-
-        // Update review status
-        await beneficiaryData.update({
-            review_status: action === 'approve' ? 'approved' : 'rejected',
-            reviewed_by_membership_id: membershipId!,
-            reviewed_at: new Date(),
-            review_note: review_note?.trim() || null,
-            updated_at: new Date()
-        });
-
-        const getUserData = await UserModel.findByPk(authUser?.userId);
-
-
-        await logAudit({
-            req,
-            action: action === 'approve' ? 'approved' : 'rejected',
-            entityType: "beneficiary",
-            entityId: beneficiary.project_id,
-            metadata: {
-                "Family Code": beneficiary?.family_code,
-                "Family Head": beneficiary?.head_name,
+            if (!action || (action !== 'approve' && action !== 'reject')) {
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'invalid_action'
+                });
             }
-        });
 
-        res.status(200).json({
+            // ENFORCE: Rejection must have a note
+            if (action === 'reject' && (!review_note || review_note.trim() === "")) {
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'rejection_note_required'
+                });
+            }
+
+            const beneficiaryData = await BeneficiaryModel.findByPk(id);
+
+            const beneficiary = beneficiaryData?.dataValues;
+
+            if (!beneficiary) {
+                return res.status(404).json({
+                    type: 'error',
+                    message: 'record_not_found'
+                });
+            }
+
+            // Verify collaborator has access to this project
+            const hasAccessData = await ProjectMemberModel.findOne({
+                where: {
+                    project_id: beneficiary.project_id,
+                    membership_id: membershipId,
+                    role_in_project: 'collaborator'
+                }
+            });
+
+            const hasAccess = hasAccessData?.dataValues;
+
+            if (!hasAccess) {
+                return res.status(403).json({
+                    type: 'error',
+                    message: 'access_denied'
+                });
+            }
+
+            // Check if already reviewed
+            if (beneficiary.review_status !== 'pending') {
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'already_reviewed'
+                });
+            }
+
+            // Update review status
+            await beneficiaryData.update({
+                review_status: action === 'approve' ? 'approved' : 'rejected',
+                reviewed_by_membership_id: membershipId!,
+                reviewed_at: new Date(),
+                review_note: review_note?.trim() || null,
+                updated_at: new Date()
+            });
+
+            const getUserData = await UserModel.findByPk(authUser?.userId);
+
+
+            await logAudit({
+                req,
+                action: action === 'approve' ? 'approved' : 'rejected',
+                entityType: "beneficiary",
+                entityId: beneficiary.project_id,
+                metadata: {
+                    "Family Code": beneficiary?.family_code,
+                    "Family Head": beneficiary?.head_name,
+                }
+            });
+
+            res.status(200).json({
+                type: 'success',
+                message: 'done',
+                data: beneficiary
+            });
+
+        } catch (error) {
+            console.error("Beneficiary: Review error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
+
+    delete: async (req: Request, res: Response) => {
+        try {
+            const {id} = req.params;
+            const {status} = req.body;
+
+            console.log("Status --> ", status);
+
+            if(status != "rejected"){
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'invalid_status'
+                });                
+            }
+
+            const beneficaryData = await BeneficiaryModel.findByPk(id);
+            const beneficary = beneficaryData?.dataValues;
+            let members;
+
+            if(beneficary?.id){
+                const {count} = await BeneficiaryMemberModel.count({
+                where: {
+                    beneficiary_id: beneficary?.id
+                }
+            }) as any;
+
+            members = count;
+            }
+            
+            if (!beneficary) {
+                return res.status(404).json({
+                    type: 'error',
+                    message: 'record_not_found',
+                });
+            }
+
+            await beneficaryData.update({
+                review_status: "false"
+            }),
+
+            await logAudit({
+                req,
+                action: status == "true" ? "Enabled" : status == "blocked" ? "Blocked" : "Deleted",
+                entityType: "beneficiary",
+                entityId: beneficary.id,
+                metadata: {
+                    Familly_Code: beneficary.family_code,
+                    Familly_Head: beneficary.head_name,
+                    Members: `${members} Member(s)`,
+                    status,
+                }
+            });
+
+            res.status(200).json({
             type: 'success',
             message: 'done',
-            data: beneficiary
-        });
+            data: {
+                id: beneficary.id,
+                status,
+            },
+            });
 
-    } catch (error) {
-        console.error("Beneficiary: Review error:", error);
-        res.status(500).json({ type: 'error', message: 'server_error' });
+        }catch (error) {
+            console.error("Membership: Toggle Status error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
     }
-}
+
 
 };
 

@@ -6,7 +6,7 @@ import { useToastStore } from "../../../store/toastStore";
 import { useAuthStore } from "../../auth/store/authStore";
 
 export const useBeneficiary = () => {
-    const { getData, filterData, fetchOneData, reviewBeneficiary } = useBeneficiaryStore();
+    const { getData, filterData, fetchOneData, reviewBeneficiary, deleteData } = useBeneficiaryStore();
     const showToast = useToastStore((state) => state.showToast);
     const { membership } = useAuthStore();
 
@@ -75,6 +75,20 @@ export const useBeneficiary = () => {
         return result.type === "success";
     };
 
+    const handleDelete = async (id: number, status: string): Promise<boolean> => {
+        if (!id || id <= 0) {
+            return false;
+        }
+
+        const result = await deleteData(id, status);
+
+        console.log("Result --> ", result);
+
+        showToast(result);
+        await getData();
+        return result.type === "success";
+    };
+
     return {
         searchTerm,
         handleSearch,
@@ -86,6 +100,7 @@ export const useBeneficiary = () => {
         handleDatePresetChange,
         refreshCurrentPage,
         handleView,
-        handleReview
+        handleReview,
+        handleDelete
     };
 };

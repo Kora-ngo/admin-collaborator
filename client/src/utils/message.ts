@@ -60,6 +60,8 @@ export const messages: MessageItem[] = [
     { key: "invalid_or_expired_token", message: "Your session has expired. Please log in again." },
     { key: "internal_server_error", message: "Something went wrong. Please try again." },
     { key: "unexpected_error", message: "An unexpected error occurred. Please try again." },
+    {key: "no_internet", message: "Check your internet connexion and try again"},
+    {key: "invalid_status", message: "This record cannot be deleted due to its current state."}
 
 
 

@@ -13,7 +13,7 @@ export interface BeneficiaryAttributes {
     created_at: Date;
     updated_at: Date;
     sync_source: 'web' | 'mobile';
-    review_status: 'pending' | 'approved' | 'rejected';
+    review_status: 'pending' | 'approved' | 'rejected' | 'false';
     reviewed_by_membership_id?: number;
     reviewed_at?: Date;
     review_note?: string;

@@ -13,7 +13,8 @@ const BeneficiaryViewGeneral = ({ data }: BeneficiaryViewGeneralProps) => {
     const statusColors: any = {
         pending: "yellow",
         approved: "green",
-        rejected: "red"
+        rejected: "red",
+        false: "red",
     };
 
     const fields = [
@@ -27,7 +28,7 @@ const BeneficiaryViewGeneral = ({ data }: BeneficiaryViewGeneralProps) => {
             label: "Review Status", 
             value: (
                 <StatusBadge 
-                    text={data.review_status} 
+                    text={data.review_status === "false" ? "Deleted" : data.review_status}
                     color={statusColors[data.review_status] || "gray"} 
                 />
             )

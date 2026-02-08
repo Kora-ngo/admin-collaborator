@@ -17,7 +17,7 @@ class Beneficiary extends Model<BeneficiaryAttributes, BeneficiaryCreationAttrib
     public created_at!: Date;
     public updated_at!: Date;
     public sync_source!: 'web' | 'mobile';
-    public review_status!: 'pending' | 'approved' | 'rejected';
+    public review_status!: 'pending' | 'approved' | 'rejected' | 'false';
     public reviewed_by_membership_id?: number;
     public reviewed_at?: Date;
     public review_note?: string;
@@ -75,7 +75,7 @@ const BeneficiaryModel = Beneficiary.init({
         defaultValue: 'web',
     },
     review_status: {
-        type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+        type: DataTypes.ENUM('pending', 'approved', 'rejected', 'false'),
         allowNull: false,
         defaultValue: 'pending',
     },

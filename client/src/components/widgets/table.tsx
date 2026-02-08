@@ -70,7 +70,7 @@ const Table: React.FC<TableProps> = ({
                 className={`
                   border-b border-gray-200
                   ${
-                    row.status === "false"
+                    row.status === "false" || row.review_status === "false"
                       ? "bg-red-50 text-red-700"
                       : "text-gray-900"
                   }

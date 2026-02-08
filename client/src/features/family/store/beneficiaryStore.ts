@@ -12,6 +12,7 @@ interface BeneficiaryState {
     fetchOneData: (id: number) => Promise<Beneficiary>;
     filterData: (page: number, filters: any) => Promise<any>;
     reviewBeneficiary: (id: number, action: 'approve' | 'reject', note?: string) => Promise<any>;
+    deleteData: (id: number, status: string) => Promise<any>
 }
 
 const endpoint = "beneficiaries";
@@ -97,7 +98,24 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
             const errorToast = handleApiError(error);
             return errorToast;
         }
-    }
+    },
+
+
+    deleteData: async (id, status) => {
+        try{
+
+        console.log("Membership toggle -- Status -- > ", status);
+
+        const response = await axiosInstance.put(`${endpoint}/${id}`, {status: status});
+        console.log("Membership delete one --> ", response.data);
+        return response.data;
+
+            
+        }catch(error: any){
+            const errorToast = handleApiError(error);
+            return errorToast;
+        }
+    },
 
 
 }));

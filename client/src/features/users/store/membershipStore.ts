@@ -61,6 +61,7 @@ export const useMembershipStore = create<MembershipState>((set) => ({
 
             
         }catch(error: any){
+
             const errorToast = handleApiError(error);
             return errorToast;
         }finally{

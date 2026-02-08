@@ -11,5 +11,6 @@ router.get('/filter', verifyToken, BeneficiaryController.filter);
 router.get('/:id', verifyToken, BeneficiaryController.fetchOne);
 router.get('/', verifyToken, BeneficiaryController.fetchAll);
 router.put('/review/:id', verifyToken, BeneficiaryController.reviewBeneficiary);
+router.put('/:id', verifyToken, BeneficiaryController.delete);
 
 export default router;
