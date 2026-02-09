@@ -9,7 +9,7 @@ export interface Delivery {
     created_at: string;
     updated_at: string;
     sync_source: 'web' | 'mobile';
-    review_status: 'pending' | 'approved' | 'rejected';
+    review_status: 'pending' | 'approved' | 'rejected' | 'false';
     reviewed_by_membership_id?: number;
     reviewed_at?: string;
     review_note?: string;

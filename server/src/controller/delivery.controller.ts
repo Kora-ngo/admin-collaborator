@@ -46,6 +46,8 @@ const DeliveryController = {
                 }
 
                 whereClause.project_id = { [Op.in]: projectIds };
+                whereClause.review_status = { [Op.ne]: 'false' };
+                
             }
 
             const { count, rows } = await DeliveryModel.findAndCountAll({
@@ -621,6 +623,74 @@ const DeliveryController = {
 
         } catch (error) {
             console.error("Delivery: Review error:", error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
+
+    delete: async (req: Request, res: Response) => {
+        try {
+            const {id} = req.params;
+            const {status} = req.body;
+
+            console.log("Status --> ", status);
+
+            if(status != "rejected"){
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'invalid_status'
+                });                
+            }
+
+            const deliveryData = await DeliveryModel.findByPk(id);
+            const delivery = deliveryData?.dataValues;
+            let items;
+
+            if(delivery?.id){
+                const {count} = await DeliveryItemModel.count({
+                where: {
+                    delivery_id: delivery?.id
+                }
+            }) as any;
+
+            items = count;
+            }
+            
+            if (!delivery) {
+                return res.status(404).json({
+                    type: 'error',
+                    message: 'record_not_found',
+                });
+            }
+
+            await deliveryData.update({
+                review_status: "false"
+            }),
+
+            await logAudit({
+                req,
+                action: status == "true" ? "Enabled" : status == "blocked" ? "Blocked" : "Deleted",
+                entityType: "beneficiary",
+                entityId: delivery.id,
+                metadata: {
+                    Familly_Code: delivery.notes,
+                    Familly_Head: delivery.created_at,
+                    Members: `${delivery} Member(s)`,
+                    status,
+                }
+            });
+
+            res.status(200).json({
+            type: 'success',
+            message: 'done',
+            data: {
+                id: delivery.id,
+                status,
+            },
+            });
+
+        }catch (error) {
+            console.error("Delivery: Toggle Status error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     }

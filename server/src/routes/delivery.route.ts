@@ -9,5 +9,7 @@ router.get('/filter', verifyToken, DeliveryController.filter);
 router.get('/:id', verifyToken, DeliveryController.fetchOne);
 router.get('/', verifyToken, DeliveryController.fetchAll);
 router.put('/review/:id', verifyToken, DeliveryController.reviewDelivery);
+router.put('/:id', verifyToken, DeliveryController.delete);
+
 
 export default router;

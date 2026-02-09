@@ -3,7 +3,7 @@ import { useDeliveryStore } from "../store/deliveryStore";
 import { useToastStore } from "../../../store/toastStore";
 
 export const useDelivery = () => {
-    const { getData, filterData, fetchOneData, reviewDelivery } = useDeliveryStore();
+    const { getData, filterData, fetchOneData, deleteData, reviewDelivery } = useDeliveryStore();
     const showToast = useToastStore((state) => state.showToast);
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -70,6 +70,21 @@ export const useDelivery = () => {
         return result.type === "success";
     };
 
+
+        const handleDelete = async (id: number, status: string): Promise<boolean> => {
+        if (!id || id <= 0) {
+            return false;
+        }
+
+        const result = await deleteData(id, status);
+
+        console.log("Result --> ", result);
+
+        showToast(result);
+        await getData();
+        return result.type === "success";
+    };
+
     return {
         searchTerm,
         handleSearch,
@@ -81,6 +96,7 @@ export const useDelivery = () => {
         handleDatePresetChange,
         refreshCurrentPage,
         handleView,
-        handleReview
+        handleReview,
+        handleDelete
     };
 };

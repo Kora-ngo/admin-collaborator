@@ -423,7 +423,7 @@ const Families = () => {
                     setDeletePopup(false);
                     setSelectedRecord(null);
                 }}
-                title="Delete this Beneficiary"
+                title="Delete this Beneficiary ?"
                 description={
                     (
                         <div className="flex bg-amber-50 rounded p-4 space-x-4 mt-4">

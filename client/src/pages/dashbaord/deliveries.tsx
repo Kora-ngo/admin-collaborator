@@ -37,11 +37,13 @@ const Deliveries = () => {
         handleDatePresetChange,
         refreshCurrentPage,
         handleView,
-        handleReview
+        handleReview,
+        handleDelete,
     } = useDelivery();
 
     const [modalMode, setModalMode] = useState<ModalMode>(null);
     const [reviewPopup, setReviewPopup] = useState(false);
+    const [deletePopup, setDeletePopup] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<{
         id: number;
         uid: number;
@@ -89,6 +91,18 @@ const Deliveries = () => {
         });
         setReviewAction(action);
         setReviewPopup(true);
+    };
+
+
+    const openTrashPopup = (record: any) => {
+        setSelectedRecord({
+            id: record.id,
+            uid: record.uid,
+            beneficiary_name: record.beneficiary  ? `${record.beneficiary.family_code} - ${record.beneficiary.head_name}`
+                : "-",
+            review_status: record.review_status
+        });
+        setDeletePopup(true);
     };
 
     const handleConfirmReview = async () => {
@@ -163,11 +177,12 @@ const Deliveries = () => {
                 const statusColors: any = {
                     pending: "yellow",
                     approved: "green",
-                    rejected: "red"
+                    rejected: "red",
+                    false: "red"
                 };
                 return (
                     <StatusBadge
-                        text={row.review_status}
+                        text={row.review_status === "false" ? "Deleted" : row.review_status}
                         color={statusColors[row.review_status] || "gray"}
                     />
                 );
@@ -214,6 +229,16 @@ const Deliveries = () => {
                                 <ActionIcon
                                     name="close_red"
                                     onClick={() => openReviewPopup(row, 'reject')}
+                                    className="text-red-600 hover:text-red-700"
+                                />
+                            </>
+                        )}
+
+                        {isCollaborator && row.review_status === 'rejected' && (
+                            <>
+                                <ActionIcon
+                                    name="trash"
+                                    onClick={() => openTrashPopup(row)}
                                     className="text-red-600 hover:text-red-700"
                                 />
                             </>
@@ -415,6 +440,40 @@ const Deliveries = () => {
                 onClose={() => setExportModal(false)}
                 onExport={handleExport}
                 title="Export Deliveries"
+            />
+
+
+            <Popup
+                open={deletePopup}
+                onClose={() => {
+                    setDeletePopup(false);
+                    setSelectedRecord(null);
+                }}
+                title="Delete this Delivery ?"
+                description={
+                    (
+                        <div className="flex bg-amber-50 rounded p-4 space-x-4 mt-4">
+                            <div className="bg-amber-600 w-2 h-24 rounded-2xl"></div>
+                            <div className="flex-col">
+                                <p className="text-lg text-amber-600 font-bold">Warning</p>
+                                <p>The Enumerator might still be working on <span className="text-amber-600 font-semibold">{selectedRecord?.beneficiary_name}</span>. Contact him to make sure he has deleted this record in his platform before proceeding.</p>
+                            </div>
+                        </div>
+                    )
+                }
+
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={async () => {
+                    if(!selectedRecord) return;
+
+                    const success = await handleDelete(selectedRecord.id, selectedRecord.review_status);
+                        if (success) {
+                        setDeletePopup(false);
+                        setSelectedRecord(null);
+                        await refreshCurrentPage(pagination!.page);
+                    }                   
+                }}
             />
 
 

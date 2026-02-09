@@ -5,16 +5,19 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      // Step 1: Add 'false' to the ENUM type
+      // Expand the ENUM to include 'false'
       await queryInterface.sequelize.query(`
-        ALTER TABLE beneficiaries
+        ALTER TABLE deliveries
         MODIFY COLUMN review_status ENUM('pending', 'approved', 'rejected', 'false')
         NOT NULL DEFAULT 'pending';
       `, { transaction });
 
-      // Optional step: If you want to set existing records to 'false' or something else
+      // Optional: If you want to auto-set invalid/old statuses to 'false'
+      // (uncomment if needed)
       // await queryInterface.sequelize.query(`
-      //   UPDATE beneficiaries SET review_status = 'false' WHERE review_status NOT IN ('pending', 'approved', 'rejected');
+      //   UPDATE deliveries 
+      //   SET review_status = 'false' 
+      //   WHERE review_status NOT IN ('pending', 'approved', 'rejected');
       // `, { transaction });
 
       await transaction.commit();
@@ -30,7 +33,7 @@ module.exports = {
     try {
       // Revert: remove 'false' from ENUM
       await queryInterface.sequelize.query(`
-        ALTER TABLE beneficiaries
+        ALTER TABLE deliveries
         MODIFY COLUMN review_status ENUM('pending', 'approved', 'rejected')
         NOT NULL DEFAULT 'pending';
       `, { transaction });
