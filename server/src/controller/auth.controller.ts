@@ -63,7 +63,7 @@ const AuthController = {
             const subscriptionData = await SubscriptionModel.findOne({
                 where: {
                     organization_id: memberships?.organization_id,
-                    status: 'true'
+                    // status: 'true'
                 },
                 order: [['ends_at', 'DESC']],
             });

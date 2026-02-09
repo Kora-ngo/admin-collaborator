@@ -15,10 +15,16 @@ import Families from './pages/dashbaord/families'
 import Deliveries from './pages/dashbaord/deliveries'
 import AuditLog from './pages/dashbaord/audit-log'
 import Renew from './pages/dashbaord/renew'
+import { useSessionGuard } from './helpers/session/useSessionGuard'
 
 function App() {
   const token = localStorage.getItem('token');
   const { user, organisation, role, loading, subscriptionStatus, getCurrentUser } = useAuthStore();
+
+
+  // ✅ Initialize session guard
+  useSessionGuard();
+
 
   // Step 1: On app start — if token exists, fetch user
   useEffect(() => {
@@ -58,23 +64,23 @@ function App() {
 
 
   // Token exists + user loaded → decide routing
-  if (user && organisation) {
-    const isOwner = user.id === organisation.created_by;
+  // if (user && organisation) {
+  //   const isOwner = user.id === organisation.created_by;
 
-    // If user is the organization owner AND subscription is NOT active
-    if (isOwner && subscriptionStatus !== 'active') {
-      return (
-        <BrowserRouter>
-          <Routes>
-            <Route path="/subscription" element={<Renew />} />
-            {/* Redirect all other routes to subscription */}
-            <Route path="*" element={<Navigate to="/subscription" replace />} />
-          </Routes>
-          <GlobalToast />
-        </BrowserRouter>
-      );
-    }
-  }
+  //   // If user is the organization owner AND subscription is NOT active
+  //   if (isOwner && subscriptionStatus != 'active') {
+  //     return (
+  //       <BrowserRouter>
+  //         <Routes>
+  //           <Route path="/subscription" element={<Renew />} />
+  //           {/* Redirect all other routes to subscription */}
+  //           <Route path="*" element={<Navigate to="/subscription" replace />} />
+  //         </Routes>
+  //         <GlobalToast />
+  //       </BrowserRouter>
+  //     );
+  //   }
+  // }
 
   // Token exists + user loaded → decide once where to go
   if (user) {

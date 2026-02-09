@@ -71,6 +71,10 @@ const EnumeratorController = {
 
                 const subscriptionValues = subscriptionData?.dataValues;
 
+                if (!subscriptionValues) {
+                    return res.status(403).json({ type: 'error', message: "no_active_subscription" });
+                }
+
                 const isSubscriptionActive = subscriptionValues
                     ? new Date(subscriptionValues.ends_at!) > new Date()
                     : false;
@@ -348,6 +352,19 @@ const EnumeratorController = {
                 });
             }
 
+            const subscriptionData = await SubscriptionModel.findOne({
+                where: {
+                    organization_id: authUser?.organizationId,
+                    status: 'true'
+                },
+                order: [['ends_at', 'DESC']],
+            });
+            const subscription = subscriptionData?.dataValues;
+
+            if (!subscription) {
+                return res.status(403).json({ type: 'error', message: "no_active_subscription" });
+            }
+
 
             // STEP 2: VALIDATE REQUEST BODY
             const { batch_uid, project_id, beneficiaries, deliveries } = req.body;
@@ -614,6 +631,7 @@ const EnumeratorController = {
                             action: 'Synched',
                             entityType: "beneficiary",
                             entityId: newBeneficiary.id,
+                            platform: "mobile",
                             metadata: {
                                 status: 'pending',
                                 length: beneficiaryResults.length

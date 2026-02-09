@@ -30,15 +30,15 @@ export const handleApiError = (err: any): ToastMessage => {
         toast = {
             type: 'warning',
             title: 'Subscription Inactive',
-            message: 'Your subscription has expired or is inactive. Please renew to continue.',
+            message: 'no_active_subscription',
             show: true,
             autoClose: 8000,
         };
 
         // Reload window after a short delay so user sees the toast
-        setTimeout(() => {
-            window.location.reload();
-        }, 3000); // 3 seconds delay — adjust if needed
+        // setTimeout(() => {
+        //     window.location.reload();
+        // }, 3000); 
 
         return toast;
         }

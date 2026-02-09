@@ -16,7 +16,7 @@ export async function checkAndUpdateSubscription(
 ): Promise<SubscriptionCheckResult> {
   try {
     // Find the latest active subscription (status = 'true')
-    const subscription = await SubscriptionModel.findOne({
+    const subscriptionData = await SubscriptionModel.findOne({
       where: {
         organization_id: organizationId,
         status: 'true',
@@ -24,20 +24,24 @@ export async function checkAndUpdateSubscription(
       order: [['ends_at', 'DESC']], // most recent first
     });
 
+    const subscription = subscriptionData?.dataValues;
+
+
     if (!subscription) {
       return {
         isActive: false,
         subscription: null,
-        message: 'No_active_subscription',
+        message: 'no_active_subscription',
       };
     }
 
     const now = new Date();
-    const endsAt = new Date(subscription.ends_at);
+    const endsAt = new Date(subscription.ends_at!);
 
     // If expired or ends today → mark as expired
     if (endsAt <= now) {
-      await subscription.update({
+      console.log("Let's Go")
+      await subscriptionData.update({
         status: 'expired',
       });
 

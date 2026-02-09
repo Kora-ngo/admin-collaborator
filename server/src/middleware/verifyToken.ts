@@ -26,15 +26,15 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
 
         // Check & update subscription status
-        // const { isActive, subscription, message } = await checkAndUpdateSubscription(payload.organizationId);
+        const { isActive, subscription, message } = await checkAndUpdateSubscription(payload.organizationId);
 
         // if (!isActive) {
-        // return res.status(403).json({
-        //     type: 'error',
-        //     message: message || 'subscription_expired_or_inactive',
-        //     subscriptionStatus: subscription?.status || 'none',
-        //     expiresAt: subscription?.ends_at || null,
-        // });
+        //     res.status(403).json({
+        //         type: 'error',
+        //         message: message || 'subscription_expired_or_inactive',
+        //         subscriptionStatus: subscription?.status || 'none',
+        //         expiresAt: subscription?.ends_at || null,
+        //     });
         // }
 
 

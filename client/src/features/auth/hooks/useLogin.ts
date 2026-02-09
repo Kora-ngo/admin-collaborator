@@ -3,11 +3,13 @@ import { validateLogin } from "../utils/validateUser";
 import { useAuthStore } from "../store/authStore";
 import { useToastStore } from "../../../store/toastStore";
 import type { ToastMessage } from "../../../types/toastMessage";
+import { sessionManager } from "../../../helpers/session/sessionManager";
 
 export const useLogin = () => {
 
     const login = useAuthStore((state) => state.login);
     const showToast = useToastStore((state) => state.showToast);
+    const storeLogout  = useAuthStore((state) => state.logout);
 
     const [form, setForm] = useState({
         email: "",
@@ -32,21 +34,52 @@ export const useLogin = () => {
 
     const handleUserLogin = async (): Promise<void> => {
 
-        const {hasErrors, formErrors, userData} = validateLogin(form);
-        setErrors(formErrors);
+        try{
+            const {hasErrors, formErrors, userData} = validateLogin(form);
+            setErrors(formErrors);
 
-        if(hasErrors){
-            return;
-        }
+            if(hasErrors){
+                return;
+            }
 
-        const toastMessage: ToastMessage = await login(userData.email, userData.password);
-        console.log("Use Login --> ", toastMessage);
-        if(toastMessage.type === "warning")
-        {
-            showToast(toastMessage);
-            return;
+            const toastMessage: ToastMessage = await login(userData.email, userData.password);
+            console.log("Use Login --> ", toastMessage);
+            if(toastMessage.type === "warning")
+            {
+                showToast(toastMessage);
+                return;
+            }else if (toastMessage.type === "success") {
+                sessionManager.initSession(() => {
+                        // Session expired callback
+                        showToast({
+                            type: 'warning',
+                            message: 'Session expired: Account opened in another tab'
+                        });
+                        handleLogout();
+                })
+            }
+        } catch (error) {
+            showToast({
+                type: 'error',
+                message: 'Login failed'
+            });
         }
     }
+
+
+
+        const handleLogout = async () => {
+        // ✅ Clear session on logout
+        sessionManager.clearSession();
+        
+        await storeLogout();
+        
+        showToast({
+            type: 'success',
+            message: 'Logged out successfully'
+        });
+        
+    };
 
 
 

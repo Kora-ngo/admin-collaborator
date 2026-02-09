@@ -22,6 +22,7 @@ export const messages: MessageItem[] = [
     { key: "user_inactive", message: "This account is inactive." },
     { key: "no_organization_membership", message: "No organization linked to this account." },
     { key: "no_active_subscription", message: "No active subscription found." },
+    {key: "session_expired", message: "Session Expired: This account was open in another tab"},
 
 
     // Assistance Type ----------------------------------------------->
