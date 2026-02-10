@@ -9,6 +9,7 @@ import sequelize from '../config/database.js';
 import MembershipModel from '../models/Membership.js';
 import User from '../models/User.js';
 import { logAudit } from '../utils/auditLogger.js';
+import { where } from 'sequelize';
 
 
 const AuthController = {
@@ -40,6 +41,10 @@ const AuthController = {
            return res.status(404).json({ type: 'error', message: "user_not_found" });
         }
 
+        if(!userExist){
+           return res.status(404).json({ type: 'error', message: "user_not_found" });
+        }
+
 
         // Check if the password is correct
         const isPasswordValid = await bcrypt.compare(password, userExist.password);
@@ -57,6 +62,10 @@ const AuthController = {
             where: { user_id: userExist.id },
         });
         const memberships = membershipsData?.dataValues;
+
+        if(memberships?.role === "enumerator"){
+           return res.status(404).json({ type: 'error', message: "user_not_found" });
+        }
 
 
             // Fetch active subscription
@@ -227,7 +236,7 @@ const AuthController = {
                 userId: newUser.id,
                 userUid: newUser.uid,
                 email: newUser.email,
-                organisationId: newOrganisation.id,
+                organizationId: newOrganisation.id,
                 membershipId: membershipId,
                 role: 'admin',
                 subscriptionExpiresAt: endsAt.toISOString(),
@@ -528,8 +537,140 @@ const AuthController = {
     },
 
 
-    forgotPassword: async (req: Request, res: Response): Promise<void> => {
-        res.status(200).json({ message: 'Password reset email sent' });
+    forgotPassword: async (req: Request, res: Response) => {
+        const { email, newPassword, confirmPassword } = req.body;
+
+        try{
+
+             // Validate required fields
+        if (!email || !newPassword || !confirmPassword) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'missing_credentials'
+            });
+            
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'invalid_email_format'
+            });
+        }
+
+
+        // Check if passwords match
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'passwords_not_match'
+            });
+        }
+
+        // Validate password length
+        if (newPassword.length < 5) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'password_too_short'
+            });
+        }
+
+
+        // Check if the user exists
+        const userExistData = await UserModel.findOne({ where: { email } });
+        const userExist = userExistData?.dataValues;
+        if(!userExist){
+           return res.status(404).json({ type: 'error', message: "user_not_found" });
+        }
+
+        if(!userExist){
+           return res.status(404).json({ type: 'error', message: "user_not_found" });
+        }
+
+        // Check if new password is same as old password
+        const isSamePassword = await bcrypt.compare(newPassword, userExist.password);
+        if (isSamePassword) {
+            res.status(400).json({
+                type: 'error',
+                message: 'same_as_old_password'
+            });
+            return;
+        }
+
+
+        // check if the user is active
+        if(userExist?.status === 'blocked' || userExist?.status === 'false'){
+           return res.status(403).json({ type: 'error', message: userExist?.status === 'blocked' ? "user_blocked" : "user_inactive"  });
+        }
+
+
+
+        // Fetch One memberships
+        const membershipsData = await MembershipModel.findOne({ 
+            where: { user_id: userExist.id },
+        });
+        const memberships = membershipsData?.dataValues;
+
+        if(memberships?.role === "enumerator"){
+           return res.status(404).json({ type: 'error', message: "user_not_found" });
+        }
+
+
+
+        
+        // Fetch active subscription
+        const subscriptionData = await SubscriptionModel.findOne({
+            where: {
+                organization_id: memberships?.organization_id,
+                // status: 'true'
+            },
+            order: [['ends_at', 'DESC']],
+        });
+        const subscription = subscriptionData?.dataValues;
+
+        if (!subscription) {
+            return res.status(403).json({ type: 'error', message: "no_active_subscription" });
+        }
+
+
+        const updates: any = {};
+        if (newPassword) updates.password = await bcrypt.hash(newPassword, 10);
+
+        await UserModel.update( updates,
+        {
+            where: {
+                id: userExist.id
+            }
+        }
+    );
+
+            await logAudit({
+                req,
+                action: "Update",
+                entityType: "auth",
+                entityId: userExist.id,
+                metadata: {
+                    name: userExist?.name,
+                    email: userExist?.email,
+                    role: memberships?.role,
+                }
+            });
+
+
+    return res.status(200).json({
+        type: 'success',
+        message: 'done',
+        user: updates,
+    });
+
+
+
+        } catch (error){
+        console.error("Reset password error:", error);
+        res.status(500).json({ type: 'error', message: 'server_error' });
+    }
     },
 
     resetPassword: async (req: Request, res: Response): Promise<void> => {

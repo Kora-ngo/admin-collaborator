@@ -49,12 +49,12 @@ export const useAdminResgister = () => {
 
     // const organisationData = user.organisation;
 
-    const fullname = user!.name;
+    const fullname = user ? user!.name : "";
     const [firstName, lastName] = fullname.split(" ");
 
 
     useEffect(() => {
-        if(user!.id){
+        if(user && user!.id){
             setUserForm({
                 fname: firstName,
                 lname: lastName,
@@ -64,12 +64,12 @@ export const useAdminResgister = () => {
                 confirmPassword: ""
             })
         }
-    }, [user])
+    }, [user]);
 
 
         useEffect(() => {
             console.log("Or --> ", organisation);
-        if(organisation!.id){
+        if(organisation && organisation!.id){
             setOrgForm({
                 name: organisation?.name|| "",
                 description: organisation?.description|| "",
@@ -141,23 +141,55 @@ export const useAdminResgister = () => {
     };
 
 
-    const handleOrgData = async (): Promise<Boolean> => {
-        const {userData} = validateUser(userForm);
-        const {hasErrors, formErrors, trimmedData} = validateOrganisation(orgForm);
-        setOrgErrors(formErrors);
+    // Validate user data (don't submit yet, just validate)
+    const handleUserData = (): boolean => {
+        console.log("Step 1: Validating user data --> ", userForm);
+
+        const { hasErrors, formErrors  } = validateUser(userForm);
+        setError(formErrors);
 
         if (hasErrors) {
+            console.log("User validation errors:", formErrors);
             return false;
         }
 
-        const toastMessage: ToastMessage = await resgister(userData, trimmedData);
-        if(toastMessage.type === "error"){
-            showToast(toastMessage);
+        console.log("✅ User data valid, proceeding to step 2");
+        return true;
+    };
+
+
+    // Validate org data + submit both user and org together
+    const handleOrgData = async (): Promise<boolean> => {
+        console.log("Step 2: Validating org data --> ", orgForm);
+
+        // Validate user data again (in case they went back and changed it)
+        const { hasErrors: userHasErrors, userData } = validateUser(userForm);
+        if (userHasErrors) {
+            console.log("User data invalid on final submit");
+            showToast({
+                type: 'error',
+                message: 'Please check your personal details'
+            });
+            return false;
         }
+
+        // Validate organisation data
+        const { hasErrors, formErrors, trimmedData } = validateOrganisation(orgForm);
+        setOrgErrors(formErrors);
+
+        if (hasErrors) {
+            console.log("Organisation validation errors:", formErrors);
+            return false;
+        }
+
+        // ✅ Both validated - now register with BOTH datasets
+        console.log("✅ Both forms valid, submitting registration...");
+        const toastMessage: ToastMessage = await resgister(userData, trimmedData);
+        
+        showToast(toastMessage);
 
         return toastMessage.type === "success";
     };
-
 
     const handleUpdateOrganisation = async (): Promise<boolean> => {
         console.log("Organisation Update Form --> ", orgForm);
@@ -206,6 +238,7 @@ export const useAdminResgister = () => {
         handleOrgChange,
         
         handleUpdateProfile,
+        handleUserData,
         handleOrgData,
 
         handleUpdateOrganisation

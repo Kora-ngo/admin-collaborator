@@ -68,7 +68,7 @@ const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrg
                             name="phone"
                             type="text"
                             placeholder="XXX - XXX - XXX"
-                            prefixElement={<label className="text-primary">(+237) |</label>}
+                            // prefixElement={<label className="text-primary">(+237) |</label>}
                             value={orgForm.phone}
                             onChange={handleOrgChange}
                         />

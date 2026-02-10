@@ -6,7 +6,7 @@ declare const AuthController: {
     getCurrentUser: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
     selectMembership: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
     inviteUser: (req: Request, res: Response) => Promise<void>;
-    forgotPassword: (req: Request, res: Response) => Promise<void>;
+    forgotPassword: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
     resetPassword: (req: Request, res: Response) => Promise<void>;
     updateProfile: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
     updateOrganisation: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;

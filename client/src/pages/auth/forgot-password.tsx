@@ -1,4 +1,5 @@
-import ForgotPasswordForm from "../features/auth/components/forgot-password-form";
+import ForgotPasswordForm from "../../features/auth/components/forgot-password-form";
+
 
 const ForgotPassword = () => {
     return ( 
@@ -18,7 +19,7 @@ const ForgotPassword = () => {
                                   <div className="flex flex-col items-start gap-2 text-start">
                                         <h1 className="text-2xl font-bold">Forgot your password ?</h1>
                                         <p className="text-muted-foreground text-sm text-balance">
-                                            Enter your email, and we'll send a reset link.
+                                            Enter your email, and the new password.
                                         </p>
                                   </div>
 

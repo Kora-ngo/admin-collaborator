@@ -12,6 +12,11 @@ export const messages: MessageItem[] = [
     {key: "admin_registered_successfully", message: "Successfully Resgister"},
     { key: "organisation_email_already_in_use", message: "This organization is already in use." },
     { key: "email_already_in_use", message: "This user is already in use." },
+    {key: "registration_successful", message: "Welcome !!"},
+    { key: "passwords_not_match", message: "New password and confirmation do not match." },
+    { key: "password_too_short", message: "Password must be at least 6 characters long." },
+    { key: "same_as_old_password", message: "New password cannot be the same as your current password." },
+    { key: "password_reset_successful", message: "Password reset successfully. You can now log in with your new password." },
 
     // General Login -------------------------------------------------->
     { key: "missing_credentials", message: "Email and password are required." },

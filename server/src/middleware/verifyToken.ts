@@ -18,6 +18,8 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
         const payload = jwt.verify(token!, process.env.JWT_SECRET as string) as any;
 
+        console.log("Token ---> ", payload);
+
 
         // valided required fields in payload
         if (!payload.userId || !payload.organizationId || !payload.role) {

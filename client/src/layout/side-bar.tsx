@@ -1,6 +1,7 @@
 import AdminSideBar from "./admin/admin-sidebar";
 import logo from "../assets/logo.svg";
 import { useAuthStore } from "../features/auth/store/authStore";
+import { getDaysLeftForSubscription } from "../utils/differenceInDays";
 
 interface SideBarProps {
     isOpen: boolean;
@@ -11,7 +12,7 @@ interface SideBarProps {
 
 const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar, onLogoutClick, onSettingClick}) => {
 
-    const {organisation, subscription} = useAuthStore();
+    const {organisation, subscription, role} = useAuthStore();
     
     return ( 
         <aside id="default-sidebar"
@@ -35,7 +36,17 @@ const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar, onLogoutClick, 
                             <div className="flex flex-col">
                                 <span className="font-semibold text-[14px]">{organisation?.name}</span>
                                 <div className="flex space-x-2">
-                                    <span className="text-[12px] font-medium text-gray-500">{subscription?.plan ? subscription?.plan.charAt(0).toUpperCase() + subscription?.plan.slice(1) : "Test"} Plan</span>
+                                    {
+                                        role === "admin" ?
+                                        (
+                                            <div className="flex space-x-2">
+                                                <span className="text-[12px] font-medium text-gray-500">{subscription?.plan ? subscription?.plan.charAt(0).toUpperCase() + subscription?.plan.slice(1) : "Test"} Plan </span>
+                                                { getDaysLeftForSubscription(subscription?.expiresAt!) < 10 ?  <span className="text-[12px] font-bold text-yellow-500">- {getDaysLeftForSubscription(subscription?.expiresAt!) + " Days"}</span> : <></> }
+                                            </div>
+                                        ):
+                                        (<span className="text-[12px] font-medium text-gray-500">{organisation?.email ? organisation?.email : "admin@kora.com"}</span>)
+
+                                    }
                                 </div>
                             </div>
                         </div>

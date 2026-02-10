@@ -88,6 +88,7 @@ export const useAssistance = () => {
 
     return {
         types,
+        setTypes,
         typeErrors,
         addNewType,
         removeType,

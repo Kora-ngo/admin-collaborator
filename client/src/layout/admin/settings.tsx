@@ -195,7 +195,7 @@ const Settings = () => {
           </li>
 
           {/* Language */}
-          <li>
+          {/* <li>
             <button
               onClick={() => setActiveTab("language")}
               className={activeTab === "language" ? activeMenu : unActiveMenu}
@@ -209,7 +209,7 @@ const Settings = () => {
                 Language
               </span>
             </button>
-          </li>
+          </li> */}
         </ul>
         <div className="w-full mt-40 px-4">
           <img  src={brandImg} className="h-8 opacity-50" />

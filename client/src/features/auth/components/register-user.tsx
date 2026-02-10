@@ -81,7 +81,7 @@ const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
                     name="phone"
                     type="tel"
                     placeholder="Your phone number"
-                    prefixElement={<label className="text-primary">(+237) |</label>}
+                    // prefixElement={<label className="text-primary">(+237) |</label>}
                     value={userForm.phone}
                     hasError={errors.phone}
                     onChange={handleChange}

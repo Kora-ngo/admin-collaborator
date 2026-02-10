@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "../../../components/widgets/button";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
@@ -42,9 +43,11 @@ const LoginForm = () => {
                     <Button type="button" onClick={handleUserLogin}>
                          Login
                     </Button>
-                    <Button type="button" variant="ghost">
-                         Forgot Password ?
-                    </Button>
+                    <Link to="/forgot-password">
+                        <Button type="button" variant="ghost">
+                            Forgot Password ?
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </div>

@@ -5,6 +5,7 @@ import axiosInstance from "../../../utils/axiosInstance";
 import type { Subscription } from "../../../types/subscription";
 import type { Organisation } from "../../../types/organisation";
 import type { Membership } from "../../../types/membership";
+import type { ToastMessage } from "../../../types/toastMessage";
 interface AuthState {
     user: User | null,
     token: string | null,
@@ -17,6 +18,7 @@ interface AuthState {
     showToastMessage: boolean,
     register: (users: User, organisation: any) => Promise<any>,
     login: (email: String, password: any) => Promise<any>,
+    resetPassword: (email: string, newPassword: string, confirmPassword: string) => Promise<any>;
     logout: () => Promise<any>,
     getCurrentUser: () => Promise<any>,
     updateProfile: (data: any) => Promise<any>;
@@ -54,6 +56,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     set({token: fetchData.token});
                     await get().getCurrentUser();
                 }
+
+                return {
+                    type: 'success',
+                    message: 'registration_successful',
+                    show: true,
+                    autoClose: 5000,
+                    } as ToastMessage;
 
             }catch(err: any){
 
@@ -105,6 +114,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 set({loading: false})
             }
         },
+
+        resetPassword: async (email: string, newPassword: string, confirmPassword: string) => {
+                try {
+                    set({ loading: true });
+
+                    const response = await axiosInstance.post('/auth/forgot-password', {
+                        email,
+                        newPassword,
+                        confirmPassword
+                    });
+
+                    console.log('Reset password response:', response.data);
+                    return response.data;
+
+                } catch (error: any) {
+                    const errorToast = handleApiError(error);
+                    return errorToast;
+                } finally {
+                    set({ loading: false });
+                }
+            },
 
         logout: async () => {
 
@@ -178,7 +208,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         } finally {
             set({ loading: false });
         }
-    },
+        },
 
         updateOrganisation: async (data) => {
             try {

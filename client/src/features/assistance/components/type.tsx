@@ -10,6 +10,7 @@ const Type = () => {
         const {
     types,
     typeErrors,
+    setTypes,
     addNewType,
     removeType,
     handleTypeChange,
@@ -22,6 +23,7 @@ const Type = () => {
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         if(toggle === 'view'){
+            setTypes([{ id: "1", name: "", unit: "" }]);
             setToggle('add');
             return;
         }else{

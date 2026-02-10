@@ -510,7 +510,7 @@ const ProjectController = {
                 description: updates.description,
                 // start_date: updates.start_date,
                 // end_date: updates.end_date,
-                // status: updates.status,
+                status: updates.status,
                 // target_families: updates.target_families
             }, { transaction });
 

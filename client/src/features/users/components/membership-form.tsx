@@ -73,7 +73,7 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                             <Label htmlFor="phone" required={false}>Phone</Label>
                             <Input
                                 id="phone"
-                                placeholder="+123456789"
+                                placeholder="xxx-xxx-xxx"
                                 value={form.phone || ""}
                                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                             />
@@ -98,7 +98,7 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                     <SelectInput
                         options={[
                             { label: "Select role...", value: "" },
-                            { label: "Admin", value: "admin" },
+                            // { label: "Admin", value: "admin" },
                             { label: "Collaborator", value: "collaborator" },
                             { label: "Enumerator", value: "enumerator" },
                         ]}

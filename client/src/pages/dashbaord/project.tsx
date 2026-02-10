@@ -87,10 +87,14 @@ const Projects = () => {
 
         let success = false;
 
+        console.log("Action --> ", action);
+        console.log("Status --> ", selectedRecord.status);
+
         if (action === 'delete') {
-            success = await handleToggle(selectedRecord.id, selectedRecord.status);
+            success = await handleToggle(selectedRecord.id, action);
         } else {
             // Update status to 'done' or 'suspended'
+            console.log("Action II --> ", action);
             success = await handleStatusUpdate(selectedRecord.id, action);
         }
 
