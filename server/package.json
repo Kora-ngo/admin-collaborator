@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "concurrently \"tsc -w\" \"nodemon dist/server.js\"",
     "build": "rimraf dist && tsc",
-    "prestart": "npm run build"
+    "prestart": "npm run build",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@types/multer": "^2.0.0",
