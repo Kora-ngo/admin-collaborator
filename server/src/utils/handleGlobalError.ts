@@ -6,6 +6,8 @@ export const handleGlobalError = (
   res: Response,
   isDev: boolean = process.env.NODE_ENV === 'development'
 ) => {
+
+  console.log("GLOABAL ERROR ----> ", err);
   // Log full error details (for debugging)
   console.error('GLOBAL ERROR:', {
     path: req.path,
@@ -62,12 +64,12 @@ export const handleGlobalError = (
 
 
   // Specific error handling
-  if (err.type === 'entity.too.large') {
-    return res.status(413).json({
-      type: 'error',
-      message: 'file_too_large',
-    });
-  }
+  // if (err.type === 'entity.too.large') {
+  //   return res.status(413).json({
+  //     type: 'error',
+  //     message: 'file_too_large',
+  //   });
+  // }
 
   if (err.name === 'SequelizeDatabaseError' || err.name === 'SequelizeConnectionError') {
     return res.status(503).json({

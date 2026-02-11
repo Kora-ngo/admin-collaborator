@@ -20,6 +20,8 @@ const ProjectController = {
             const body = req.body;
             const middlewareAuth = req.user;
 
+            console.log("BOBD --> ", body);
+
             if (!body.name || !body.organisation_id || !body.start_date || !body.end_date || !body.selectedMembers?.length) {
                 res.status(400).json({
                     type: 'error',

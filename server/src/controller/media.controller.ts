@@ -51,6 +51,7 @@ const MediaController =  {
             externalTransaction?: any
         ): Promise<UploadedFileInfo[]> => {
             // Use provided transaction or create new one
+            console.log("Hello This is the new world ---> ");
             const transaction = externalTransaction || await sequelize.transaction();
             const shouldCommit = !externalTransaction; // Only commit if we created the transaction
 
