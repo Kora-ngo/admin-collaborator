@@ -64,12 +64,12 @@ export const handleGlobalError = (
 
 
   // Specific error handling
-  // if (err.type === 'entity.too.large') {
-  //   return res.status(413).json({
-  //     type: 'error',
-  //     message: 'file_too_large',
-  //   });
-  // }
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      type: 'error',
+      message: 'file_too_large',
+    });
+  }
 
   if (err.name === 'SequelizeDatabaseError' || err.name === 'SequelizeConnectionError') {
     return res.status(503).json({

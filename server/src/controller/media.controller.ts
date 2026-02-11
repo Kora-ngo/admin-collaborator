@@ -51,7 +51,7 @@ const MediaController =  {
             externalTransaction?: any
         ): Promise<UploadedFileInfo[]> => {
             // Use provided transaction or create new one
-            console.log("Hello This is the new world ---> ");
+            console.log("Hello This is the new world")
             const transaction = externalTransaction || await sequelize.transaction();
             const shouldCommit = !externalTransaction; // Only commit if we created the transaction
 
@@ -166,54 +166,43 @@ const MediaController =  {
          * Delete media file
     */
 
-    deleteMedia: async (req: Request, res: Response) => {
-        const transaction = await sequelize.transaction();
+/**
+ * ✅ NEW: Delete media by ID (internal use)
+ */
+deleteMediaById: async (mediaId: number, transaction?: any) => {
+    try {
+        const mediaData = await Media.findByPk(mediaId);
+        const media = mediaData?.dataValues;
 
-        try {
-            const { mediaId } = req.params;
-
-            const media = await Media.findByPk(mediaId);
-
-            if (!media) {
-                res.status(404).json({
-                    type: 'error',
-                    message: 'media_not_found'
-                });
-                return;
-            }
-
-            // Extract public_id from Cloudinary URL
-            const urlParts = media.storage_path.split('/');
-            const publicIdWithExt = urlParts.slice(-2).join('/');
-            const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '');
-
-            // Delete from Cloudinary
-            await cloudinary.uploader.destroy(publicId, {
-                resource_type: media.file_type === 'image' ? 'image' : 'raw'
-            });
-
-            // Delete MediaLinks
-            await MediaLink.destroy({
-                where: { media_id: mediaId },
-                transaction
-            });
-
-            // Delete Media record
-            await media.destroy({ transaction });
-
-            await transaction.commit();
-
-            res.status(200).json({
-                type: 'success',
-                message: 'media_deleted'
-            });
-
-        } catch (error) {
-            await transaction.rollback();
-            console.error('Delete media error:', error);
-            res.status(500).json({ type: 'error', message: 'server_error' });
+        if (!media) {
+            return { success: false, message: 'media_not_found' };
         }
+
+        // Delete from Cloudinary
+        const urlParts = media.storage_path.split('/');
+        const publicIdWithExt = urlParts.slice(-2).join('/');
+        const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '');
+        
+        await cloudinary.uploader.destroy(publicId, {
+            resource_type: media.file_type === 'image' ? 'image' : 'raw'
+        });
+
+        // Delete MediaLinks
+        await MediaLink.destroy({
+            where: { media_id: mediaId },
+            transaction
+        });
+
+        // Delete Media
+        await mediaData.destroy({ transaction });
+
+        return { success: true, message: 'media_deleted' };
+
+    } catch (error) {
+        console.error(`Delete media ${mediaId} error:`, error);
+        return { success: false, message: 'server_error' };
     }
+}
 
 };
 

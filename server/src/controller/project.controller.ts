@@ -20,8 +20,6 @@ const ProjectController = {
             const body = req.body;
             const middlewareAuth = req.user;
 
-            console.log("BOBD --> ", body);
-
             if (!body.name || !body.organisation_id || !body.start_date || !body.end_date || !body.selectedMembers?.length) {
                 res.status(400).json({
                     type: 'error',
@@ -123,6 +121,7 @@ const ProjectController = {
                         size
                     };
                 });
+                
 
 
                 uploadedFiles  = await MediaController.uploadAndLinkFiles(
@@ -478,15 +477,19 @@ const ProjectController = {
         const transaction = await sequelize.transaction();
         
         try {
+
             const { id } = req.params;
             const updates = req.body;
             const middlewareAuth = req.user;
 
             // console.log("Updates --> ", updates);
 
+            console.log("Time tp upload 0 ---> ");
+
+
             const project = await ProjectModel.findByPk(id);
 
-            console.log("Updates --> ", project?.dataValues);
+            console.log("Time tp upload I ---> ");
 
             if (!project?.dataValues) {
                 await transaction.rollback();
@@ -497,7 +500,10 @@ const ProjectController = {
                 return;
             }
 
-            if (updates.name === '' || (updates.description === '' && updates.description !== undefined)) {
+            console.log("Time tp upload II ---> ");
+            // console.log("Time tp upload II ---> ", updates);
+
+            if (updates.name === '') {
                 await transaction.rollback();
                 res.status(400).json({
                     type: 'error',
@@ -505,6 +511,7 @@ const ProjectController = {
                 });
                 return;
             }
+            console.log("Time tp upload III ---> ");
 
             // Update basic project info
             await project.update({
@@ -515,6 +522,8 @@ const ProjectController = {
                 status: updates.status,
                 // target_families: updates.target_families
             }, { transaction });
+
+            console.log("Time tp upload IV ---> ");
 
             // Handle members update (only update unlocked ones)
             if (updates.selectedMembers !== undefined) {
@@ -588,10 +597,18 @@ const ProjectController = {
             // Handle file updates
             if (updates.filesToDelete && updates.filesToDelete.length > 0) {
                 // Delete specified media files
+                console.log("I come through here ---> ");
                 for (const mediaId of updates.filesToDelete) {
-                    await MediaController.deleteMedia(mediaId, res);
+                    console.log("I come through here ---> ", mediaId);
+                    const result = await MediaController.deleteMediaById(mediaId, transaction);
+
+                    if (!result.success) {
+                        console.warn(`Failed to delete media ${mediaId}`);
+                    }
                 }
+                console.log(`✅ Finished deleting files`);
             }
+
 
             // Handle new file uploads
             let uploadedFiles: any[] = [];
@@ -605,6 +622,7 @@ const ProjectController = {
                         size
                     };
                 });
+
 
                 uploadedFiles = await MediaController.uploadAndLinkFiles(
                     processedFiles as any[],

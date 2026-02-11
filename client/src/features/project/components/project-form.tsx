@@ -555,7 +555,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                             )}
                         </p>
                         <p className="text-xs text-gray-500">
-                            {id ? "Add more files" : "Images, PDF, Word, Excel (MAX. 10MB each)"}
+                            {id ? "Add more files" : "Images Only (MAX. 50KB each)"}
                         </p>
                     </div>
                     <input

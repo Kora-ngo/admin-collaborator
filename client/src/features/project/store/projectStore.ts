@@ -97,26 +97,31 @@ export const useProjectStore = create<ProjectState>((set) => ({
         try {
             // Convert new files to base64 if present
             let filesData: any[] = [];
-            if (files && files.length > 0) {
-                filesData = await Promise.all(
-                    files.map(file => {
-                        return new Promise((resolve) => {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                                resolve({
-                                    name: file.name,
-                                    base64: reader.result as string,
-                                    type: file.type,
-                                    size: file.size
-                                });
-                            };
-                            reader.readAsDataURL(file);
-                        });
-                    })
-                );
+            try{
+                    if (files && files.length > 0) {
+                    filesData = await Promise.all(
+                        files.map(file => {
+                            return new Promise((resolve) => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                    resolve({
+                                        name: file.name,
+                                        base64: reader.result as string,
+                                        type: file.type,
+                                        size: file.size
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                            });
+                        })
+                    );
+                }
+            }catch(err){
+                console.log(" Conversion Failed ---> ", err);
             }
 
-            console.log(" File ---> ", files);
+            console.log(" File II ---> ", data);
+            console.log(" File III ---> ", filesData);
 
             const response = await axiosInstance.put(`/${endpoint}/${id}`, {
                 ...data,
