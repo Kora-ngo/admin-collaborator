@@ -9,7 +9,7 @@ const app = express();
 app.use(cors({
     origin: [
         'https://space.kora.onl',              // Production frontend (custom domain)
-        'https://kora-frontend.vercel.app',    // Vercel default domain
+        'https://kora-space.vercel.app',    // Vercel default domain
         'http://localhost:3000',               // Local React dev
         'http://localhost:5173',               // Local Vite dev
         'http://localhost:4200',               // Local Angular dev (if applicable)
