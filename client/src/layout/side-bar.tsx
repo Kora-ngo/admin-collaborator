@@ -22,7 +22,7 @@ const SideBar: React.FC<SideBarProps> = ({isOpen, toggleSideBar, onLogoutClick, 
                 <div className="h-full px-3 py-2 overflow-y-auto bg-white">
 
                     <div className="flex pt-3 items-center mx-2">
-                        <button type="button" className="block sm:hidden  mr-2 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" onClick={toggleSideBar}>
+                        <button type="button" className="block border py-3 px-1 sm:hidden  mr-2 text-gray-500 rounded-sm hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" onClick={toggleSideBar}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5 ">
                                 <path fillRule="evenodd" d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
                             </svg>

@@ -105,11 +105,11 @@ const SettingSubscription = () => {
         </div>
       </div>
 
-      <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
+      {/* <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
         <p className="text-sm text-accent-800 font-medium">
           To renew your subscription, contact <span className="font-bold">kora.support@ngo.com</span>
         </p>
-      </div>
+      </div> */}
     </div>
   );
 
