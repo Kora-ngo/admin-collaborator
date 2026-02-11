@@ -18,14 +18,18 @@
     "multer": "^2.0.2",
     "mysql2": "^3.16.0",
     "sequelize": "^6.37.7",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
+    "xlsx": "^0.18.5",
+    
+    
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.0.2",
+    "@types/node": "^25.0.2"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    
+
     "@types/sequelize": "^4.28.20",
     "@types/xlsx": "^0.0.35",
     "concurrently": "^9.2.1",

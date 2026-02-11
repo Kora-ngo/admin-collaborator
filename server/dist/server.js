@@ -3,8 +3,10 @@ import dotenv from 'dotenv';
 import app from './app.js';
 import sequelize from './config/database.js';
 // Loading the environment variable from .env 
-dotenv.config();
-const port = process.env.PORT;
+if (process.env.NODE_ENV !== 'production') {
+    dotenv.config();
+}
+const port = Number(process.env.PORT) || 5000;
 const startServer = async () => {
     try {
         await sequelize.authenticate();
@@ -14,8 +16,9 @@ const startServer = async () => {
         //     console.log('Database synced with alter: true (development mode)');
         // }
         // Then: start server
-        app.listen(port, () => {
-            console.log(`Server is running on http://localhost:${port}`);
+        app.listen(port, '0.0.0.0', () => {
+            console.log(`Server is running on port ${port}`);
+            console.log(`Environment: ${process.env.NODE_ENV}`);
         });
     }
     catch (error) {
