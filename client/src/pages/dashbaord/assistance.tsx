@@ -96,7 +96,7 @@ const Assistance = () => {
     
 
     const assistanceColumns: TableColumn[] = [
-    { key: "id", label: "ID", visibleOn: "always",  render: (_, globalIndex) => formatCode("AS", globalIndex) },
+    { key: "id", label: "ID", visibleOn: "lg",  render: (_, globalIndex) => formatCode("AS", globalIndex) },
     { key: "name", label: "Name", visibleOn: "always" },
     { key: "type", label: "Type", visibleOn: "md", render: (row) => row.assistanceType.name },
     { key: "unit", label: "Unit", visibleOn: "sm", render: (row) => row.assistanceType.unit },
@@ -170,8 +170,8 @@ const Assistance = () => {
         <div className="grid grid-cols-1 gap-4 mt-2">
             <div className="flex flex-col items-start justify-start rounded-sm bg-white  gap-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
-                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <div className="w-full sm:w-64 lg:w-80">
+                    <div className="flex flex-row gap-4 w-full sm:w-auto">
+                        <div className="w-[70%] sm:w-64 lg:w-80">
                             <SearchInput
                                 placeholder="Search for name"
                                 className="w-full sm:w-64 lg:w-80"
@@ -179,9 +179,11 @@ const Assistance = () => {
                                     onChange={(e) => handleSearch(e.target.value)}
                             />
                         </div>
-                        <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
+                        <div>
+                            <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
+                        </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <div className="flex flex-row gap-3 w-full sm:w-auto">
 
                         <ActionButton onClick={() => refreshCurrentPage(pagination?.page!)} />
                         <Button className="w-full" variant="ghost" onClick={() => setTypeModal(true)}>

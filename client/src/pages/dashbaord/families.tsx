@@ -150,7 +150,7 @@ const Families = () => {
     const beneficiaryColumns: (TableColumn | null)[] = [
         { key: "project",  label: "Project",  visibleOn: "lg", render: (row) => row.project?.name || "-" },
         { key: "family_code", label: "Family Code", visibleOn: "always" },
-        { key: "head_name", label: "Head of Family", visibleOn: "always" },
+        // { key: "head_name", label: "Head of Family", visibleOn: "always" },
         { key: "members_count", label: "Members", visibleOn: "sm", render: (row) => `${row.members?.length || 0} members`},
         { key: "review_status", label: "Status", visibleOn: "always",
             render: (row) => {
@@ -226,8 +226,8 @@ const Families = () => {
         <div className="grid grid-cols-1 gap-4 mt-2">
             <div className="flex flex-col items-start justify-start rounded-sm bg-white gap-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
-                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <div className="w-full sm:w-64 lg:w-80">
+                    <div className="flex flex-row gap-4 w-full sm:w-auto">
+                        <div className="w-[70%] sm:w-64 lg:w-80">
                             <SearchInput
                                 placeholder="Search for family code or head name"
                                 className="w-full sm:w-64 lg:w-80"
@@ -235,15 +235,17 @@ const Families = () => {
                                 onChange={(e) => handleSearch(e.target.value)}
                             />
                         </div>
-                        <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
+                        <div className="w-[30%] sm:w-auto flex-shrink-0">
+                            <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
+                        </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                        <ActionButton onClick={() => refreshCurrentPage(pagination?.page || 1)} />
-                        {isAdmin && (
+                    <div className="flex flex-row gap-3 w-full sm:w-auto">
+                        <ActionButton className="h-10 w-[12%] sm:w-auto" onClick={() => refreshCurrentPage(pagination?.page || 1)} />
+                        {isAdmin && data.length != 0 && (
                             <Button
                                 variant="ghost"
                                 onClick={() => setExportModal(true)}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 w-full sm:w-auto"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />

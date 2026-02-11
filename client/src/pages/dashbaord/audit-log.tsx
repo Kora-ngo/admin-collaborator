@@ -127,7 +127,7 @@ const AuditLogs = () => {
         {
             key: "created_at",
             label: "Created At",
-            visibleOn: "always",
+            visibleOn: "lg",
             render: (row) => formatDate(row.created_at, true)
         },
         {
@@ -146,19 +146,21 @@ const AuditLogs = () => {
                         <div className="grid grid-cols-1 gap-4 mt-2">
                             <div className="flex flex-col items-start justify-start rounded-sm bg-white gap-4">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
-                                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                                        <div className="w-full sm:w-64 lg:w-80">
+                                    <div className="flex flex-row gap-4 w-full sm:w-auto">
+                                        <div className="w-[70%] sm:w-64 lg:w-80">
                                             <SearchInput
                                                 placeholder="Search audit logs..."
-                                                className="w-full sm:w-64 lg:w-80"
+                                                className="w-full"
                                                 value={searchTerm}
                                                 onChange={(e) => handleSearch(e.target.value)}
                                             />
                                         </div>
                                         <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
                                     </div>
-                                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                                        <ActionButton onClick={() => refreshCurrentPage(pagination?.page || 1)} />
+                                    <div className="flex flex-col  sm:flex-row gap-3 w-full sm:w-auto">
+                                        <ActionButton 
+                                        className="h-10 sm:w-auto"
+                                        onClick={() => refreshCurrentPage(pagination?.page || 1)} />
                                     </div>
                                 </div>
 

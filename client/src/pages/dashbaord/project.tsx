@@ -165,7 +165,7 @@ const Projects = () => {
         { 
             key: "id", 
             label: "ID", 
-            visibleOn: "always", 
+            visibleOn: "lg", 
             render: (row) => `#PRJ-${row.id}` 
         },
         { 
@@ -294,27 +294,39 @@ const Projects = () => {
         <div className="grid grid-cols-1 gap-4 mt-2">
             <div className="flex flex-col items-start justify-start rounded-sm bg-white gap-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
-                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <div className="w-full sm:w-64 lg:w-80">
-                            <SearchInput
-                                placeholder="Search for project name"
-                                className="w-full sm:w-64 lg:w-80"
-                                value={searchTerm}
-                                onChange={(e) => handleSearch(e.target.value)}
-                            />
-                        </div>
+                    <div className="flex flex-row gap-4 w-full sm:w-auto">
+                    {/* Mobile: 70% width | Desktop: fixed widths */}
+                    <div className="w-[70%] sm:w-64 lg:w-80">
+                        <SearchInput
+                        placeholder="Search for project name"
+                        className="w-full"  // ← full width of its container
+                        value={searchTerm}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        />
+                    </div>
+                    
+                    {/* Always compact button (30% on mobile via flex) */}
+                    <div className="w-[30%] sm:w-auto flex-shrink-0">
                         <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                        <ActionButton className="h-10" onClick={() => refreshCurrentPage(pagination?.page!)} />
-                        {
-                            membership?.role === "admin" && (
-                                <Button className="w-full" onClick={() => openProjectModal('add')}>
-                                    New Project
-                                </Button>
-                            )
-                        }
-                    </div>
+                </div>
+                <div className="flex flex-row gap-3 w-full sm:w-auto">
+                    {/* ActionButton: full width on mobile, auto on desktop */}
+                    <ActionButton 
+                        className="h-10 w-[14%] sm:w-auto" 
+                        onClick={() => refreshCurrentPage(pagination?.page!)} 
+                    />
+
+                    {/* New Project button: only for admin, full width on mobile */}
+                    {membership?.role === "admin" && (
+                        <Button 
+                        className="w-full sm:w-auto"
+                        onClick={() => openProjectModal('add')}
+                        >
+                        New Project
+                        </Button>
+                    )}
+                </div>
                 </div>
 
                 {filterMode && (
@@ -352,7 +364,7 @@ const Projects = () => {
                 )}
 
                 {loading ? (
-                    <div className="w-[75vw] mt-20">
+                    <div className="flex justify-center w-full mt-20">
                         <Loading text="Please wait..." />
                     </div>
                 ) : (

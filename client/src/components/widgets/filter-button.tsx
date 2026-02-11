@@ -46,15 +46,17 @@ export const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
   closedText = "Filter",
 }) => {
   return (
-    <button
-      onClick={onToggle}
-      className={`flex items-center gap-2 px-3  border rounded-md transition-colors
-        ${isOpen ? "bg-gray-400 text-white border-gray-400" : "bg-white text-gray-700 border-gray-300"}
-        hover:${isOpen ? "bg-gray-600" : "bg-gray-50"} focus:outline-none
-        ${className}`}
-    >
-      {isOpen ? closeIcon : filterIcon}
-      <span className="font-medium text-sm">{isOpen ? openText : closedText}</span>
-    </button>
+  <button
+    onClick={onToggle}
+    className={`flex items-center gap-2 px-3 py-2 border rounded-md transition-colors
+      ${isOpen ? "bg-gray-400 text-white border-gray-400" : "bg-white text-gray-700 border-gray-300"}
+      hover:${isOpen ? "bg-gray-600" : "bg-gray-50"} focus:outline-none focus:ring-2 focus:ring-primary/50
+      ${className}`}
+  >
+    {isOpen ? closeIcon : filterIcon}
+    <span className="font-medium text-sm">
+      {isOpen ? openText : closedText}
+    </span>
+  </button>
   );
 };

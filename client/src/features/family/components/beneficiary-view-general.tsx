@@ -22,7 +22,7 @@ const BeneficiaryViewGeneral = ({ data }: BeneficiaryViewGeneralProps) => {
         { label: "Head of Family", value: data.head_name },
         { label: "Phone", value: data.phone || "-" },
         { label: "Region", value: data.region || "-" },
-        { label: "Village", value: data.village || "-" },
+        // { label: "Village", value: data.village || "-" },
         { label: "Project", value: data.project?.name || "-" },
         { 
             label: "Review Status", 
@@ -33,7 +33,7 @@ const BeneficiaryViewGeneral = ({ data }: BeneficiaryViewGeneralProps) => {
                 />
             )
         },
-        { label: "Sync Source", value: data.sync_source },
+        // { label: "Sync Source", value: data.sync_source },
         { label: "Created By", value: `${data.createdBy?.user?.name} - ${data.createdBy?.role}` || "-" },
         { label: "Created At", value: formatDate(data.created_at.toString(), true) },
     ];

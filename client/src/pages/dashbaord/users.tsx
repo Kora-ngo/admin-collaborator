@@ -84,7 +84,7 @@ const User = () => {
 
 
     const membershipColumns: (TableColumn | null)[] = [
-    { key: "id", label: "ID", visibleOn: "always",  render: (_, globalIndex) => formatCode("MB", globalIndex) },
+    { key: "id", label: "ID", visibleOn: "lg",  render: (_, globalIndex) => formatCode("MB", globalIndex) },
     { key: "user", label: "Member", visibleOn: "always", render: (row) => row.user.name },
 
     
@@ -199,8 +199,8 @@ const User = () => {
         <div className="grid grid-cols-1 gap-4 mt-2">
             <div className="flex flex-col items-start justify-start rounded-sm bg-white gap-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
-                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <div className="w-full sm:w-64 lg:w-80">
+                    <div className="flex flex-row gap-4 w-full sm:w-auto">
+                        <div className="w-[70%] sm:w-64 lg:w-80">
                             <SearchInput
                                 placeholder="Search for a member's name"
                                 className="w-full sm:w-64 lg:w-80"
@@ -208,13 +208,15 @@ const User = () => {
                                 onChange={(e) => handleSearch(e.target.value)}
                             />
                         </div>
-                        <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
+                        <div className="w-[30%] sm:w-auto flex-shrink-0">
+                            <FilterToggleButton isOpen={filterMode} onToggle={toggleFilter} />
+                        </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                        <ActionButton className="h-10" onClick={() => refreshCurrentPage(pagination?.page!)} />
+                    <div className="flex flex-row gap-3 w-full sm:w-auto">
+                        <ActionButton className="h-10 w-[14%] sm:w-auto" onClick={() => refreshCurrentPage(pagination?.page!)} />
                         {
                             role === "admin" && (
-                                <Button className="w-full" onClick={() => openMembershipModal('add')}>
+                                <Button className="w-full sm:w-auto" onClick={() => openMembershipModal('add')}>
                                     New User
                                 </Button>
                             )
@@ -275,7 +277,7 @@ const User = () => {
                 )}
 
                 {loading ? (
-                    <div className="w-[75vw] mt-20">
+                    <div className="flex justify-center w-full mt-20">
                         <Loading text="Please wait..." />
                     </div>
                 ) : (
