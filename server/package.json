@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"tsc -w\" \"nodemon dist/server.js\"",
-    "build": "rimraf dist && tsc",
+    "build": "tsc",
     "prestart": "npm run build",
     "start": "node dist/server.js"
   },
