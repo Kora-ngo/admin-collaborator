@@ -33,18 +33,18 @@ export const logAudit = async ({
                          req.socket.remoteAddress ||
                          'unknown';
 
-        await AuditLogModel.create({
-            organisation_id: authUser.organizationId,
-            actor_membership_id: authUser.membershipId,
-            actor_role: authUser.role,
-            action,
-            entity_type: entityType,
-            entity_id: entityId,
-            batch_uid: batchUid,
-            metadata: metadata || null,
-            ip_address: ipAddress,
-            platform
-        });
+                await AuditLogModel.create({
+                    organisation_id: authUser.organizationId,
+                    actor_membership_id: authUser.membershipId,
+                    actor_role: authUser.role,
+                    action,
+                    entity_type: entityType,
+                    ...(entityId !== undefined && { entity_id: entityId }),
+                    ...(batchUid !== undefined && { batch_uid: batchUid }),
+                    metadata: metadata ?? null,           // keep null instead of undefined
+                    ip_address: ipAddress,
+                    platform: platform
+                });
 
         console.log(`✓ Audit logged: ${action} by ${authUser.role}`);
     } catch (error) {
