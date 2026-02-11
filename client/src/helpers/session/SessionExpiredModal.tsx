@@ -1,7 +1,4 @@
-// components/SessionExpiredModal.tsx
-
 import { useEffect, useState } from 'react';
-import Modal from '../../components/widgets/modal';
 import { Button } from '../../components/widgets/button';
 import Popup from '../../components/widgets/popup';
 

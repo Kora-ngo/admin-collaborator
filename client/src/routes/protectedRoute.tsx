@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 } 
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRole, children }) => {
-  const { user, loading } = useAuthStore();
+  const { user, role, loading } = useAuthStore();
 
   // Case 1: Still loading user → show nothing or spinner (prevent flash)
   if (loading) {
@@ -23,7 +23,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRole, children }
   }
 
   // Case 3: User exists but wrong role → redirect to login
-  if (user.role !== allowedRole) {
+  if (role !== allowedRole) {
     return <Navigate to="/" replace />;
   }
 

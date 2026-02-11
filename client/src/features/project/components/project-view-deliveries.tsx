@@ -3,7 +3,6 @@ import EmptyState from "../../../components/widgets/empty";
 import type { Delivery } from "../../../types/delivery";
 import { useAuthStore } from "../../auth/store/authStore";
 import Accordion from "../../../components/widgets/accordion";
-import StatusBadge from "../../../components/widgets/status-badge";
 
 
 interface ProjectViewDeliveryProps {

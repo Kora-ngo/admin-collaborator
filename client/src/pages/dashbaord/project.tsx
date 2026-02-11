@@ -59,7 +59,7 @@ const Projects = () => {
     } | null>(null);
 
        // State to track if a project can be deleted
-    const [canDeleteMap, setCanDeleteMap] = useState<Record<number, boolean>>({});
+    const [, setCanDeleteMap] = useState<Record<number, boolean>>({});
 
 
     // Check which projects can be deleted (only for admin)

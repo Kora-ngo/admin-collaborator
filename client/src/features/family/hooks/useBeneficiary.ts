@@ -3,12 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useBeneficiaryStore } from "../store/beneficiaryStore";
 import { useToastStore } from "../../../store/toastStore";
-import { useAuthStore } from "../../auth/store/authStore";
 
 export const useBeneficiary = () => {
     const { getData, filterData, fetchOneData, reviewBeneficiary, deleteData } = useBeneficiaryStore();
     const showToast = useToastStore((state) => state.showToast);
-    const { membership } = useAuthStore();
 
     const [searchTerm, setSearchTerm] = useState("");
     const [filterMode, setFilterMode] = useState(false);

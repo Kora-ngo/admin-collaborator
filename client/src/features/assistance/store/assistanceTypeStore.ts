@@ -14,7 +14,7 @@ interface AssistanceTypeState {
 const endpoint = "/assistance-type";
 
 
-export const useAssistanceTypeStore = create<AssistanceTypeState>((set, get) => ({
+export const useAssistanceTypeStore = create<AssistanceTypeState>((set) => ({
     data: [],
     loading: false,
 

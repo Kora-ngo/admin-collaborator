@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/';
+
 const axiosInstance = axios.create({
-    baseURL: "http://localhost:5000/api/",
+    baseURL: API_URL,
     // baseURL: "http://192.168.1.125:5000/api/"
     timeout: 30000
 

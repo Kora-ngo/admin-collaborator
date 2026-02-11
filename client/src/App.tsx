@@ -14,13 +14,12 @@ import Assistance from './pages/dashbaord/assistance'
 import Families from './pages/dashbaord/families'
 import Deliveries from './pages/dashbaord/deliveries'
 import AuditLog from './pages/dashbaord/audit-log'
-import Renew from './pages/dashbaord/renew'
 import { useSessionGuard } from './helpers/session/useSessionGuard'
 import ForgotPassword from './pages/auth/forgot-password'
 
 function App() {
   const token = localStorage.getItem('token');
-  const { user, organisation, role, loading, subscriptionStatus, getCurrentUser } = useAuthStore();
+  const { user, role, loading, getCurrentUser } = useAuthStore();
 
 
   // ✅ Initialize session guard

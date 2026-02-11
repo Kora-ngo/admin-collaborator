@@ -8,7 +8,7 @@ const RedirectRoute: React.FC<{children: ReactNode}> = ({children}) => {
     const  {showToast} = useToastStore();
 
     const token= localStorage.getItem('token');
-    const { user, loading, getCurrentUser } = useAuthStore();
+    const { user, role, loading, getCurrentUser } = useAuthStore();
 
     // 1. Fetch user if token exists but user not loaded
     useEffect(() => {
@@ -24,14 +24,14 @@ const RedirectRoute: React.FC<{children: ReactNode}> = ({children}) => {
       showToast({
         type: 'info',
         title: 'Welcome back!',
-        message: `Hello, ${user.user.name || 'User'}!`,
+        message: `Hello, ${user.name || 'User'}!`,
         autoClose: 4000,
       });
 
       // Only redirect if currently on root/login page
       const publicPaths = ['/', '/register', '/invitation'];
       if (publicPaths.includes(window.location.pathname)) {
-        const targetPath = user.role === 'admin' ? '/admin' : '/collaborator';
+        const targetPath = role === 'admin' ? '/admin' : '/collaborator';
         navigate(targetPath, { replace: true });
       }
     }

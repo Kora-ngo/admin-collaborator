@@ -1,7 +1,4 @@
-// src/features/project/components/project-view-media.tsx
-
 import { useState } from "react";
-import DetailView from "../../../components/widgets/detail-view";
 import { Button } from "../../../components/widgets/button";
 import { getFileIcon } from "../../../utils/fileIcons"; // your icon helper
 import { formatDate } from "../../../utils/formatDate";

@@ -1,7 +1,4 @@
-// hooks/useSessionGuard.ts
-
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../features/auth/store/authStore';
 import { sessionManager } from './sessionManager';
 import { useToastStore } from '../../store/toastStore';

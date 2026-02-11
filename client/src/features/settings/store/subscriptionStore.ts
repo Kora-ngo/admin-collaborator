@@ -22,7 +22,7 @@ export const useSubscriptionStore = create<SubscriptionStore>((set) => ({
     loading: false,
     pagination: null,
 
-    getHistory: async (page = 1) => {
+    getHistory: async () => {
         set({ loading: true });
         try {
             const response = await axiosInstance.get(`${endpoint}`);

@@ -102,9 +102,11 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                             { label: "Collaborator", value: "collaborator" },
                             { label: "Enumerator", value: "enumerator" },
                         ]}
-                        value={form.role || ""}
+                        value={form.role}
                         hasError={errors.role}
-                        onChange={(e) => setForm({ ...form, role: e.target.value })}
+                        onChange={(e) => setForm({ ...form,
+                             role: e.target.value as "" | "admin" | "collaborator" | "enumerator"
+                             })}
                     />
                 </div>
             </div>

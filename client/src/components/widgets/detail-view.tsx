@@ -16,8 +16,8 @@ interface DetailViewProps {
 }
 
 const DetailView = ({
-  title,
-  subtitle,
+  // title,
+  // subtitle,
   fields,
   className = "",
   layout = "double",  // default to current behavior
