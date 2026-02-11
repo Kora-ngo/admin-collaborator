@@ -9,7 +9,16 @@ if (process.env.NODE_ENV !== 'production') {
     dotenv.config();
 }
 
+console.log('Connecting with:', {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  sslEnabled: !!process.env.DB_HOST?.includes('proxy'),
+});
+
 const port = Number(process.env.PORT) || 5000;
+
 
 const startServer = async () => {
     try{
