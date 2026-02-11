@@ -8,18 +8,18 @@ if (process.env.NODE_ENV !== 'production') {
 
 const sequelize = new Sequelize({
     dialect: 'mysql',
-    host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+    host:  process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '3306'),
-    username: process.env.MYSQLUSER || process.env.MYSQLUSER || "root",
-    password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
-    database: process.env.MYSQLDATABASE || process.env.DB_NAME || 'kora',
+    username: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
+    database: process.env.DB_NAME || 'railway',
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     dialectOptions: {
     //   ssl: {
     //   rejectUnauthorized: false,   // Accept self-signed/proxy cert
     // },
     // Optional but helpful: longer timeout + keep-alive
-    connectTimeout: 30000,
+    connectTimeout: 60000,
     },
     pool: {
         max: 5,
