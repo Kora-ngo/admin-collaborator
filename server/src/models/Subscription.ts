@@ -47,7 +47,7 @@ const SubscriptionModel = Subscription.init({
 }, {
     sequelize,
     modelName: 'Subscription',
-    tableName: 'Subscription',
+    tableName: 'subscription',
     timestamps: false,
 });
 

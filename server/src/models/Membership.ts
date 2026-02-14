@@ -49,7 +49,7 @@ const MembershipModel = Membership.init( {
 {
     sequelize,
     modelName: 'Membership',
-    tableName: 'Membership', // or whatever your table name is
+    tableName: 'membership', // or whatever your table name is
     timestamps: false,
   }
 );

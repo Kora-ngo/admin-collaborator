@@ -7,13 +7,29 @@ const app = express();
 
 // Allow my frontend dureing dev
 app.use(cors({
-    origin: [
-        'https://space.kora.onl',              // Production frontend (custom domain)
-        'https://kora-space.vercel.app',    // Vercel default domain
-        'http://localhost:3000',               // Local React dev
-        'http://localhost:5173',               // Local Vite dev
-        'http://localhost:4200',               // Local Angular dev (if applicable)
-    ],
+    
+    origin: function (origin, callback) {
+        if(!origin){
+            // Allow request with no origin (like mobile apps, postman, curl)
+            return callback(null, true);
+        }
+
+        const allowedOrigins =  [
+            'https://kora.onl/space',              // Production frontend (custom domain)
+            'https://kora-space.vercel.app',    // Vercel default domain
+            'http://localhost:3000',               // Local React dev
+            'http://localhost:5173',               // Local Vite dev
+            'http://localhost:4200',               // Local Angular dev (if applicable)
+        ];
+
+        if(allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(null, true);
+        }
+
+    },
+
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization']

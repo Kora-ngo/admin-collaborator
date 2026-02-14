@@ -3,10 +3,12 @@ import { Button } from "../../../components/widgets/button";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
 import { useLogin } from "../hooks/useLogin";
+import { useAuthStore } from "../store/authStore";
 
 const LoginForm = () => {
 
     const {form, errors, handleChange, handleUserLogin} = useLogin();
+    const {loading} = useAuthStore();
 
     return ( 
         <div className="grid gap-4">
@@ -40,11 +42,11 @@ const LoginForm = () => {
                     <p className="text-sm font-semibold">I agree with the <span className="text-primary underline cursor-pointer">term and conditions</span></p>
                 </div>
                 <div className="flex gap-2">
-                    <Button type="button" onClick={handleUserLogin}>
+                    <Button type="button" onClick={handleUserLogin} loading={loading}>
                          Login
                     </Button>
                     <Link to="/forgot-password">
-                        <Button type="button" variant="ghost">
+                        <Button type="button" variant="ghost" loading={loading}>
                             Forgot Password ?
                         </Button>
                     </Link>

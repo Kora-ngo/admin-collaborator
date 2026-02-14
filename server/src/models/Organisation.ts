@@ -81,7 +81,7 @@ const OrganisationModel = Organisation.init({
 }, {
     sequelize,
     modelName: 'Organisation',
-    tableName: 'Organisation', // adjust if your actual table name is different
+    tableName: 'organisation', // adjust if your actual table name is different
     timestamps: false,
 });
 

@@ -86,11 +86,26 @@ const Toast: React.FC<ToastProps> = ({
     <div
       role="alert"
       aria-live="polite"
-      className={`fixed bottom-8 right-5 z-50 max-w-sm w-full transition-all duration-500 ease-in-out ${
-        visible
+      className={`
+        fixed bottom-6 sm:bottom-8
+        z-50
+
+        max-w-[90%] sm:max-w-sm w-full
+
+        // ─── Mobile (default) ───
+        left-1/2 -translate-x-1/2
+
+        // ─── Desktop / bigger screens ───
+        sm:left-auto sm:right-5
+        sm:translate-x-0
+
+        transition-all duration-500 ease-in-out
+        ${visible
           ? 'opacity-100 translate-y-0'
           : 'opacity-0 translate-y-4 pointer-events-none'
-      } ${className}`}
+        }
+        ${className}
+      `}
     >
       <div
         className={`flex items-center gap-4 rounded-xl shadow-xl px-5 py-4 border ${styles.bgColor} ${styles.borderColor}`}
