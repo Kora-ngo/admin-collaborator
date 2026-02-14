@@ -78,7 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         login: async (email, password) => {
             try{
-                set({loading: false});
+                set({loading: true});
 
                 console.log("Login --> ", {email, password});
                 const response: any = await axiosInstance.post(`${endpoint}/login`, {

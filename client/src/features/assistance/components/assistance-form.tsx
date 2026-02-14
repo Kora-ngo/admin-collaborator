@@ -31,7 +31,6 @@ const AssistanceForm = ({onSuccess, isOpen, id}: AssistanceFormProps) => {
 
       useEffect(() => {
         if(!isOpen){
-            console.log("Clear form");
             handleClearForm();
         }
       }, [isOpen])

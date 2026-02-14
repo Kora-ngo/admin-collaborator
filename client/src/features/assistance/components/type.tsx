@@ -30,7 +30,6 @@ const Type = () => {
             const isDone = await handleTypeSubmit();
             if(isDone){
                 setToggle('view');
-                console.log("Refersh...")
                 await fetchData();
             }
             return;

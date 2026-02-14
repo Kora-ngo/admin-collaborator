@@ -16,46 +16,46 @@ const EnumeratorController = {
 
     login: async (req: Request, res: Response) => {
         const { email, password } = req.body;
-    
+
         console.log("Email --> ", email);
         console.log("Password --> ", password);
         
         try{
             // Validate input
             if(!email || !password){
-                  return res.status(400).json({ type: 'error', message: "missing_credentials" });
+                    return res.status(400).json({ type: 'error', message: "missing_credentials" });
             }
-    
-    
+
+
             // Validate email format
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if(!emailRegex.test(email)){
-               return  res.status(400).json({ type: 'error', message: "invalid_email_format" });
+                return  res.status(400).json({ type: 'error', message: "invalid_email_format" });
             }
-    
+
             // Check if the user exists
             const userExistData = await UserModel.findOne({ where: { email } });
             const userExist = userExistData?.dataValues;
             if(!userExist){
-               return res.status(404).json({ type: 'error', message: "user_not_found" });
+                return res.status(404).json({ type: 'error', message: "user_not_found" });
             }
-    
+
             if(!userExist){
-               return res.status(404).json({ type: 'error', message: "user_not_found" });
+                return res.status(404).json({ type: 'error', message: "user_not_found" });
             }
-    
-    
+
+
             // Check if the password is correct
             const isPasswordValid = await bcrypt.compare(password, userExist.password);
             if(!isPasswordValid){
-               return res.status(401).json({ type: 'error', message: "invalid_credentials" });
+                return res.status(401).json({ type: 'error', message: "invalid_credentials" });
             }
-    
+
             // check if the user is active
             if(userExist?.status === 'blocked' || userExist?.status === 'false'){
-               return res.status(403).json({ type: 'error', message: userExist?.status === 'blocked' ? "user_blocked" : "user_inactive"  });
+                return res.status(403).json({ type: 'error', message: userExist?.status === 'blocked' ? "user_blocked" : "user_inactive"  });
             }
-    
+
             // Fetch One memberships
             const membershipsData = await MembershipModel.findOne({ 
                 where: { user_id: userExist.id },
@@ -64,10 +64,10 @@ const EnumeratorController = {
 
             if(memberships?.role === "collaborator" || memberships?.role === "admin")
             {
-               return res.status(404).json({ type: 'error', message: "user_not_found" });
+                return res.status(404).json({ type: 'error', message: "user_not_found" });
             }
-    
-    
+
+
                 // Fetch active subscription
                 const subscriptionData = await SubscriptionModel.findOne({
                     where: {
@@ -77,13 +77,13 @@ const EnumeratorController = {
                     order: [['ends_at', 'DESC']],
                 });
                 const subscription = subscriptionData?.dataValues;
-    
+
                 if (!subscription) {
                     return res.status(403).json({ type: 'error', message: "no_active_subscription" });
                 }
-    
+
                 const expiresAt = subscription.ends_at;
-    
+
                 const token = jwt.sign(
                     {
                         userId: userExist.id,
@@ -97,7 +97,7 @@ const EnumeratorController = {
                     process.env.JWT_SECRET as string,
                     { expiresIn: '30d' }
                 );
-    
+
                 await logAudit({
                     req,
                     action: "Logged In",
@@ -109,23 +109,22 @@ const EnumeratorController = {
                         role: memberships?.role,
                     }
                 });
-    
+
                 return res.status(200).json({
                     type: 'success',
                     token,
                 });
         
-    
-    
-    
-         
+
+
+
+            
         } catch (error){
             console.error("Login error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
-    
-        },
 
+    },
 
     getMobileUserData: async (req: Request, res: Response) => {
             const authUser = req.user;
