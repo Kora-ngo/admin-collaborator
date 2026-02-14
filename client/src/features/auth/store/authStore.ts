@@ -94,6 +94,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     localStorage.setItem('token', fetchData.token);
                     set({token: fetchData.token});
                     const response = await get().getCurrentUser();
+
+                    console.log("response to get --> ", response);
+
                     if(response.type === "error")
                     {
                         return {
@@ -102,6 +105,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                                 show: true
                             };
                     }
+
+                    return response;
                 }
                 
 
@@ -172,6 +177,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     loading: false,
                     subscriptionStatus: data.subscription.status === "true" ? "active" : data.subscription.status
                 });
+                return data;
             }catch(err: any){
                 console.log("Error --> ", err);
                 localStorage.removeItem('token');
