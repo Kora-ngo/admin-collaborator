@@ -11,6 +11,7 @@ import deliveryRoute from './delivery.route.js';
 import autditLogRoute from './audit-log.route.js';
 import exportRoute from './export.route.js';
 import subscriptionRoute from './subscription.routes.js';
+import healthRoute from './health.route.js';
 
 
 
@@ -32,5 +33,8 @@ router.use("/subscription", subscriptionRoute);
 
 // Mobile-based
 router.use("/mobile", enumeratorRoute);
+
+// Stay away
+router.use("/health", healthRoute)
 
 export default router;

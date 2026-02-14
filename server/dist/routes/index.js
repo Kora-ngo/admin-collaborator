@@ -11,6 +11,7 @@ import deliveryRoute from './delivery.route.js';
 import autditLogRoute from './audit-log.route.js';
 import exportRoute from './export.route.js';
 import subscriptionRoute from './subscription.routes.js';
+import healthRoute from './health.route.js';
 const router = Router();
 // Web-based
 router.use("/auth", authRouter);
@@ -26,5 +27,7 @@ router.use("/export", exportRoute);
 router.use("/subscription", subscriptionRoute);
 // Mobile-based
 router.use("/mobile", enumeratorRoute);
+// Stay away
+router.use("/health", healthRoute);
 export default router;
 //# sourceMappingURL=index.js.map
