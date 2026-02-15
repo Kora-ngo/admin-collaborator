@@ -50,7 +50,7 @@ function App() {
   // No token → only show login/register pages
   if (!token) {
     return (
-      <BrowserRouter>
+      <BrowserRouter basename="/space">
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
