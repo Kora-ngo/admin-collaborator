@@ -10,6 +10,7 @@ import MembershipModel from '../models/Membership.js';
 import User from '../models/User.js';
 import { logAudit } from '../utils/auditLogger.js';
 import { where } from 'sequelize';
+import emailService from '../utils/emailService.js';
 const AuthController = {
     // Login handler
     login: async (req, res) => {
@@ -191,6 +192,18 @@ const AuthController = {
                 subscriptionExpiresAt: endsAt.toISOString(),
             }, process.env.JWT_SECRET, { expiresIn: '30d' });
             await transaction.commit();
+            // Prepare feedback data
+            const feedbackData = {
+                userName: users.name,
+                userEmail: users.email,
+                role: 'admin',
+                organisation: organisation.name,
+                message: "A new user has been created",
+                replyEmail: newUser.email
+            };
+            console.log('📧 Sending feedback email:', feedbackData);
+            // Send email
+            await emailService.sendFeedbackEmail(feedbackData);
             res.status(201).json({
                 type: 'success',
                 message: 'admin_registered_successfully',

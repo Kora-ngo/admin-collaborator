@@ -12,6 +12,7 @@ import autditLogRoute from './audit-log.route.js';
 import exportRoute from './export.route.js';
 import subscriptionRoute from './subscription.routes.js';
 import healthRoute from './health.route.js';
+import feedbackRoute from './feedback.routes.js';
 const router = Router();
 // Web-based
 router.use("/auth", authRouter);
@@ -25,6 +26,7 @@ router.use("/deliveries", deliveryRoute);
 router.use("/audit-logs", autditLogRoute);
 router.use("/export", exportRoute);
 router.use("/subscription", subscriptionRoute);
+router.use("/feedback", feedbackRoute);
 // Mobile-based
 router.use("/mobile", enumeratorRoute);
 // Stay away
