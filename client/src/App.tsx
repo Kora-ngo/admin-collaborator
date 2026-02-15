@@ -87,13 +87,13 @@ function App() {
   if (user) {
     if (role != '') {
       return (
-        <BrowserRouter>
+        <BrowserRouter basename="/space">
           <Routes>
             <Route path="/dashbaord" element={<Home />}>
               <Route index element={<Dasbaord />} />
               <Route path="projects" element={<Projects />} />
               <Route path="users" element={<Users />} />
-              <Route path="assistance" element={assistanceAllowedRoles.includes(role) ? (<Assistance />) : (<Navigate to="/dashboard" replace />) } />
+              <Route path="assistance" element={assistanceAllowedRoles.includes(role) ? (<Assistance />) : (<Navigate to="/dashbaord" replace />) } />
               <Route path="families" element={<Families />} />
               <Route path="deliveries" element={<Deliveries />} />
               <Route path="log" element={<AuditLog />} />

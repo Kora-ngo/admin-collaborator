@@ -25,6 +25,7 @@ type ModalMode = 'add' | 'edit' | 'view' | null;
 const User = () => {
     const {data, getData, pagination, loading} = useMembershipStore();
     const userData = useAuthStore((state) => state.user);
+    const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {role} = useAuthStore();
 
     const {
@@ -48,7 +49,7 @@ const User = () => {
     const [selectedRecord, setSelectedRecord] = useState<{
         id: number;
         userName: string;
-        status: "true" | "false";
+        status: "true" | "false" | "blocked";
         } | null>(null);
 
 
@@ -141,14 +142,24 @@ const User = () => {
                         openMembershipModal('edit', row.id)}}
                 /> */}
 
-                <ActionIcon name="view"
-                    onClick={() => {
-                    setSelectedRecord({
-                        id: row.id,
-                        userName: row.user.name,
-                        status: row.status
-                    });
-                    openMembershipModal('view', row.id)}}
+
+                <ActionIcon name={loadingViewId === row.id ? "spinner" : "view"}
+                    onClick={async () => {
+                        if (loadingViewId === row.id) return; // Prevent double-click
+                        
+                        setLoadingViewId(row.id);
+                        setSelectedRecord({
+                            id: row.id,
+                            userName: row.user.name,
+                            status: row.status
+                        });
+                        
+                        try {
+                            await openMembershipModal('view', row.id);
+                        } finally {
+                            setLoadingViewId(null);
+                        }
+                    }}
                 />
 
                 {
@@ -172,7 +183,7 @@ const User = () => {
 
 
                 {
-                    role === "admin" ?
+                    role === "admin" && row.status != "blocked" ?
                     (
                         <ActionIcon name="trash"
                             onClick={() => {
@@ -184,6 +195,10 @@ const User = () => {
                                 setDeletePopUp(true);
                             }}
                         />
+                    )  :
+                    role === "admin" && row.status === "blocked" ?
+                    (
+                        <ActionIcon name="disable" />
                     )  :
                     // (<ActionIcon name="delivery" onClick={() => {}} />)
                     (<></>)
@@ -431,6 +446,7 @@ const User = () => {
             />
 
             <Popup
+                loading={loading}
                 open={deletePopup}
                 onClose={() => setDeletePopUp(false)}
                 title={selectedRecord?.status === "true" ? "Deactivate Record" : "Activate Record"}
@@ -465,6 +481,7 @@ const User = () => {
 
 
                 <Popup
+                    loading={loading}
                     open={disableUserPopup}
                     onClose={() => setDisableUserPopup(false)}
                     title={selectedRecord?.status === "true" ? "Disable Member" : "Enable Member"}
@@ -477,6 +494,7 @@ const User = () => {
                         </>
                         ) : "Loading..."
                     }
+                    // loading={true}
                     confirmText={selectedRecord?.status === "true" ? "Disable" : "Enable"}
                     cancelText="Cancel"
                     onConfirm={async () => {
@@ -494,8 +512,8 @@ const User = () => {
                     }}
                     confirmButtonClass={
                         selectedRecord?.status === "true" 
-                        ? "bg-red-500 hover:bg-red-400"   // Disable = red
-                        : "bg-accent hover:bg-accent/50" // Enable = green
+                        ? "bg-red-500"   // Disable = red
+                        : "bg-accent" // Enable = green
                     }
                 />
 

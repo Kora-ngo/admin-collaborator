@@ -158,7 +158,7 @@ const AdminDashbaord = () => {
                 }
 
                 {
-                    projectAlert?.alerts.length != 0 ?
+                    projectAlert?.alerts.length === 0 ?
                     (
 
                     <div className="flex justify-center items-center w-full md:w-[40%] min-h-[40vh] p-2 overflow-auto space-y-2 bg-muted/40 rounded-sm">

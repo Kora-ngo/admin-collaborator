@@ -26,6 +26,7 @@ type ModalMode = 'add' | 'edit' | 'view' | null;
 const Assistance = () => {
 
     const {data, getData, pagination, loading} = useAssistanceStore();
+    const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {role} = useAuthStore();
     const {
             filters,
@@ -129,26 +130,48 @@ const Assistance = () => {
              </div>
           )
         }
-
+                        // setSelectedRecord({
+                        //     id: row.id,
+                        //     name: row.name,
+                        //     status: row.status
+                        // });
           return(
              <div className="flex items-center space-x-3">
-                <ActionIcon name="edit"
-                    onClick={() =>
-                        {setSelectedRecord({
-                            id: row.id,
-                            name: row.name,
-                            status: row.status
-                        })
-                        openAssistanceModal('edit', row.id)}}
-                />
-                <ActionIcon name="view"
-                    onClick={() => {
+                <ActionIcon name={loadingViewId === row.id ? "spinner" : "edit"}
+                    onClick={async () => {
+                        if (loadingViewId === row.id) return;
+                        
+                        setLoadingViewId(row.id);
                         setSelectedRecord({
                             id: row.id,
                             name: row.name,
                             status: row.status
                         });
-                        openAssistanceModal('view', row.id)}}
+                        
+                        try {
+                            await openAssistanceModal('edit', row.id);
+                        } finally {
+                            setLoadingViewId(null);
+                        }
+                    }}
+                />
+                <ActionIcon name={loadingViewId === row.id ? "spinner" : "view"}
+                    onClick={async () => {
+                        if (loadingViewId === row.id) return;
+                        
+                        setLoadingViewId(row.id);
+                        setSelectedRecord({
+                            id: row.id,
+                            name: row.name,
+                            status: row.status
+                        });
+                        
+                        try {
+                            await openAssistanceModal('view', row.id);
+                        } finally {
+                            setLoadingViewId(null);
+                        }
+                    }}
                 />
                 <ActionIcon name="trash"
                     onClick={() => {
@@ -406,6 +429,7 @@ const Assistance = () => {
             />
 
         <Popup
+            loading ={loading}
             open={deletePopup}
             onClose={() => setDeletePopUp(false)}
             title={selectedRecord?.status === "true" ? "Deactivate Record" : "Activate Record"}

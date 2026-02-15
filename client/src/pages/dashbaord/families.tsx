@@ -26,6 +26,7 @@ type ModalMode = 'view' | 'review' | null;
 
 const Families = () => {
     const { data, getData, pagination, loading } = useBeneficiaryStore();
+    const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const { membership } = useAuthStore();
     const {
         searchTerm,
@@ -187,8 +188,17 @@ const Families = () => {
                 return (
                     <div className="flex items-center space-x-3">
                         <ActionIcon
-                            name="view"
-                            onClick={() => openModal('view', row.id)}
+                            name={loadingViewId === row.id ? "spinner" : "view"}
+                            onClick={async () => {
+                                if (loadingViewId === row.id) return;
+
+                                setLoadingViewId(row.id);
+                                try {
+                                openModal('view', row.id);
+                                } finally {
+                                    setLoadingViewId(null);
+                                }
+                            }}
                         />
                         
                         {/* Collaborator can review pending items */}

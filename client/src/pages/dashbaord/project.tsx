@@ -26,6 +26,7 @@ type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Projects = () => {
     const { data, getData, pagination, loading } = useProjectStore();
+    const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {membership} = useAuthStore();
 
     const {
@@ -247,13 +248,34 @@ const Projects = () => {
                 return (
                     <div className="flex items-center space-x-3">
                         {
-                            membership?.role === "admin" && row.status != "done" ? (<ActionIcon name="edit"
-                            onClick={() => openProjectModal('edit', row.id)}
+                            membership?.role === "admin" && row.status != "done" ? (<ActionIcon name={loadingViewId === row.id ? "spinner" : "edit"}
+                            onClick={async () => {
+                                if (loadingViewId === row.id) return;
+                                setLoadingViewId(row.id);
+
+                                try {
+                                   await openProjectModal('edit', row.id)
+                                }finally{
+                                    setLoadingViewId(null);
+                                }
+
+                            }}
                         />) : (<ActionIcon name="disable" />)
                         }
                         
-                        <ActionIcon name="view"
-                            onClick={() => openProjectModal('view', row.id)}
+                        <ActionIcon name={loadingViewId === row.id ? "spinner" : "view"}
+                            onClick={async () => {
+                                if(loadingViewId === row.id) return;
+                                    setLoadingViewId(row.id);
+
+
+                                try{
+                                    await openProjectModal('view', row.id)
+
+                                } finally {
+                                    setLoadingViewId(null);
+                                }
+                            }}
                         />
                         {
                             membership?.role === "admin" && 
@@ -534,6 +556,7 @@ const Projects = () => {
             
 
             <Popup
+                loading={loading}
                 open={deletePopup}
                 onClose={() => setDeletePopUp(false)}
                 title={selectedRecord?.status !== "false" ? "Delete Project" : "Restore Project"}
