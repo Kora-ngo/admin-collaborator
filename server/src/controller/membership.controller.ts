@@ -16,6 +16,7 @@ const MembershipController = {
             // await cleanupOldDeleted(MembershipModel, 7)
             const authUser = req.user;
             const userRole = authUser?.role;
+            const organisationId = authUser?.organizationId;
             const membershipId = authUser?.membershipId;
 
             const status = req.query.status as string;
@@ -25,7 +26,9 @@ const MembershipController = {
             // console.log("User Role --> ", userRole);
             // console.log("Status from body --> ", status);
 
-            const whereClause: any = {};
+            const whereClause: any = {
+               organization_id: organisationId
+            };
 
             if (currentUserId) {
                 whereClause.user_id = { [Op.ne]: currentUserId }; // Exclude current user

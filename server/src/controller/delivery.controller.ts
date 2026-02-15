@@ -8,6 +8,7 @@ const DeliveryController = {
     fetchAll: async (req: Request, res: Response) => {
         const authUser = req.user;
         const userRole = authUser?.role;
+        const organisationId = authUser?.organizationId;
         const membershipId = authUser?.membershipId;
 
         console.log("Delivery fetchAll --> Role:", userRole);
@@ -57,7 +58,10 @@ const DeliveryController = {
                     {
                         model: ProjectModel,
                         as: 'project',
-                        attributes: ['id', 'name', 'status']
+                        attributes: ['id', 'name', 'status'],
+                        where: {
+                            organisation_id: organisationId
+                        }
                     },
                     {
                         model: BeneficiaryModel,

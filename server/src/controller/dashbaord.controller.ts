@@ -1,5 +1,5 @@
 import { type Request, type Response } from 'express';
-import { Op, Sequelize } from 'sequelize';
+import { Op, or, Sequelize } from 'sequelize';
 import { 
     ProjectModel, 
     ProjectMemberModel, 
@@ -29,7 +29,8 @@ const DashboardController = {
             // 1. Active Projects (status: ongoing, overdue)
             const activeProjects = await ProjectModel.count({
                 where: {
-                    status: { [Op.in]: ['ongoing', 'overdue'] }
+                    status: { [Op.in]: ['ongoing', 'overdue'] },
+                    organisation_id: organisationId
                 }
             });
 
@@ -66,7 +67,8 @@ const DashboardController = {
             // 4. Active Field Users (enumerators + collaborators on ongoing projects)
             const ongoingProjects = await ProjectModel.findAll({
                 where: {
-                    status: { [Op.in]: ['ongoing', 'overdue'] }
+                    status: { [Op.in]: ['ongoing', 'overdue'] },
+                    organisation_id: organisationId
                 },
                 attributes: ['id'],
                 raw: true
@@ -123,7 +125,8 @@ const DashboardController = {
             // Get all ongoing projects
             const ongoingProjects = await ProjectModel.findAll({
                 where: {
-                    status: { [Op.in]: ['ongoing', 'overdue'] }
+                    status: { [Op.in]: ['ongoing', 'overdue'] },
+                    organisation_id: organisationId
                 },
                 order: [['created_at', 'DESC']],
                 include: [
@@ -225,6 +228,9 @@ const DashboardController = {
                         model: ProjectModel,
                         as: 'project',
                         attributes: [],
+                        where: {
+                            organisation_id: orgId
+                        },
                         required: true
                     }
                 ]
@@ -250,6 +256,9 @@ const DashboardController = {
                         model: ProjectModel,
                         as: 'project',
                         attributes: [],
+                        where: {
+                            organisation_id: orgId
+                        },
                         required: true
                     }
                 ]
@@ -274,6 +283,7 @@ const DashboardController = {
 
             const projectsNearDeadline = await ProjectModel.findAll({
                 where: {
+                    organisation_id: orgId,
                     status: { [Op.in]: ['ongoing', 'overdue'] },
                     end_date: {
                         [Op.lte]: sevenDaysFromNow,
@@ -304,6 +314,7 @@ const DashboardController = {
             // ===================================================================
             const inactiveEnumerators = await MembershipModel.findAll({
                 where: {
+                    organization_id: orgId,
                     role: 'enumerator',
                     status: 'true'
                 },
@@ -427,6 +438,7 @@ const DashboardController = {
             // 1. Assigned Projects (ongoing/overdue only)
             const assignedProjects = await ProjectModel.count({
                 where: {
+                    organisation_id: authUser.organizationId,
                     id: { [Op.in]: projectIds },
                     status: { [Op.in]: ['ongoing', 'overdue'] }
                 }

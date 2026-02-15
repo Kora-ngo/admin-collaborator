@@ -156,6 +156,7 @@ const ProjectController = {
 
     fetchAll: async (req: Request, res: Response) => {
         const userRole = req.user!.role;
+        const organisationId = req.user?.organizationId;
         const membershipId = req.user!.membershipId;
 
         console.log("Backend fetch --> entrance", userRole, membershipId);
@@ -170,7 +171,8 @@ const ProjectController = {
 
             // Build where clause based on role
             const whereClause: any = { 
-                status: { [Op.ne]: 'false' } 
+                status: {[Op.ne]: 'false' },
+                organisation_id: organisationId
             };
 
             let includeArray: any[] = [];
@@ -180,7 +182,9 @@ const ProjectController = {
             if(userRole === "collaborator"){
 
                 const collaboratorProjects = await ProjectMemberModel.findAll({
-                    where: { membership_id: membershipId },
+                    where: { 
+                        membership_id: membershipId
+                     },
                     attributes: ['project_id'],
                     raw: true
                 });
