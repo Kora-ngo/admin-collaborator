@@ -20,12 +20,15 @@ const AssistanceController = {
 
             console.log("Status from query --> ", status);
 
-            const whereClause: any = {};
+            const whereClause: any = {
+                created_by: req.user?.userId,
+                organization_id: req.user?.organizationId
+            };
 
             // Check if status is "all"
             if (status === "all") {
                 // Fetch all except 'false', no pagination
-                whereClause.status = { [Op.ne]: 'false' };
+                whereClause.status = { [Op.ne]: 'false',  };
 
                 const rows = await AssistanceModel.findAll({
                     where: whereClause,
@@ -129,6 +132,7 @@ const AssistanceController = {
     create: async (req: Request, res: Response) => {
         try{
             const body: AssistanceCreationAttributes = req.body;
+            const organisationId = req.user?.organizationId;
 
             console.log("Assistnace - creation - body --> ", body);
 
@@ -157,6 +161,7 @@ const AssistanceController = {
             const newAssistance = await AssistanceModel.create({
                 ...body,
                 uid: assistanceUid,
+                organization_id: organisationId!,
                 status: 'true'
             });
 
@@ -418,6 +423,9 @@ const AssistanceController = {
        try{
          const type = await AssistanceTypeModel.findAll({
             order: [['name', 'ASC']],
+            where: {
+                organization_id: req.user?.organizationId
+            }
         });
 
         res.status(200).json({
@@ -457,6 +465,16 @@ const AssistanceController = {
     createType: async (req: Request, res: Response) => {
         try {
             const input = req.body;
+            const organizationId = req.user?.organizationId;
+
+
+            // Security: prevent organization impersonation
+            if (!organizationId) {
+                return res.status(403).json({
+                    type: 'error',
+                    message: 'organization_not_found',
+                });
+            }
 
             // Normalize input:
             const typesToCreate: AssistanceTypeCreationAttributes[] = Array.isArray(input)
@@ -490,7 +508,7 @@ const AssistanceController = {
                             message: 'fields_required',
                         });
                     } else {
-                        validTypes.push({ name, unit });
+                        validTypes.push({ name, unit, organization_id: organizationId });
                     }
                 });
 

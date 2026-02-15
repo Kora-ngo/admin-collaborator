@@ -8,6 +8,7 @@ class Assistance extends Model<AssistanceAttributes, AssistanceCreationAttribute
     public name!: string;
     public description!: string;
     public assistance_id!: number;
+    public organization_id!: number;
     public created_by!: number;
     public status!: string;
     public date_of!: Date;
@@ -52,6 +53,11 @@ const AssistanceModel = Assistance.init({
         allowNull: false
     },
 
+
+    organization_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
 
     date_of: {
       type: DataTypes.DATE,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../../components/widgets/button";
 import TypeView from "./type-view";
 import TypeForm from "./type-form";
@@ -19,6 +19,11 @@ const Type = () => {
 
   const {fetchData} = useAssistanceTypeStore();
 
+  useEffect(() => {
+    if (toggle === 'view') {
+      fetchData(); 
+    }
+  }, [toggle, fetchData]);
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();

@@ -8,6 +8,7 @@ class AssistanceType extends Model<AssistanceTypeAttributes, AssistanceTypeCreat
     public id!: number;
     public name!: string;
     public unit!: string;
+    public organization_id!: number;
     public date_of!: Date;
     public update_of!: Date;
 }
@@ -25,6 +26,10 @@ const AssistanceTypeModel = AssistanceType.init(
         },
         unit: {
             type: DataTypes.STRING,
+            allowNull: false,
+        },
+        organization_id: {  
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         date_of: {

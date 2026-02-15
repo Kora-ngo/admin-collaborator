@@ -3,6 +3,7 @@ export interface AssistanceAttributes {
     uid: number;
     name: string;
     description: string;
+    organization_id: number;
     assistance_id: number;
     created_by: number;
     status: string;
@@ -14,6 +15,7 @@ export interface AssistanceTypeAttributes {
     id?: number;
     name: string;
     unit: string;
+    organization_id: number 
     date_of?: Date;
     update_of?: Date;
 }
