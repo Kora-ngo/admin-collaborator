@@ -322,7 +322,10 @@ const DeliveryController = {
                     {
                         model: ProjectModel,
                         as: 'project',
-                        attributes: ['id', 'name', 'status']
+                        attributes: ['id', 'name', 'status'],
+                        where: {
+                            organisation_id: req.user?.organizationId
+                        }
                     },
                     {
                         model: BeneficiaryModel,
@@ -467,7 +470,10 @@ const DeliveryController = {
                     {
                         model: ProjectModel,
                         as: 'project',
-                        attributes: ['id', 'name', 'status']
+                        attributes: ['id', 'name', 'status'],
+                        where: {
+                            organisation_id: req.user?.organizationId
+                        }
                     },
                     {
                         model: BeneficiaryModel,

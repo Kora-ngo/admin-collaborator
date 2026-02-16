@@ -288,6 +288,7 @@ const AssistanceController = {
             const where: any = {
             status: 'true',
             name: { [Op.like]: `%${q}%` },
+            organization_id: req.user?.organizationId
             };
 
             const { count, rows } = await AssistanceModel.findAndCountAll({
@@ -336,7 +337,9 @@ const AssistanceController = {
             const typeId = req.query.typeId ? parseInt(req.query.typeId as string) : undefined;
             const datePreset = (req.query.datePreset as string)?.trim();
 
-            const where: any = {};
+            const where: any = {
+                organization_id: req.user?.organizationId
+            };
 
             if (status === "true" || status === "false") {
                 where.status = status;

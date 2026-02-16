@@ -298,7 +298,10 @@ const BeneficiaryController = {
                     {
                         model: ProjectModel,
                         as: 'project',
-                        attributes: ['id', 'name', 'status']
+                        attributes: ['id', 'name', 'status'],
+                        where: {
+                            organisation_id: req.user?.organizationId
+                        }
                     },
                     {
                         model: BeneficiaryMemberModel,
@@ -432,7 +435,10 @@ const BeneficiaryController = {
                     {
                         model: ProjectModel,
                         as: 'project',
-                        attributes: ['id', 'name', 'status']
+                        attributes: ['id', 'name', 'status'],
+                        where: {
+                            organisation_id: req.user?.organizationId
+                        }
                     },
                     {
                         model: BeneficiaryMemberModel,

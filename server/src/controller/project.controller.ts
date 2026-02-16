@@ -474,9 +474,6 @@ const ProjectController = {
         }
     },
 
-
-
-
     update: async (req: Request, res: Response) => {
         const transaction = await sequelize.transaction();
         
@@ -745,6 +742,7 @@ const ProjectController = {
     search: async (req: Request, res: Response) => {
         const userRole = req.user!.role;
         const membershipId = req.user!.membershipId;
+        const organisationId = req.user?.organizationId;
 
         try {
             const q = (req.query.q as string)?.trim();
@@ -761,7 +759,8 @@ const ProjectController = {
 
             const where: any = {
                 status: { [Op.ne]: 'false' },
-                name: { [Op.like]: `%${q}%` }
+                name: { [Op.like]: `%${q}%` },
+                organisation_id: organisationId
             };
 
             // Build includes with role-based filtering
@@ -839,6 +838,7 @@ const ProjectController = {
     filter: async (req: Request, res: Response) => {
         const userRole = req.user!.role;
         const membershipId = req.user!.membershipId;
+        const organisationId = req.user?.organizationId;
 
         try {
             const page = parseInt(req.query.page as string) || 1;
@@ -848,7 +848,9 @@ const ProjectController = {
             const status = (req.query.status as string)?.trim();
             const datePreset = (req.query.datePreset as string)?.trim();
 
-            const where: any = {};
+            const where: any = {
+                organisation_id: organisationId
+            };
 
             if (status) where.status = status;
 

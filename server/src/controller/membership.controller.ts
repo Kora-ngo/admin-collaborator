@@ -490,6 +490,7 @@ const MembershipController = {
         const authUser = req.user;
         const userRole = authUser?.role;
         const membershipId = authUser?.membershipId;
+        const organisationId = authUser?.organizationId;
 
         try {
             const q = (req.query.q as string)?.trim();
@@ -506,6 +507,7 @@ const MembershipController = {
 
             const where: any = {
                 status: ['true', 'blocked'],
+                organization_id: organisationId
             };
 
             // === ROLE-BASED FILTERING ===
@@ -616,6 +618,7 @@ const MembershipController = {
         const authUser = req.user;
         const userRole = authUser?.role;
         const membershipId = authUser?.membershipId;
+        const organisationId = authUser?.organizationId;
 
         try {
             const page = parseInt(req.query.page as string) || 1;
@@ -631,7 +634,9 @@ const MembershipController = {
             console.log("Status --> ", req.query.status);
             console.log("User Role --> ", userRole);
 
-            const where: any = {};
+            const where: any = {
+                organization_id: organisationId
+            };
 
             // === ROLE-BASED FILTERING ===
             if (userRole === 'collaborator') {
