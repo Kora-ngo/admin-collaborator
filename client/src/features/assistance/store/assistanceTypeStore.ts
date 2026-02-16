@@ -26,7 +26,6 @@ export const useAssistanceTypeStore = create<AssistanceTypeState>((set) => ({
 
             set({data: data.data});
 
-            console.log("Assis Type - Fetch type response --> ", data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -40,7 +39,6 @@ export const useAssistanceTypeStore = create<AssistanceTypeState>((set) => ({
             set({loading: true});
 
             const response = await axiosInstance.post(endpoint, data);
-            console.log("Assistance Type create --> ", response.data);
             return response.data;
 
             

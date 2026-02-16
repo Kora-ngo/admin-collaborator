@@ -17,8 +17,6 @@ const EnumeratorController = {
     login: async (req: Request, res: Response) => {
         const { email, password } = req.body;
 
-        console.log("Email --> ", email);
-        console.log("Password --> ", password);
         
         try{
             // Validate input
@@ -129,7 +127,6 @@ const EnumeratorController = {
     getMobileUserData: async (req: Request, res: Response) => {
             const authUser = req.user;
 
-            console.log("Mobile - Auth User --> ", authUser);
 
             if (!authUser || !authUser.userId) {
                 return res.status(401).json({ type: 'error', message: 'unauthorized' });
@@ -144,7 +141,6 @@ const EnumeratorController = {
                 const userModel = await UserModel.findByPk(authUser.userId);
                 const user = userModel?.dataValues;
 
-                console.log("Mobile - User found --> ", user);
 
                 if (!user || user.status !== 'true') {
                     return res.status(403).json({
@@ -208,7 +204,6 @@ const EnumeratorController = {
                 const userRole = membership.role;
                 const membershipId = membership.id;
 
-                console.log("Mobile - Fetching projects for role:", userRole);
 
                 // Build where clause
                 const whereClause: any = { 
@@ -372,7 +367,6 @@ const EnumeratorController = {
                     };
                 }));
 
-                console.log(`💚 MOBILE --->`);
 
 
                 // ========================================
@@ -422,7 +416,6 @@ const EnumeratorController = {
     syncData: async (req: Request, res: Response) => {
         const authUser = req.user;
 
-        console.log("Hello synch --> ", authUser);
         const transaction = await sequelize.transaction();
 
         try {
@@ -558,7 +551,6 @@ const EnumeratorController = {
                 status: 'pending'
             }, { transaction });
 
-            console.log(`✓ Created sync batch: ${batch_uid} (Server ID: ${syncBatch.id})`);
 
 
             // STEP 5: PROCESS BENEFICIARIES
@@ -566,7 +558,6 @@ const EnumeratorController = {
             const beneficiaryResults: any[] = [];
 
             if (beneficiaries && beneficiaries.length > 0) {
-                console.log(`Processing ${beneficiaries.length} beneficiaries sequentially...`);
 
                 for (const benef of beneficiaries) {
                     try {
@@ -579,23 +570,19 @@ const EnumeratorController = {
                                 status: 'rejected',
                                 error: 'missing_required_fields'
                             });
-                            console.log(`✗ Beneficiary ${benef.uid || 'unknown'} → missing required fields`);
                             continue;
                         }
 
-                        console.log(`\n── Processing beneficiary: ${benef.uid} ──`);
 
                         // ────────────────────────────────────
                         // 2. CHECK IF server_id EXISTS (UPDATE FLOW)
                         // ────────────────────────────────────
                         if (benef.server_id) {
-                            console.log(`  → server_id found: ${benef.server_id}, checking DB...`);
 
                             const existing = await BeneficiaryModel.findByPk(benef.server_id, { transaction });
 
                             if (existing) {
                                 // ── UPDATE the existing beneficiary ──
-                                console.log(`  → Record exists, updating...`);
 
                                 await existing.update({
                                     family_code: benef.family_code,
@@ -608,7 +595,6 @@ const EnumeratorController = {
                                     updated_at: new Date()
                                 }, { transaction });
 
-                                console.log(`  ✓ Beneficiary updated, now handling members... ${benef.server_id}`);
 
                                 // ── HANDLE MEMBERS for this updated beneficiary ──
                                 if (benef.members && benef.members.length > 0) {
@@ -618,12 +604,10 @@ const EnumeratorController = {
                                         transaction
                                     });
 
-                                    console.log(`  → Old members cleared, inserting new ones...`);
 
                                     // Insert members one by one
                                     for (const member of benef.members) {
                                         if (!member.full_name || !member.gender || !member.relationship) {
-                                            console.log(`  ✗ Skipped invalid member: ${member.full_name || 'unknown'} -- ${member.gender} | ${member.relationship}`);
                                             continue;
                                         }
 
@@ -635,7 +619,6 @@ const EnumeratorController = {
                                             relationship: member.relationship
                                         }, { transaction });
 
-                                        console.log(`  ✓ Member inserted: ${member.full_name} (${member.relationship})`);
                                     }
                                 }
 
@@ -646,18 +629,15 @@ const EnumeratorController = {
                                     action: 'updated'
                                 });
 
-                                console.log(`  ✓ Beneficiary ${benef.uid} → updated successfully\n`);
                                 continue; // Done with this record, move to the next
                             }
 
                             // server_id was sent but not found in DB → treat as new
-                            console.log(`  → server_id ${benef.server_id} not found in DB, treating as new record...`);
                         }
 
                         // ────────────────────────────────────
                         // 3. NEW RECORD FLOW - Check duplicate family_code
                         // ────────────────────────────────────
-                        console.log(`  → Checking duplicate family_code: ${benef.family_code}...`);
 
                         const duplicate = await BeneficiaryModel.findOne({
                             where: {
@@ -674,14 +654,12 @@ const EnumeratorController = {
                                 status: 'rejected',
                                 error: 'duplicate_family_code'
                             });
-                            console.log(`  ✗ Beneficiary ${benef.uid} → duplicate family_code "${benef.family_code}"\n`);
                             continue; // Move to the next beneficiary
                         }
 
                         // ────────────────────────────────────
                         // 4. ALL CHECKS PASSED → INSERT BENEFICIARY
                         // ────────────────────────────────────
-                        console.log(`  → All checks passed, inserting beneficiary...`);
 
                         const beneficiaryUid = await generateUniqueUid('beneficiaries');
 
@@ -698,18 +676,15 @@ const EnumeratorController = {
                             review_status: 'pending'
                         }, { transaction });
 
-                        console.log(`  ✓ Beneficiary inserted → server_id: ${newBeneficiary.id}`);
 
                         // ────────────────────────────────────
                         // 5. BENEFICIARY INSERTED → NOW HANDLE ITS MEMBERS
                         // ────────────────────────────────────
                         if (benef.members && benef.members.length > 0) {
-                            console.log(`  → Processing ${benef.members.length} members for beneficiary ${newBeneficiary.id}...`);
 
                             for (const member of benef.members) {
                                 // Validate each member individually
                                 if (!member.full_name || !member.gender || !member.relationship) {
-                                    console.log(`  ✗ Skipped invalid member: ${member.full_name || 'unknown'}`);
                                     continue;
                                 }
 
@@ -721,10 +696,8 @@ const EnumeratorController = {
                                     relationship: member.relationship
                                 }, { transaction });
 
-                                console.log(`  ✓ Member inserted: ${member.full_name} (${member.relationship})`);
                             }
                         } else {
-                            console.log(`  → No members provided for this beneficiary`);
                         }
 
 
@@ -753,7 +726,6 @@ const EnumeratorController = {
                             }
                         });
 
-                        console.log(`  ✓ Beneficiary ${benef.uid} → fully processed (created)\n`);
 
                     } catch (error: any) {
                         console.error(`  ✗ Error processing beneficiary ${benef.uid || 'unknown'}:`, error);
@@ -765,7 +737,6 @@ const EnumeratorController = {
                     }
                 }
 
-                console.log(`\n── Beneficiaries processing complete: ${beneficiaryResults.length} records handled ──\n`);
             }
 
 
@@ -774,7 +745,6 @@ const EnumeratorController = {
 const deliveryResults: any[] = [];
 
 if (deliveries && deliveries.length > 0) {
-    console.log(`Processing ${deliveries.length} deliveries...`);
 
     for (const deliv of deliveries) {
         try {
@@ -785,7 +755,6 @@ if (deliveries && deliveries.length > 0) {
                     status: 'rejected',
                     error: 'missing_required_fields'
                 });
-                console.log(`✗ Delivery ${deliv.uid || 'unknown'} → missing required fields`);
                 continue;
             }
 
@@ -796,7 +765,6 @@ if (deliveries && deliveries.length > 0) {
                     status: 'rejected',
                     error: 'no_delivery_items'
                 });
-                console.log(`✗ Delivery ${deliv.uid} → no items`);
                 continue;
             }
 
@@ -805,13 +773,11 @@ if (deliveries && deliveries.length > 0) {
 
             // NEW: Check if this is an existing delivery (mobile sent server_id)
             if (deliv.server_id) {
-                console.log(`  → server_id found: ${deliv.server_id}, checking DB...`);
 
                 const existing = await DeliveryModel.findByPk(deliv.server_id, { transaction });
 
                 if (existing) {
                     // ── UPDATE the existing delivery ──
-                    console.log(`  → Record exists, updating delivery...`);
 
                     await existing.update({
                         delivery_date: deliv.delivery_date,
@@ -825,9 +791,7 @@ if (deliveries && deliveries.length > 0) {
                     deliveryRecord = existing;
                     isUpdate = true;
 
-                    console.log(`  ✓ Delivery updated, now handling items...`);
                 } else {
-                    console.log(`  → server_id ${deliv.server_id} not found, treating as new...`);
                 }
             }
 
@@ -849,7 +813,6 @@ if (deliveries && deliveries.length > 0) {
                         status: 'rejected',
                         error: 'beneficiary_not_found_or_not_approved'
                     });
-                    console.log(`✗ Delivery ${deliv.uid} → invalid beneficiary`);
                     continue;
                 }
 
@@ -869,7 +832,6 @@ if (deliveries && deliveries.length > 0) {
                         status: 'rejected',
                         error: 'invalid_assistance_items'
                     });
-                    console.log(`✗ Delivery ${deliv.uid} → invalid assistance items`);
                     continue;
                 }
 
@@ -888,7 +850,6 @@ if (deliveries && deliveries.length > 0) {
                     review_status: 'pending',
                 }, { transaction });
 
-                console.log(`✓ Created new delivery: uid ${deliv.uid} → server_id ${deliveryRecord.id}`);
             }
 
             // ── HANDLE DELIVERY ITEMS (replace all for updates, create for new) ──
@@ -899,7 +860,6 @@ if (deliveries && deliveries.length > 0) {
                         where: { delivery_id: deliv.server_id },
                         transaction
                     });
-                    console.log(`  → Old items cleared for delivery ${deliv.server_id}`);
                 }
 
                 const itemsData = deliv.items.map((item: any) => ({
@@ -910,7 +870,6 @@ if (deliveries && deliveries.length > 0) {
 
                 await DeliveryItemModel.bulkCreate(itemsData, { transaction });
 
-                console.log(`  ✓ ${isUpdate ? 'Replaced' : 'Added'} ${itemsData.length} items for delivery ${deliveryRecord.id}`);
             }
 
             deliveryResults.push({
@@ -930,7 +889,6 @@ if (deliveries && deliveries.length > 0) {
                     length: deliveryResults.length
                 }
             });
-            console.log(`  ✓ Delivery ${deliv.uid} → fully processed (${isUpdate ? 'updated' : 'created'})\n`);
 
         } catch (error: any) {
             console.error(`Error processing delivery ${deliv.uid || 'unknown'}:`, error);
@@ -942,7 +900,6 @@ if (deliveries && deliveries.length > 0) {
         }
     }
 
-    console.log(`\n── Deliveries processing complete: ${deliveryResults.length} records handled ──\n`);
 }
 
 
@@ -971,7 +928,6 @@ if (deliveries && deliveries.length > 0) {
 
             // Commit transaction
             await transaction.commit();
-            console.log("✅ Transaction committed successfully");
 
             // STEP 8: RETURN RESPONSE
 

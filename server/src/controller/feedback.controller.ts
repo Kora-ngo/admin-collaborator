@@ -86,7 +86,6 @@ const FeedbackController = {
                 replyEmail: replyEmail
             };
 
-            console.log('📧 Sending feedback email:', feedbackData);
 
             // Send email
             const emailSent = await emailService.sendFeedbackEmail(feedbackData);

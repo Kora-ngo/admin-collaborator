@@ -10,7 +10,6 @@ interface ProjectViewAssistanceProps {
 const ProjectViewAssistance = ({selectedAssistance}: ProjectViewAssistanceProps) => {
 
     useEffect(() => {
-        console.log("Assinacte --> ", selectedAssistance);
     }, [selectedAssistance])
 
 

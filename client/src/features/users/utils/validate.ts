@@ -6,8 +6,6 @@ export const validateMembership = (
     form: Partial<Membership & { email: string; name: string; phone?: string; password: string }>,
     isEdit: boolean = false
 ) => {
-    console.log("Membership - Validation --> ", form);
-    console.log("Membership - Is Edit --> ", isEdit);
 
     
     const errors = {

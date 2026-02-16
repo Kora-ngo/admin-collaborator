@@ -43,7 +43,6 @@ const [generalData, setGeneralData] = useState({
         const fetchedData = await fetchOneData(id);
         setData(fetchedData as ProjectFormData);
 
-        console.log("Data --> ", fetchedData);
         setGeneralData({
             name: fetchedData.name,
             description: fetchedData!.description!,

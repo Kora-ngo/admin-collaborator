@@ -27,7 +27,6 @@ export const useSubscriptionStore = create<SubscriptionStore>((set) => ({
         try {
             const response = await axiosInstance.get(`${endpoint}`);
 
-            console.log("Store - Subscription --> ", response);
             
             if (response.data.type === 'success') {
                 set({
@@ -37,7 +36,6 @@ export const useSubscriptionStore = create<SubscriptionStore>((set) => ({
                 });
             }
         } catch (error) {
-            console.error('Failed to fetch subscription history:', error);
             set({ loading: false });
         }
     },

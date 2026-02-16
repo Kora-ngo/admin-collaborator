@@ -9,14 +9,14 @@ if (process.env.NODE_ENV !== 'production') {
     dotenv.config();
 }
 
-console.log('=== DATABASE DEBUG ===');
-console.log('DB_HOST:', process.env.DB_HOST);
-console.log('DB_PORT:', process.env.DB_PORT, 'Type:', typeof process.env.DB_PORT);
-console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_NAME:', process.env.DB_NAME);
-console.log('DB_PASSWORD set?', !!process.env.DB_PASSWORD);
-console.log('Parsed port:', parseInt(process.env.DB_PORT || '3306'));
-console.log('======================');
+// console.log('=== DATABASE DEBUG ===');
+// console.log('DB_HOST:', process.env.DB_HOST);
+// console.log('DB_PORT:', process.env.DB_PORT, 'Type:', typeof process.env.DB_PORT);
+// console.log('DB_USER:', process.env.DB_USER);
+// console.log('DB_NAME:', process.env.DB_NAME);
+// console.log('DB_PASSWORD set?', !!process.env.DB_PASSWORD);
+// console.log('Parsed port:', parseInt(process.env.DB_PORT || '3306'));
+// console.log('======================');
 
 const port = Number(process.env.PORT) || 5000;
 
@@ -24,7 +24,7 @@ const port = Number(process.env.PORT) || 5000;
 const startServer = async () => {
     try{
         await sequelize.authenticate();
-        console.log('Database connected successfully.');
+        // console.log('Database connected successfully.');
 
         // if(process.env.NODE_ENV === 'development'){
         //     await sequelize.sync({ alter: true });
@@ -33,7 +33,6 @@ const startServer = async () => {
 
         // Then: start server
         app.listen(port, '0.0.0.0', () => {
-            console.log(`Server is running on port ${port}`);
             console.log(`Environment: ${process.env.NODE_ENV}`);
         });
     }catch (error) {

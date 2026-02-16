@@ -99,10 +99,8 @@ export const useDeliveryStore = create<DeliveryState>((set) => ({
     deleteData: async (id, status) => {
         try{
 
-        console.log("Membership toggle -- Status -- > ", status);
 
         const response = await axiosInstance.put(`${endpoint}/${id}`, {status: status});
-        console.log("Membership delete one --> ", response.data);
         return response.data;
 
             

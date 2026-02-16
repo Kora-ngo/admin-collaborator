@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Button } from "../../../components/widgets/button";
 import { useAuthStore } from "../store/authStore";
 
@@ -11,9 +10,6 @@ const AccountView: React.FC<AccountViewProps> = ({onToggle}) => {
 
     const {user, role} = useAuthStore();
 
-    useEffect(() => {
-        console.log("This is the user -->", user);
-    }, [user])
 
 
     const fullname = user!.name;

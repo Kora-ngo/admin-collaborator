@@ -19,8 +19,6 @@ const AuthController = {
     login: async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
-    console.log("Email --> ", email);
-    console.log("Password --> ", password);
     
     try{
         // Validate input
@@ -131,7 +129,6 @@ const AuthController = {
     registerAdmin: async (req: Request, res: Response) => {
     const { users, organisation } = req.body;
 
-    // console.log("Subscription --> ", subscription);
 
     if(!users || !organisation){
         return res.status(400).json({ type: 'error', message: 'missing_user_or_organisation_data' });
@@ -249,20 +246,19 @@ const AuthController = {
         await transaction.commit();
 
 
-        // Prepare feedback data
-        const feedbackData = {
-            userName: users.name,
-            userEmail: users.email,
-            role: 'admin',
-            organisation: organisation.name,
-            message: "A new user has been created",
-            replyEmail: newUser.email
-        };
+        // // Prepare feedback data
+        // const feedbackData = {
+        //     userName: users.name,
+        //     userEmail: users.email,
+        //     role: 'admin',
+        //     organisation: organisation.name,
+        //     message: "A new user has been created",
+        //     replyEmail: newUser.email
+        // };
 
-        console.log('📧 Sending feedback email:', feedbackData);
 
-        // Send email
-        await emailService.sendFeedbackEmail(feedbackData);
+        // // Send email
+        // await emailService.sendFeedbackEmail(feedbackData);
 
         res.status(201).json({
             type: 'success',
@@ -339,24 +335,20 @@ const AuthController = {
     getCurrentUser: async (req: Request, res: Response) => {
         const authUser = req.user;
 
-        console.log("Auth User --> ", authUser);
 
         if (!authUser || !authUser.userId) {
             return res.status(401).json({ type: 'error', message: 'unauthorized' });
         }
 
-        console.log("Authriszed User");
 
         try{
 
-            console.log("Trying to find user");
 
 
             // 1. Fetch user (exclude password)
             const userModel = await UserModel.findByPk(authUser.userId);
             const user = userModel?.dataValues;
 
-            console.log("User find --> ", user);
 
 
             if (!user || user.status !== 'true') {
@@ -373,7 +365,6 @@ const AuthController = {
                 const membership = membershipData?.dataValues;
 
 
-                console.log("membershipData");
 
 
                 if (!membership || membership.status !== 'true') {
@@ -793,7 +784,6 @@ const AuthController = {
             if (password) updates.password = await bcrypt.hash(password, 10);
 
 
-            console.log('Updates --> ', updates);
 
             // Update user
             await UserModel.update(updates, {
@@ -892,7 +882,6 @@ const AuthController = {
             if (country !== undefined) updates.country = country?.trim() || null;
             if (region !== undefined) updates.region = region?.trim() || null;
 
-            console.log("Updates --> ", updates);
 
             // Update organisation
             await OrganisationModel.update(updates, {

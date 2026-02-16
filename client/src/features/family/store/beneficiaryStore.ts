@@ -37,7 +37,6 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
                 pagination: data.pagination
             });
 
-            console.log("Bene --> data", data);
 
             return data;
         } catch (error: any) {
@@ -104,10 +103,8 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
     deleteData: async (id, status) => {
         try{
 
-        console.log("Membership toggle -- Status -- > ", status);
 
         const response = await axiosInstance.put(`${endpoint}/${id}`, {status: status});
-        console.log("Membership delete one --> ", response.data);
         return response.data;
 
             

@@ -5,7 +5,6 @@ type ProjectFormData = Partial<Project> & {
 };
 
 export const validateProject = (form: ProjectFormData) => {
-    console.log("Project Validation → Form data:", form);
 
     const errors = {
         name: false,
@@ -50,8 +49,6 @@ export const validateProject = (form: ProjectFormData) => {
 
     const hasErrors = Object.values(errors).some(Boolean);
 
-    console.log("Validation errors:", errors);
-    console.log("Has errors:", hasErrors);
 
     return {
         hasErrors,

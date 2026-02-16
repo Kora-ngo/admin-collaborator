@@ -108,7 +108,6 @@ const ProjectController = {
             let uploadedFiles: any[] = [];
             if (body.files && body.files.length > 0) {
 
-                console.log("FILES --> ");
 
                 // Convert base64 files to buffer format
                 const processedFiles = body.files.map((fileData: any) => {
@@ -137,7 +136,6 @@ const ProjectController = {
             }
 
             await transaction.commit();
-            console.log("✅ Transaction committed successfully");
 
             res.status(201).json({
                 type: 'success',
@@ -159,7 +157,6 @@ const ProjectController = {
         const organisationId = req.user?.organizationId;
         const membershipId = req.user!.membershipId;
 
-        console.log("Backend fetch --> entrance", userRole, membershipId);
 
         try {
             // Clean up old deleted projects (7 days)
@@ -341,7 +338,6 @@ const ProjectController = {
 
 
     fetchOne: async (req: Request, res: Response) => {
-        console.log("Backend fetchOne --> entrance");
         
         try {
             const { id } = req.params;
@@ -483,14 +479,9 @@ const ProjectController = {
             const updates = req.body;
             const middlewareAuth = req.user;
 
-            // console.log("Updates --> ", updates);
-
-            console.log("Time tp upload 0 ---> ");
-
 
             const project = await ProjectModel.findByPk(id);
 
-            console.log("Time tp upload I ---> ");
 
             if (!project?.dataValues) {
                 await transaction.rollback();
@@ -501,9 +492,6 @@ const ProjectController = {
                 return;
             }
 
-            console.log("Time tp upload II ---> ");
-            // console.log("Time tp upload II ---> ", updates);
-
             if (updates.name === '') {
                 await transaction.rollback();
                 res.status(400).json({
@@ -512,7 +500,6 @@ const ProjectController = {
                 });
                 return;
             }
-            console.log("Time tp upload III ---> ");
 
             // Update basic project info
             await project.update({
@@ -523,8 +510,6 @@ const ProjectController = {
                 status: updates.status,
                 // target_families: updates.target_families
             }, { transaction });
-
-            console.log("Time tp upload IV ---> ");
 
             // Handle members update (only update unlocked ones)
             if (updates.selectedMembers !== undefined) {
@@ -598,16 +583,13 @@ const ProjectController = {
             // Handle file updates
             if (updates.filesToDelete && updates.filesToDelete.length > 0) {
                 // Delete specified media files
-                console.log("I come through here ---> ");
                 for (const mediaId of updates.filesToDelete) {
-                    console.log("I come through here ---> ", mediaId);
                     const result = await MediaController.deleteMediaById(mediaId, transaction);
 
                     if (!result.success) {
                         console.warn(`Failed to delete media ${mediaId}`);
                     }
                 }
-                console.log(`✅ Finished deleting files`);
             }
 
 

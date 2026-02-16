@@ -27,7 +27,6 @@ export const cleanupOldDeleted = async <T extends Model>(
     });
 
     if (deletedCount > 0) {
-      console.log(`🗑️ Cleaned up ${deletedCount} old deleted record(s) from ${model.tableName}`);
     }
   } catch (error) {
     console.error(`Cleanup failed for ${model.tableName}:`, error);

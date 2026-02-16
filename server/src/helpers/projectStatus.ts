@@ -65,10 +65,7 @@ export const updateProjectStatusInDB = async (project: any): Promise<any> => {
         if (typeof project.update === 'function') {
             await project.update({ status: calculatedStatus });
         } else {
-            // If it's a plain object, we can't update it
-            console.warn(`Cannot update project ${projectData.id} - not a Sequelize instance`);
         }
-        console.log(`Project ${projectData.id} status updated: ${currentStatus} → ${calculatedStatus}`);
     }
 
     return project;
@@ -99,7 +96,6 @@ export const bulkUpdateProjectStatuses = async (projects: any[]): Promise<any[]>
             // If it's a Sequelize instance, use .update()
             if (typeof project.update === 'function') {
                 await project.update({ status: calculatedStatus });
-                console.log(`Project ${projectData.id} status updated: ${currentStatus} → ${calculatedStatus}`);
             } else {
                 console.warn(`Cannot update project ${projectData.id} - not a Sequelize instance`);
             }

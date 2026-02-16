@@ -49,7 +49,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 });
                 const fetchData = response.data;
 
-                // console.log("AuthStore - Resgister - Response --> ", response);
 
                 if(fetchData.token){
                     localStorage.setItem('token', fetchData.token);
@@ -66,7 +65,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
             }catch(err: any){
 
-                console.log("Error --> ", err);
 
                 const errorToast = handleApiError(err);
                 return errorToast;
@@ -80,13 +78,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             try{
                 set({loading: true});
 
-                console.log("Login --> ", {email, password});
                 const response: any = await axiosInstance.post(`${endpoint}/login`, {
                     email,
                     password
                 });
 
-                console.log("AuthStore - Login - Response --> ", response.data);
 
                 const fetchData = response.data;
 
@@ -95,7 +91,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     set({token: fetchData.token});
                     const response = await get().getCurrentUser();
 
-                    console.log("response to get --> ", response);
 
                     if(response.type === "error")
                     {
@@ -130,7 +125,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                         confirmPassword
                     });
 
-                    console.log('Reset password response:', response.data);
                     return response.data;
 
                 } catch (error: any) {
@@ -167,7 +161,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             try {
                 set({loading: true, showToastMessage: false});
                 const {data} = await axiosInstance.get(`${endpoint}/me`);
-                console.log("AuthStore - Current user - Response --> ", data);
                 set({
                     user: data.user,
                     role: data.role,
@@ -179,7 +172,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 });
                 return data;
             }catch(err: any){
-                console.log("Error --> ", err);
                 localStorage.removeItem('token');
 
                 set({ 
@@ -193,7 +185,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                  });
                 const errorToast = handleApiError(err);
 
-                console.log("Error_Login --> ", errorToast);
 
                 return errorToast;
 
@@ -204,7 +195,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         try {
             set({ loading: true });
             const response = await axiosInstance.put(`${endpoint}/profile`, data);
-            console.log("Response --> ", response.data);
             if (response.data.type === "success") {
                 await get().getCurrentUser();
             }

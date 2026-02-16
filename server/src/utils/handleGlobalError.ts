@@ -7,7 +7,6 @@ export const handleGlobalError = (
   isDev: boolean = process.env.NODE_ENV === 'development'
 ) => {
 
-  console.log("GLOABAL ERROR ----> ", err);
   // Log full error details (for debugging)
   console.error('GLOBAL ERROR:', {
     path: req.path,

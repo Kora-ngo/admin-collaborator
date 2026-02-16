@@ -13,7 +13,6 @@ const ProjectViewDeliverires = ({selectedDelivery}: ProjectViewDeliveryProps) =>
     const {membership} = useAuthStore();
 
     useEffect(() => {
-        console.log("Dlivery --> ", selectedDelivery);
     }, [selectedDelivery])
 
     if(!selectedDelivery || selectedDelivery.length === 0)

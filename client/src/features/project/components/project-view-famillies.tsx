@@ -14,7 +14,6 @@ const ProjectViewFamilies = ({selectedFamily}: ProjectViewFamilyProps) => {
     const {membership} = useAuthStore();
 
     useEffect(() => {
-        console.log("Beneficiary --> ", selectedFamily);
     }, [selectedFamily])
 
     if(!selectedFamily || selectedFamily.length === 0)

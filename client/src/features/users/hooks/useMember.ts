@@ -123,12 +123,10 @@ export const useMembership = () => {
         setErrors(formErrors);
 
         if (hasErrors) {
-            console.log("Error --> ", formErrors);
             return false;
         }
 
         try {
-            console.log("Use MEmeber ---> ", data);
             let result: ToastMessage;
 
             if (id) {
@@ -172,7 +170,6 @@ export const useMembership = () => {
 
         const result = await toggleData(id, status);
 
-        console.log("Result --> ", result);
 
         showToast(result);
         await getData();

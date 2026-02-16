@@ -138,7 +138,6 @@ export const useProject = () => {
         }
 
         setProjectForm(prev => ({ ...prev, selectedMembers: members }));
-        console.log("Combined members:", members);
     };
 
     const updateSelectedAssitance = (assistance: Assistance[]) => {
@@ -171,7 +170,6 @@ export const useProject = () => {
 
         if (hasErrors) {
             setErrors(validationErrors);
-            console.log("Validation failed:", validationErrors);
             return false;
         }
 
@@ -190,7 +188,6 @@ export const useProject = () => {
                 filesToDelete: filesToDelete || []
             };
 
-            console.log("Submitting project data:", submitData);
 
             if (id) {
                 result = await updateData(id, submitData, files);
@@ -239,7 +236,6 @@ export const useProject = () => {
 
     const handleView = async (id: number): Promise<any> => {
         const response = await fetchOneData(id) as any;
-        console.log("Response --> ", response);
         
         // Set edit metadata
         if (response.editMetadata) {

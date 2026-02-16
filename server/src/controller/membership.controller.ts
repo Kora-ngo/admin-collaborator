@@ -22,9 +22,6 @@ const MembershipController = {
             const status = req.query.status as string;
             const currentUserId = authUser?.userId;
 
-            // console.log("Current ID --> ", currentUserId);
-            // console.log("User Role --> ", userRole);
-            // console.log("Status from body --> ", status);
 
             const whereClause: any = {
                organization_id: organisationId
@@ -451,8 +448,6 @@ const MembershipController = {
             const getUserData = await UserModel.findByPk(membershipDataResult.dataValues.user_id);
             const useData = getUserData?.dataValues;
 
-            console.log("UserData --> ", useData);
-            console.log("User ID --> ", membershipDataResult.dataValues.user_id);
 
 
             await logAudit({
@@ -630,9 +625,6 @@ const MembershipController = {
             const roleFilter = req.query.role ? (req.query.role as string).trim() : undefined;
             const datePreset = (req.query.datePreset as string)?.trim();
 
-            console.log("Role --> ", req.query.role);
-            console.log("Status --> ", req.query.status);
-            console.log("User Role --> ", userRole);
 
             const where: any = {
                 organization_id: organisationId

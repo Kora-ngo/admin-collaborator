@@ -7,7 +7,6 @@ export const useCollaboratorSelect = () => {
 
     useEffect(() => {
         getData(1, "", "all");
-        console.log("Hello world --> ", data);
     }, [getData]);
 
     // Separate enumerators from collaborators
@@ -29,7 +28,6 @@ export const useCollaboratorSelect = () => {
             setSelectedEnumerators([...selectedEnumerators, enumerator]);
         }
 
-        console.log("Enumerators --> ", selectedEnumerators);
 
         e.target.value = '';
     };

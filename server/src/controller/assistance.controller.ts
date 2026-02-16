@@ -11,14 +11,12 @@ const AssistanceController = {
 
 
     fetchAll: async (req: Request, res: Response) => {
-        console.log("Backend fetch --> entrance");
 
         try {
             // await cleanupOldDeleted(AssistanceModel, 7);
 
             const status = req.query.status as string;
 
-            console.log("Status from query --> ", status);
 
             const whereClause: any = {
                 created_by: req.user?.userId,
@@ -94,7 +92,6 @@ const AssistanceController = {
     },
 
     fetchOne: async (req: Request, res: Response) => {
-        console.log("Backend fetchOne --> entrance");
         try{
             const {id} = req.params;
             const assistance = await AssistanceModel.findOne({
@@ -134,7 +131,6 @@ const AssistanceController = {
             const body: AssistanceCreationAttributes = req.body;
             const organisationId = req.user?.organizationId;
 
-            console.log("Assistnace - creation - body --> ", body);
 
             if(!body.name || !body.assistance_id || !body.created_by) {
                 res.status(400).json({
@@ -646,8 +642,6 @@ const AssistanceController = {
     deleteType: async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-
-            console.log("backend delete type ID:", id);
 
             const type = await AssistanceTypeModel.findByPk(id);
 

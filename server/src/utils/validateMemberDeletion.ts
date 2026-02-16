@@ -24,7 +24,6 @@ export async function validateMemberDeletion(
             }
         });
 
-        console.log("Count enum --> ", beneficiaryCount);
 
         if (beneficiaryCount > 0) {
             details.blockedBy.push({

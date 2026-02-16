@@ -40,7 +40,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
                 pagination: data.pagination
             });
 
-            // console.log("Project - Fetch response:", data);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -57,7 +56,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
             // Convert files to base64 if any
             let fileData: any[] = [];
             if(files && files.length > 0){
-                console.log(`Converting ${files.length} files to base64`);
                 fileData = await Promise.all(
                     files.map(file => fileToBase64(file))
                 )
@@ -70,7 +68,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
             };
 
             const response = await axiosInstance.post(endpoint, data);
-            console.log("Project create:", response.data);
             return response.data;
         } catch (error: any) {
             const errorToast = handleApiError(error);
@@ -83,7 +80,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
     fetchOneData: async (id) => {
         try {
             const response = await axiosInstance.get(`${endpoint}/${id}`);
-            console.log("Project get one:", response.data.data);
             return response.data.data;
         } catch (error: any) {
             const errorToast = handleApiError(error);
@@ -92,7 +88,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
     },
 
     updateData: async (id: number, data: any, files?: File[]) => {
-        console.log(" File  here ---> ");
         set({ loading: true });
         try {
             // Convert new files to base64 if present
@@ -117,11 +112,8 @@ export const useProjectStore = create<ProjectState>((set) => ({
                     );
                 }
             }catch(err){
-                console.log(" Conversion Failed ---> ", err);
             }
 
-            console.log(" File II ---> ", data);
-            console.log(" File III ---> ", filesData);
 
             const response = await axiosInstance.put(`/${endpoint}/${id}`, {
                 ...data,
@@ -143,7 +135,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
     toggleData: async (id, status) => {
         try {
             const response = await axiosInstance.put(`${endpoint}/toggle/${id}`, { status });
-            console.log("Project toggle:", response.data);
             return response.data;
         } catch (error: any) {
             const errorToast = handleApiError(error);

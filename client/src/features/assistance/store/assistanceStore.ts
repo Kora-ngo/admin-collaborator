@@ -24,7 +24,6 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
     pagination: null,
 
     getData: async (page, searchTerm = "", status) => {
-        console.log("Assistnace GetData Search --> ", searchTerm);
         try{
             set({loading: true, data: []});
             const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
@@ -32,7 +31,6 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
 
             if (searchTerm.trim()) params.q = searchTerm.trim();
 
-            console.log("Assistnace GetData params Search --> ", params);
 
             const {data} = await axiosInstance.get(getEndpoint, { params });
 
@@ -43,7 +41,6 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
                 pagination: data.pagination
             });
 
-            console.log("Assis - Fetch type response --> ", data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -57,7 +54,6 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
             set({loading: true});
 
             const response = await axiosInstance.post(endpoint, data);
-            console.log("Assistance create --> ", response.data);
             return response.data;
 
             
@@ -71,10 +67,8 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
 
     fetchOneData: async (id) => {
         try{
-            console.log("Assistance get one --> ");
 
             const response = await axiosInstance.get(`${endpoint}/${id}`);
-            console.log("Assistance get one --> ", response.data.data);
             return response.data.data;
 
             
@@ -89,7 +83,6 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
             set({loading: true});
 
             const response = await axiosInstance.put(`${endpoint}/${id}`, data);
-            console.log("Assistance update --> ", response.data);
             return response.data;
 
             
@@ -104,10 +97,8 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
     toggleData: async (id, status) => {
         try{
 
-        console.log("Assiance toggle -- Status -- > ", status);
 
         const response = await axiosInstance.put(`${endpoint}/toggle/${id}`, {status: status});
-        console.log("Assistance delete one --> ", response.data);
         return response.data;
 
             
@@ -128,7 +119,6 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
     ) => {
     try {
         set({ loading: true, data: [] });
-        console.log('Filter --> ', filters);
 
         const params: any = { page, limit: 5 };
         if (filters.status) params.status = filters.status;

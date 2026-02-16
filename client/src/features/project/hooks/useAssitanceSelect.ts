@@ -7,7 +7,6 @@ export const useAssitanceSelect = () => {
 
       useEffect(() => {
           getData(1, "", "all");
-          console.log("Hello world Assis --> ", data);
       }, [getData])
   
 

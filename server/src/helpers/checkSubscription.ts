@@ -40,7 +40,6 @@ export async function checkAndUpdateSubscription(
 
     // If expired or ends today → mark as expired
     if (endsAt <= now) {
-      console.log("Let's Go")
       await subscriptionData.update({
         status: 'expired',
       });

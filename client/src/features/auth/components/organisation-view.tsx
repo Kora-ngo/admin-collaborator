@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Button } from "../../../components/widgets/button";
 import { useAuthStore } from "../store/authStore";
 
@@ -13,9 +12,7 @@ const OrganisationView: React.FC<OrganisationViewProps> = ({onToggle}) => {
 
         const {organisation, user} = useAuthStore();
 
-        useEffect(() => {
-            console.log("This is the org -->", organisation);
-        }, [organisation]);
+
 
 
     return ( 

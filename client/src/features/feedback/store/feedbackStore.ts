@@ -19,7 +19,6 @@ export const useFeedbackStore = create<FeedbackStore>((set) => ({
                 email: email || undefined
             });
 
-            console.log('Feedback response:', response.data);
             return response.data;
 
         } catch (error: any) {

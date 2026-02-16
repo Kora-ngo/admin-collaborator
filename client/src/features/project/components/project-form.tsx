@@ -89,7 +89,6 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
             }
 
             const projectData = await handleView(id);
-            console.log("Project Data -------> ", projectData);
 
             // Set existing media files
             if (projectData.mediaLinks) {
@@ -118,7 +117,6 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
             }
 
             setLockedEnumeratorIds(lockedEnumIds);
-            console.log("Locked Enumerator IDs:", lockedEnumIds);
 
             // Calculate locked assistances
             const lockedAssistIds: number[] = [];
@@ -137,7 +135,6 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
             }
 
             setLockedAssistanceIds(lockedAssistIds);
-            console.log("Locked Assistance IDs:", lockedAssistIds);
 
             // Load existing members (enumerators and collaborator)
             if (projectData.members) {

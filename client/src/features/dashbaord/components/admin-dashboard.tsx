@@ -15,7 +15,6 @@ const AdminDashbaord = () => {
         getKeyMetrics();
         getProjectProgress();
         getProjectAlert();
-        console.log("Data --> ", projectAlert);
     }, [getKeyMetrics, getProjectProgress, getProjectAlert]);
 
     if (loading && !keyMetrics) {

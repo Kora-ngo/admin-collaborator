@@ -12,7 +12,6 @@ import {
 const DashboardController = {
     
     adminKeyMetrics: async (req: Request, res: Response) => {
-        console.log("Backend adminKeyMetrics --> entrance");
 
         try {
             const authUser = req.user;
@@ -102,13 +101,11 @@ const DashboardController = {
             });
 
         } catch (error) {
-            console.error("Dashboard: adminKeyMetrics error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
 
     adminProjectProgress: async (req: Request, res: Response) => {
-        console.log("Backend adminProjectProgress --> entrance");
 
         try {
             const authUser = req.user;
@@ -200,7 +197,6 @@ const DashboardController = {
     },
 
     adminAlerts: async (req: Request, res: Response) => {
-        console.log("Backend adminAlerts --> entrance");
         
         try {
             const authUser = req.user;
@@ -398,7 +394,6 @@ const DashboardController = {
     // ========================================
 
     collaboratorKeyMetrics: async (req: Request, res: Response) => {
-        console.log("Backend collaboratorKeyMetrics --> entrance");
 
         try {
             const authUser = req.user;
@@ -479,13 +474,11 @@ const DashboardController = {
             });
 
         } catch (error) {
-            console.error("Dashboard: collaboratorKeyMetrics error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
 
     collaboratorEnumeratorActivity: async (req: Request, res: Response) => {
-        console.log("Backend collaboratorEnumeratorActivity --> entrance");
 
         try {
             const authUser = req.user;
@@ -623,13 +616,11 @@ const DashboardController = {
             });
 
         } catch (error) {
-            console.error("Dashboard: collaboratorEnumeratorActivity error:", error);
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
 
     collaboratorValidationQueue: async (req: Request, res: Response) => {
-        console.log("Backend collaboratorValidationQueue --> entrance");
 
         try {
             const authUser = req.user;

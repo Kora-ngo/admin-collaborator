@@ -19,7 +19,6 @@ export const useAssistance = () => {
     ]);
 
     useEffect(() => {
-    console.log("Current types state:", types);
 }, [types]);
 
     // Bussiness Logic for Assistance Type
@@ -62,11 +61,9 @@ export const useAssistance = () => {
         setTypeErrors(formErrors.types || []);
 
         if(hasErrors){
-            console.log("Errors --> ", formErrors.types);
             return false;
         }
 
-        console.log("Submitting:", typeData);
         const toatMessage: ToastMessage = await creatData(typeData);
         showToast(toatMessage);
         if(toatMessage.type === "success"){

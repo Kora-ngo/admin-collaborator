@@ -24,7 +24,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     pagination: null,
 
     getData: async (page, searchTerm = "", status) => {
-        console.log("Membership GetData Search --> ", searchTerm);
 
         try{
             set({loading: true, data: []});
@@ -33,7 +32,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
 
             if (searchTerm.trim()) params.q = searchTerm.trim();
 
-            console.log("Membership GetData params Search --> ", params);
 
             const {data} = await axiosInstance.get(getEndpoint, { params });
 
@@ -42,7 +40,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
                 pagination: data.pagination
             });
 
-            console.log("Membership - Fetch response --> ", data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -56,7 +53,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
             set({loading: true});
 
             const response = await axiosInstance.post(endpoint, data);
-            console.log("Membership create --> ", response.data);
             return response.data;
 
             
@@ -71,10 +67,8 @@ export const useMembershipStore = create<MembershipState>((set) => ({
 
     fetchOneData: async (id) => {
         try{
-            console.log("Membership get one --> ");
 
             const response = await axiosInstance.get(`${endpoint}/${id}`);
-            console.log("Membership get one --> ", response.data.data);
             return response.data.data;
 
             
@@ -89,7 +83,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
             set({loading: true});
 
             const response = await axiosInstance.put(`${endpoint}/${id}`, data);
-            console.log("Membership update --> ", response.data);
             return response.data;
 
             
@@ -104,10 +97,8 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     toggleData: async (id, status) => {
         try{
 
-        console.log("Membership toggle -- Status -- > ", status);
 
         const response = await axiosInstance.put(`${endpoint}/toggle/${id}`, {status: status});
-        console.log("Membership delete one --> ", response.data);
         return response.data;
 
             
@@ -128,7 +119,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     ) => {
     try {
         set({ loading: true, data: [] });
-        console.log('Filter --> ', filters);
 
         const params: any = { page, limit: 5 };
         if (filters.status) params.status = filters.status;

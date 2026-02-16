@@ -147,10 +147,6 @@ const renderAdditionalTab = () => {
   const hasMetadata = log.metadata;
   const realdata = typeof log.metadata === 'string' ? JSON.parse(log.metadata) : log.metadata
 
-  Object.entries(realdata).forEach(([key, value]) => {
-  console.log(`${key}: ${value}`);
-});
-
 
   return (
     <div className="space-y-3">

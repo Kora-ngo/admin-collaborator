@@ -78,7 +78,6 @@ export const useDelivery = () => {
 
         const result = await deleteData(id, status);
 
-        console.log("Result --> ", result);
 
         showToast(result);
         await getData();

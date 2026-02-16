@@ -64,7 +64,6 @@ class SessionManager {
         // Start monitoring
         this.startMonitoring();
         
-        console.log('✅ Session initialized:', this.sessionId);
     }
 
     /**
@@ -89,7 +88,6 @@ class SessionManager {
      * Handle session conflict (another tab took over)
      */
     private handleSessionConflict(): void {
-        console.log('🚨 Session expired - Another tab is active');
         
         // Stop monitoring
         this.stopMonitoring();
@@ -137,7 +135,6 @@ class SessionManager {
         }
         
         this.sessionId = null;
-        console.log('Session cleared');
     }
 
     /**

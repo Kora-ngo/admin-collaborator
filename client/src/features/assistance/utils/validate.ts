@@ -4,8 +4,6 @@ export const validateAssistanceType = (
     types: AssistanceType[]
 ) => {
 
-    console.log("Validate types --> ", types);
-
 
     // Validate each row (ignoring id)
     const rowErrors = types.map((type) => ({
@@ -26,8 +24,6 @@ export const validateAssistanceType = (
         unit: t.unit.trim()
     }));
 
-
-    console.log("Validate errors --> ", rowErrors);
 
     return {
     hasErrors,

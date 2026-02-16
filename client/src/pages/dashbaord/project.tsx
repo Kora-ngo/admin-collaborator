@@ -88,14 +88,11 @@ const Projects = () => {
 
         let success = false;
 
-        console.log("Action --> ", action);
-        console.log("Status --> ", selectedRecord.status);
 
         if (action === 'delete') {
             success = await handleToggle(selectedRecord.id, action);
         } else {
             // Update status to 'done' or 'suspended'
-            console.log("Action II --> ", action);
             success = await handleStatusUpdate(selectedRecord.id, action);
         }
 
@@ -153,8 +150,6 @@ const Projects = () => {
             beneficiaryCount: project.beneficiaries?.length, 
             deliveryCount: project.deliveries?.length
         });
-        console.log("Select ---> ", project.beneficiaries?.length);
-        console.log("Select ---> ", project.deliveries?.length);
         setActionPopup(true);
     };
 

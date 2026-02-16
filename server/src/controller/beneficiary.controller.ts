@@ -12,7 +12,6 @@ const BeneficiaryController = {
         const organisationId = authUser?.organizationId;
         const membershipId = authUser?.membershipId;
 
-        console.log("Beneficiary fetchAll --> Role:", userRole);
 
         try{
             const page = parseInt(req.query.page as string) || 1;
@@ -593,7 +592,6 @@ const BeneficiaryController = {
             const {id} = req.params;
             const {status} = req.body;
 
-            console.log("Status --> ", status);
 
             if(status != "rejected"){
                 return res.status(400).json({

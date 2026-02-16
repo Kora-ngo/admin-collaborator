@@ -6,7 +6,6 @@ const SubscriptionController = {
     
     // Get all subscriptions for an organization (with pagination)
     fetchAll: async (req: Request, res: Response) => {
-        console.log("Hello -->");
         try {
             const organisationId = req.user!.organizationId;
 

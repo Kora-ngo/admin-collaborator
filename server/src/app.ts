@@ -43,7 +43,6 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    console.log(req.path, req.method);
     // Handle everything else with the utility
     // handleGlobalError(err, req, res);
     next();

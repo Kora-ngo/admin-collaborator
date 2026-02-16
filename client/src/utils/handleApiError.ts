@@ -5,7 +5,6 @@ const NETWORK_TOAST_COOLDOWN_MS = 5000;
 
 
 export const handleApiError = (err: any): ToastMessage => {
-    console.log("Hello");
 
     let toast: ToastMessage = {
         type: 'error',

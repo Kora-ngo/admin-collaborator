@@ -46,7 +46,6 @@ export const logAudit = async ({
                     platform: platform
                 });
 
-        console.log(`✓ Audit logged: ${action} by ${authUser.role}`);
     } catch (error) {
         console.error('Failed to log audit:', error);
         // Don't throw - audit logging should not break the main flow

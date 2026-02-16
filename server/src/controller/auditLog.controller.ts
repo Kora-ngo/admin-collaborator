@@ -12,7 +12,6 @@ const AuditLogController = {
         const membershipId = authUser?.membershipId;
         const organisationId = authUser?.organizationId;
 
-        console.log("AuditLog fetchAll --> Role:", userRole);
 
         try {
             const page = parseInt(req.query.page as string) || 1;

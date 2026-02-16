@@ -11,7 +11,6 @@ const DeliveryController = {
         const organisationId = authUser?.organizationId;
         const membershipId = authUser?.membershipId;
 
-        console.log("Delivery fetchAll --> Role:", userRole);
 
         try {
             const page = parseInt(req.query.page as string) || 1;
@@ -643,7 +642,6 @@ const DeliveryController = {
             const {id} = req.params;
             const {status} = req.body;
 
-            console.log("Status --> ", status);
 
             if(status != "rejected"){
                 return res.status(400).json({
