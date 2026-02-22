@@ -655,6 +655,7 @@ const EnumeratorController = {
                                 uid: benef.uid,
                                 server_id: duplicate.id,
                                 status: 'rejected',
+                                inital_stautus: duplicate.review_status,
                                 error: 'duplicate_family_code'
                             });
                             continue; // Move to the next beneficiary
