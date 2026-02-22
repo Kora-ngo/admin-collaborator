@@ -15,8 +15,6 @@ const AuthController = {
     // Login handler
     login: async (req, res) => {
         const { email, password } = req.body;
-        console.log("Email --> ", email);
-        console.log("Password --> ", password);
         try {
             // Validate input
             if (!email || !password) {
@@ -99,7 +97,6 @@ const AuthController = {
     // Register admin handler
     registerAdmin: async (req, res) => {
         const { users, organisation } = req.body;
-        // console.log("Subscription --> ", subscription);
         if (!users || !organisation) {
             return res.status(400).json({ type: 'error', message: 'missing_user_or_organisation_data' });
         }
@@ -192,18 +189,17 @@ const AuthController = {
                 subscriptionExpiresAt: endsAt.toISOString(),
             }, process.env.JWT_SECRET, { expiresIn: '30d' });
             await transaction.commit();
-            // Prepare feedback data
-            const feedbackData = {
-                userName: users.name,
-                userEmail: users.email,
-                role: 'admin',
-                organisation: organisation.name,
-                message: "A new user has been created",
-                replyEmail: newUser.email
-            };
-            console.log('📧 Sending feedback email:', feedbackData);
-            // Send email
-            await emailService.sendFeedbackEmail(feedbackData);
+            // // Prepare feedback data
+            // const feedbackData = {
+            //     userName: users.name,
+            //     userEmail: users.email,
+            //     role: 'admin',
+            //     organisation: organisation.name,
+            //     message: "A new user has been created",
+            //     replyEmail: newUser.email
+            // };
+            // // Send email
+            // await emailService.sendFeedbackEmail(feedbackData);
             res.status(201).json({
                 type: 'success',
                 message: 'admin_registered_successfully',
@@ -262,17 +258,13 @@ const AuthController = {
     },
     getCurrentUser: async (req, res) => {
         const authUser = req.user;
-        console.log("Auth User --> ", authUser);
         if (!authUser || !authUser.userId) {
             return res.status(401).json({ type: 'error', message: 'unauthorized' });
         }
-        console.log("Authriszed User");
         try {
-            console.log("Trying to find user");
             // 1. Fetch user (exclude password)
             const userModel = await UserModel.findByPk(authUser.userId);
             const user = userModel?.dataValues;
-            console.log("User find --> ", user);
             if (!user || user.status !== 'true') {
                 return res.status(403).json({
                     type: 'error',
@@ -282,7 +274,6 @@ const AuthController = {
             // 2. Fetch the single membership (using the one from JWT)
             const membershipData = await MembershipModel.findByPk(authUser.membershipId);
             const membership = membershipData?.dataValues;
-            console.log("membershipData");
             if (!membership || membership.status !== 'true') {
                 return res.status(403).json({
                     type: 'error',
@@ -608,7 +599,6 @@ const AuthController = {
                 updates.email = email.toLowerCase().trim();
             if (password)
                 updates.password = await bcrypt.hash(password, 10);
-            console.log('Updates --> ', updates);
             // Update user
             await UserModel.update(updates, {
                 where: { id: authUser.userId },
@@ -694,7 +684,6 @@ const AuthController = {
                 updates.country = country?.trim() || null;
             if (region !== undefined)
                 updates.region = region?.trim() || null;
-            console.log("Updates --> ", updates);
             // Update organisation
             await OrganisationModel.update(updates, {
                 where: { id: authUser.organizationId },

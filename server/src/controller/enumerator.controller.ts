@@ -639,7 +639,7 @@ const EnumeratorController = {
                         // 3. NEW RECORD FLOW - Check duplicate family_code
                         // ────────────────────────────────────
 
-                        const duplicate = await BeneficiaryModel.findOne({
+                        const duplicateData = await BeneficiaryModel.findOne({
                             where: {
                                 project_id: project_id,
                                 family_code: benef.family_code,
@@ -648,9 +648,12 @@ const EnumeratorController = {
                             transaction
                         });
 
+                        const duplicate = duplicateData?.dataValues
+
                         if (duplicate) {
                             beneficiaryResults.push({
                                 uid: benef.uid,
+                                server_id: duplicate.id,
                                 status: 'rejected',
                                 error: 'duplicate_family_code'
                             });
@@ -714,17 +717,22 @@ const EnumeratorController = {
                         });
 
 
-                        await logAudit({
-                            req,
-                            action: 'Synched',
-                            entityType: "beneficiary",
-                            entityId: newBeneficiary.id,
-                            platform: "mobile",
-                            metadata: {
-                                status: 'pending',
-                                length: beneficiaryResults.length
-                            }
-                        });
+                        try {
+                                await logAudit({
+                                    req,
+                                    action: 'Synched',
+                                    entityType: "beneficiary",
+                                    entityId: newBeneficiary.id,
+                                    platform: "mobile",
+                                    metadata: {
+                                        status: 'pending',
+                                        length: beneficiaryResults.length
+                                    }
+                                });
+                        } catch (auditError) {
+                            console.warn('Audit log failed (non-critical):', auditError);
+                            // ✅ Continue sync
+                        }
 
 
                     } catch (error: any) {
@@ -807,9 +815,12 @@ if (deliveries && deliveries.length > 0) {
                     transaction
                 });
 
-                if (!beneficiaryModel) {
+                const beneficary = beneficiaryModel?.dataValues;
+
+                if (!beneficary) {
                     deliveryResults.push({
                         uid: deliv.uid,
+                        server_id: beneficary!.id,
                         status: 'rejected',
                         error: 'beneficiary_not_found_or_not_approved'
                     });
@@ -879,16 +890,24 @@ if (deliveries && deliveries.length > 0) {
             });
 
 
-            await logAudit({
-                req,
-                action: 'Synched',
-                entityType: "delivery",
-                entityId: deliveryRecord.id,
-                metadata: {
-                    status: 'pending',
-                    length: deliveryResults.length
-                }
-            });
+            try {
+                await logAudit({
+                    req,
+                    action: 'Synched',
+                    entityType: "delivery",
+                    entityId: deliveryRecord.id,
+                    metadata: {
+                        status: 'pending',
+                        length: deliveryResults.length
+                    }
+                });
+            } catch (auditError) {
+                console.warn('Audit log failed (non-critical):', auditError);
+                // ✅ Continue sync
+            }
+
+
+
 
         } catch (error: any) {
             console.error(`Error processing delivery ${deliv.uid || 'unknown'}:`, error);

@@ -88,6 +88,8 @@ export const useProjectStore = create<ProjectState>((set) => ({
     },
 
     updateData: async (id: number, data: any, files?: File[]) => {
+            console.log("Project ID Update ---> ", id);
+            // console.log("Status updates ---> ", id);
         set({ loading: true });
         try {
             // Convert new files to base64 if present
@@ -134,6 +136,9 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
     toggleData: async (id, status) => {
         try {
+
+            console.log("Project ID ---> ", id);
+            console.log("Status ---> ", status);
             const response = await axiosInstance.put(`${endpoint}/toggle/${id}`, { status });
             return response.data;
         } catch (error: any) {

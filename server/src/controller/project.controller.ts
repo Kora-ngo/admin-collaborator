@@ -679,15 +679,15 @@ const ProjectController = {
         try {
             const { id } = req.params;
 
-            const membershipData = await MembershipModel.findByPk(id);
-            const membership = membershipData?.dataValues;
+            // const membershipData = await MembershipModel.findByPk(id);
+            // const membership = membershipData?.dataValues;
 
-            if (!membership) {
-                return res.status(404).json({
-                    type: 'error',
-                    message: 'record_not_found',
-                });
-            }
+            // if (!membership) {
+            //     return res.status(404).json({
+            //         type: 'error',
+            //         message: 'record_not_found',
+            //     });
+            // }
 
             const projectData = await ProjectModel.findByPk(id);
             const project = projectData?.dataValues;
