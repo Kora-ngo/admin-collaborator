@@ -2,6 +2,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import app from './app.js';
 import sequelize from './config/database.js';
+import SuperAdminModel from './models/SuperAdmin.js';
 
 
 // Loading the environment variable from .env 
@@ -30,6 +31,10 @@ const startServer = async () => {
         //     await sequelize.sync({ alter: true });
         //     console.log('Database synced with alter: true (development mode)');
         // }
+
+        console.log("SuperAdmin sync starting...");
+        await SuperAdminModel.sync({ alter: true });
+        console.log("SuperAdmin sync done ✅");
 
         // Then: start server
         app.listen(port, '0.0.0.0', () => {
