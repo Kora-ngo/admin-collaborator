@@ -32,10 +32,6 @@ const startServer = async () => {
         //     console.log('Database synced with alter: true (development mode)');
         // }
 
-        console.log("SuperAdmin sync starting...");
-        await SuperAdminModel.sync({ alter: true });
-        console.log("SuperAdmin sync done ✅");
-
         // Then: start server
         app.listen(port, '0.0.0.0', () => {
             console.log(`Environment: ${process.env.NODE_ENV}`);
