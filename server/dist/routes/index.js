@@ -13,6 +13,13 @@ import exportRoute from './export.route.js';
 import subscriptionRoute from './subscription.routes.js';
 import healthRoute from './health.route.js';
 import feedbackRoute from './feedback.routes.js';
+// Super -admin
+import superAdminRouter from './superAdmin.route.js';
+import adminOrganisationRouter from './admin/organisation.route.js';
+import adminMembershipRouter from './admin/membership.route.js';
+import adminProjectRouter from './admin/project.route.js';
+import auditLogRouter from './admin/auditLog.route.js';
+import subscriptionRouter from './admin/subscription.route.js';
 const router = Router();
 // Web-based
 router.use("/auth", authRouter);
@@ -29,7 +36,14 @@ router.use("/subscription", subscriptionRoute);
 router.use("/feedback", feedbackRoute);
 // Mobile-based
 router.use("/mobile", enumeratorRoute);
-// Stay away
+// Stay awake
 router.use("/health", healthRoute);
+// Super admin
+router.use("/super-admin", superAdminRouter);
+router.use('/super-admin/organisations', adminOrganisationRouter);
+router.use('/super-admin/memberships', adminMembershipRouter);
+router.use('/super-admin/projects', adminProjectRouter);
+router.use('/super-admin/audit-logs', auditLogRouter);
+router.use('/super-admin/subscriptions', subscriptionRouter);
 export default router;
 //# sourceMappingURL=index.js.map

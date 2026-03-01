@@ -12,6 +12,8 @@ import OrganisationModel from "./Organisation.js";
 import ProjectModel from "./project.js";
 import ProjectAssistanceModel from "./projectAssistance.js";
 import ProjectMemberModel from "./projectMember.js";
+import SubscriptionModel from "./Subscription.js";
+import Subscription from "./Subscription.js";
 import SyncBatchModel from "./SyncBatch.js";
 import UserModel from "./User.js";
 
@@ -53,6 +55,29 @@ OrganisationModel.hasMany(MembershipModel, {
 });
 
 
+// Organisation -- ORGANSIATIOn ---------------------------->
+OrganisationModel.belongsTo(UserModel, {
+    foreignKey: 'created_by',
+    as: 'owner',
+});
+
+// Organisation → Subscription
+OrganisationModel.hasOne(Subscription, {
+    foreignKey: 'organization_id',
+    as: 'subscription',
+});
+
+// Organisation → Projects
+OrganisationModel.hasMany(ProjectModel, {
+    foreignKey: 'organisation_id',
+    as: 'projects',
+});
+
+// Organisation → Assistances
+OrganisationModel.hasMany(AssistanceModel, {
+    foreignKey: 'organization_id',
+    as: 'assistances',
+});
 
 
 
@@ -102,6 +127,19 @@ AssistanceModel.hasMany(ProjectAssistanceModel, {
     as: 'projectAssistances'
 });
 
+
+
+// Project → Organisation ------------------------->
+ProjectModel.belongsTo(OrganisationModel, {
+    foreignKey: 'organisation_id',
+    as: 'organisation',
+});
+
+// Project → Creator (Membership)
+ProjectModel.belongsTo(MembershipModel, {
+    foreignKey: 'created_by',
+    as: 'creator',
+});
 
 
 
@@ -311,6 +349,12 @@ AuditLogModel.belongsTo(OrganisationModel, {
 OrganisationModel.hasMany(AuditLogModel, {
     foreignKey: 'organisation_id',
     as: 'auditLogs'
+});
+
+
+SubscriptionModel.belongsTo(OrganisationModel, {
+    foreignKey: 'organization_id',
+    as: 'organisation',
 });
 
 

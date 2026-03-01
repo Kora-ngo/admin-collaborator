@@ -783,12 +783,14 @@ if (deliveries && deliveries.length > 0) {
             // NEW: Check if this is an existing delivery (mobile sent server_id)
             if (deliv.server_id) {
 
-                const existing = await DeliveryModel.findByPk(deliv.server_id, { transaction });
+                const existingData = await DeliveryModel.findByPk(deliv.server_id, { transaction });
+
+                const existing = existingData?.dataValues;
 
                 if (existing) {
                     // ── UPDATE the existing delivery ──
 
-                    await existing.update({
+                    await existingData.update({
                         delivery_date: deliv.delivery_date,
                         notes: deliv.notes || null,
                         sync_source: 'mobile',
