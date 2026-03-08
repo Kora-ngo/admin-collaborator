@@ -41,8 +41,17 @@ function App() {
   // Step 2: While fetching user → show simple loading
   if (token && loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-lg">Loading...</div>
+      <div className="flex items-center justify-center h-screen bg-white">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute h-24 w-24 rounded-full border border-indigo-500/50 animate-[ping_2.4s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+          <div className="absolute h-20 w-20 rounded-full border border-indigo-400/20 animate-[ping_2.8s_cubic-bezier(0,0,0.2,1)_infinite] delay-300"></div>
+
+          <div className="flex gap-3">
+            <div className="h-4 w-4 rounded-full bg-indigo-400 animate-pulse"></div>
+            <div className="h-4 w-4 rounded-full bg-indigo-500 animate-pulse delay-150"></div>
+            <div className="h-4 w-4 rounded-full bg-indigo-600 animate-pulse delay-300"></div>
+          </div>
+        </div>
       </div>
     );
   }

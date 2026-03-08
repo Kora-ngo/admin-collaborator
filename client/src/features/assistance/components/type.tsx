@@ -17,7 +17,7 @@ const Type = () => {
     handleTypeSubmit,
   } = useAssistance();
 
-  const {fetchData} = useAssistanceTypeStore();
+  const {fetchData, loading} = useAssistanceTypeStore();
 
   useEffect(() => {
     if (toggle === 'view') {
@@ -56,10 +56,14 @@ const Type = () => {
             }
             <div className="border-t-1 border-gray-200">
                 <div className="my-4 flex gap-4 justify-end">
-                    <Button onClick={() => setToggle('view')} variant="ghost">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSubmit}>
+                    {
+                        toggle === "add" &&
+                        <Button onClick={() => setToggle('view')} variant="ghost">
+                            Cancel
+                        </Button>
+                    }
+
+                    <Button onClick={handleSubmit} loading={loading}>
                         {toggle === "view" ? "New" : "Save"}
                     </Button>
 

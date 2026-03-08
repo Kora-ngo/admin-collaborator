@@ -297,7 +297,7 @@ const OrganisationController = {
                 return res.status(404).json({ type: 'error', message: 'record_not_found' });
             }
 
-            const newStatus = organisation.status === 'true' ? 'false' : 'true';
+            const newStatus = organisation.dataValues.status === 'true' ? 'blocked' : 'true';
 
             await organisation.update({ status: newStatus, update_of: new Date() });
 

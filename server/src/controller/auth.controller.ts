@@ -66,6 +66,17 @@ const AuthController = {
            return res.status(404).json({ type: 'error', message: "user_not_found" });
         }
 
+        const organisationData = await OrganisationModel.findByPk(memberships?.organization_id);
+        const organisation = organisationData?.dataValues;
+
+        if(!organisation) {
+            return res.status(404).json({ type: 'error', message: "no_organization_membership" });
+        }
+
+        if(organisation.status === "blocked"){
+            return res.status(404).json({ type: 'warning', message: "organization_blocked" });
+        }
+
 
             // Fetch active subscription
             const subscriptionData = await SubscriptionModel.findOne({
@@ -383,6 +394,11 @@ const AuthController = {
                     type: 'error',
                     message: 'organization_not_found',
                 });
+                }
+
+
+                if(organisation.status === "blocked"){
+                    return res.status(404).json({ type: 'error', message: "organization_blocked" });
                 }
 
 

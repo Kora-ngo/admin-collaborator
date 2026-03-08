@@ -51,6 +51,9 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                                 id="email"
                                 type="email"
                                 placeholder="user@example.com"
+                                autoComplete="new-password" 
+                                autoSave="off"
+                                autoCorrect="off"
                                 value={form.email || ""}
                                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                                 hasError={errors.email}
@@ -62,6 +65,7 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                             <Input
                                 id="name"
                                 placeholder="John Doe"
+                                autoComplete="new-password" 
                                 value={form.name || ""}
                                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                                 hasError={errors.name}
@@ -73,6 +77,7 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                             <Input
                                 id="phone"
                                 placeholder="xxx-xxx-xxx"
+                                autoComplete="new-password" 
                                 value={form.phone || ""}
                                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                             />
@@ -83,6 +88,7 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                             <Input
                                 id="password"
                                 type="password"
+                                autoComplete="new-password" 
                                 placeholder=""
                                 value={form.password || ""}
                                 onChange={(e) => setForm({ ...form, password: e.target.value })}

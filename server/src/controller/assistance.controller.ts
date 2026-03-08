@@ -527,6 +527,7 @@ const AssistanceController = {
             // Check against existing records
             const existingTypes = await AssistanceTypeModel.findAll({
                 where: {
+                    organization_id: organizationId,
                     [Op.or]: validTypes.map(t => ({
                         name: t.name,
                         unit: t.unit,

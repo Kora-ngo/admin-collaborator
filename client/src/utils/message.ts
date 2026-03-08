@@ -28,6 +28,8 @@ export const messages: MessageItem[] = [
     { key: "no_organization_membership", message: "No organization linked to this account." },
     { key: "no_active_subscription", message: "No active subscription found." },
     {key: "session_expired", message: "Session Expired: This account was open in another tab"},
+    {key: "organization_blocked", message: "Your organisation has been blocked, for more information, contact the kora support team"},
+
 
 
     // Assistance Type ----------------------------------------------->
