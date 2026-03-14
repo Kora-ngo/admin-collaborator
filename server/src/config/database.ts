@@ -13,6 +13,9 @@ const sequelize = process.env.DATABASE_URL
         logging: false,
         dialectOptions: {
             connectTimeout: 60000,
+            ssl: {
+                rejectUnauthorized: false,
+            }
         }
       })
     : new Sequelize({
