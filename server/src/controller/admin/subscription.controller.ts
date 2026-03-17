@@ -216,7 +216,7 @@ const SubscriptionController = {
                 plan,
                 started_at,
                 ends_at,
-                status: 'active',
+                status: 'true',
             });
 
             return res.status(201).json({

@@ -194,7 +194,7 @@ const Families = () => {
 
                                 setLoadingViewId(row.id);
                                 try {
-                                openModal('view', row.id);
+                                 await openModal('view', row.id);
                                 } finally {
                                     setLoadingViewId(null);
                                 }
@@ -505,6 +505,7 @@ const Families = () => {
             }
             confirmText={reviewAction === 'approve' ? 'Approve' : 'Reject'}
             cancelText="Cancel"
+            loading={loading}
             onConfirm={async () => {
                 // Validate rejection note
                 if (reviewAction === 'reject' && reviewNote.trim() === "") {
@@ -514,8 +515,8 @@ const Families = () => {
             }}
             confirmButtonClass={
                 reviewAction === 'approve'
-                    ? "bg-green-500 hover:bg-green-400"
-                    : "bg-red-500 hover:bg-red-400"
+                    ? `${loading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
+                    : `${loading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
             }
         />
         </div>

@@ -43,6 +43,7 @@ const Deliveries = () => {
 
     const [modalMode, setModalMode] = useState<ModalMode>(null);
     const [reviewPopup, setReviewPopup] = useState(false);
+    const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const [deletePopup, setDeletePopup] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<{
         id: number;
@@ -215,8 +216,15 @@ const Deliveries = () => {
                 return (
                     <div className="flex items-center space-x-3">
                         <ActionIcon
-                            name="view"
-                            onClick={() => openModal(row.id)}
+                            name={loadingViewId === row.id ? "spinner" : "view"}
+                            onClick={ async () => {
+                                    setLoadingViewId(row.id);
+                                try{
+                                    await openModal(row.id)
+                                }finally {
+                                    setLoadingViewId(null);
+                                }
+                            }}
                         />
 
                         {isCollaborator && row.review_status === 'pending' && (
@@ -522,14 +530,15 @@ const Deliveries = () => {
                 }
                 confirmText={reviewAction === 'approve' ? 'Approve' : 'Reject'}
                 cancelText="Cancel"
+                loading={loading}
                 onConfirm={async () => {
                     if (reviewAction === 'reject' && reviewNote.trim() === "") return;
                     await handleConfirmReview();
                 }}
                 confirmButtonClass={
                     reviewAction === 'approve'
-                        ? "bg-green-500 hover:bg-green-400"
-                        : "bg-red-500 hover:bg-red-400"
+                        ? `${loading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
+                        : `${loading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
                 }
             />
         </div>

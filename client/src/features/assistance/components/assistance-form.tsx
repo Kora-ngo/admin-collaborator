@@ -15,7 +15,7 @@ interface AssistanceFormProps {
 
 const AssistanceForm = ({onSuccess, isOpen, id}: AssistanceFormProps) => {
 
-    const {form, setForm, errors, handleChange, handleSubmit, handleView, handleClearForm} = useAssis();
+    const {form, assitanceLoading, setForm, errors, handleChange, handleSubmit, handleView, handleClearForm} = useAssis();
     const {data} = useAssistanceTypeStore();
     const [selectedType, setSelectedType] = useState<number>(0);
 
@@ -97,7 +97,7 @@ const AssistanceForm = ({onSuccess, isOpen, id}: AssistanceFormProps) => {
 
             <div className="border-t-1 border-gray-200">
                 <div className="my-4 flex gap-4 justify-end">
-                    <Button onClick={handleValide}>
+                    <Button onClick={handleValide} loading={assitanceLoading}>
                         {id ? "Update" : "Save"}
                     </Button>
 

@@ -9,7 +9,7 @@ import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 
 export const useAssis = () => {
 
-    const {createData, getData, fetchOneData, filterData, updateData, toggleData} = useAssistanceStore();
+    const {loading, createData, getData, fetchOneData, filterData, updateData, toggleData} = useAssistanceStore();
     const showToast = useToastStore((state) => state.showToast);
     const typeData = useAssistanceTypeStore((state) => state.data);
 
@@ -189,6 +189,7 @@ export const useAssis = () => {
       setForm,
       errors,
       searchTerm,
+      assitanceLoading: loading,
 
       handleChange,
       handleSubmit,

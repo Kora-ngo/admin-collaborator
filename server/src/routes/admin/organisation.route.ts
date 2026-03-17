@@ -9,5 +9,6 @@ router.get('/filter',  verifySuperAdminToken, OrganisationController.filter);
 router.get('/:id',     verifySuperAdminToken, OrganisationController.fetchOne);
 router.get('/',        verifySuperAdminToken, OrganisationController.fetchAll);
 router.put('/toggle/:id', verifySuperAdminToken, OrganisationController.toggleStatus);
+router.delete('/:id', verifySuperAdminToken, OrganisationController.deleteOrganisation);
 
 export default router;
