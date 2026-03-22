@@ -493,18 +493,19 @@ const Projects = () => {
             </div>
 
             <Modal
-                className={projectModalMode ===  "view" ? "lg:w-[630px]" : ""}
+                className="lg:w-[630px]"
+                mobileHeight="large" 
                 isOpen={projectModalMode !== null}
                 onClose={closeProjectModal}
                 title={
                     projectModalMode === 'add' ? "New Project" :
-                        projectModalMode === 'view' ? "View Project" :
-                            "Edit Project"
+                    projectModalMode === 'view' ? "View Project" :
+                    "Edit Project"
                 }
                 children={
                     projectModalMode === 'add' || projectModalMode === 'edit' ? (
                         <ProjectForm
-                            id={selectedRecord != null ? selectedRecord!.id : undefined}
+                            id={selectedRecord?.id}
                             isOpen={projectModalMode !== null}
                             onSuccess={() => {
                                 getData();
@@ -514,7 +515,7 @@ const Projects = () => {
                     ) : (
                         <ProjectView
                             isOpen={projectModalMode === 'view'}
-                            id={selectedRecord != null ? selectedRecord!.id! : 0}
+                            id={selectedRecord?.id || 0}
                         />
                     )
                 }

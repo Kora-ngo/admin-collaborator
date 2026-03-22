@@ -112,7 +112,7 @@ const Settings = () => {
   return (
     <div className="flex flex-col h-full overflow-hidden bg-white">
       {/* MOBILE TAB BAR – horizontal scrollable (hidden on desktop) */}
-      <div className="sm:hidden border-b border-gray-200 bg-white sticky top-0 z-10">
+      <div className="md:hidden border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="overflow-x-auto scrollbar-hide px-4 py-3">
           <div className="flex space-x-2 min-w-max">
             {tabs.map((tab) => (
@@ -121,7 +121,7 @@ const Settings = () => {
                 onClick={() => setActiveTab(tab.key)}
                 className={activeTab === tab.key ? mobileActiveTab : mobileInactiveTab}
               >
-                <div className={activeTab === tab.key ? activeIcon : unActiveIcon}>
+                <div className={`${activeTab === tab.key ? "w-5 h-5" : "w-5 h-5"}`}>
                   {tab.icon}
                 </div>
                 {tab.label}
@@ -134,7 +134,7 @@ const Settings = () => {
       {/* MAIN LAYOUT */}
       <div className="flex flex-1 overflow-hidden">
         {/* DESKTOP SIDEBAR – hidden on mobile, exact original style */}
-        <div className="hidden sm:block w-64 border-r border-gray-200 bg-white overflow-y-auto">
+        <div className="hidden md:block w-64 border-r border-gray-200 bg-white overflow-y-auto">
           <ul className="space-y-3 p-4 font-medium">
             {tabs.map((tab) => (
               <li key={tab.key}>
@@ -154,7 +154,7 @@ const Settings = () => {
           </ul>
 
           {/* Branding footer – desktop only */}
-          <div className="mt-40 px-6">
+          <div className="mt-50 mb-10 px-6">
             <img src={brandImg} className="h-8 opacity-50" alt="Brand" />
             <p className="font-semibold text-sm ml-6 text-gray-300 mt-2">v1.0.1</p>
           </div>
@@ -162,8 +162,8 @@ const Settings = () => {
 
         {/* CONTENT AREA – full width on mobile, flex-1 on desktop */}
         <div className="flex-1 overflow-y-auto bg-gray-50/50">
-          <div className="p-4 sm:p-6 lg:p-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+          <div className="p-4 md:p-6 lg:p-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
               {getTabDisplayName(activeTab)}
             </h1>
 

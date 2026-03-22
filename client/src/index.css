@@ -51,3 +51,15 @@
 
 .animate-backdrop-in  { animation: backdrop-fade-in  220ms linear forwards; }
 .animate-backdrop-out { animation: backdrop-fade-out 180ms linear forwards; }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {display: none;}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {-ms-overflow-style: none; scrollbar-width: none;}
+
+@supports (padding: max(0px)) {
+  .modal-body {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
