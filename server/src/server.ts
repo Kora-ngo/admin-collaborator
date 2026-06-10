@@ -23,7 +23,7 @@ const startServer = async () => {
         //     console.log('Database synced with alter: true (development mode)');
         // }
 
-        // await sequelize.sync({ alter: true });
+        // await sequelize.sync({ force: true });
         // console.log('Tables synced ✅');
 
         // Then: start server

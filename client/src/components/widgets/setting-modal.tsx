@@ -102,22 +102,26 @@ const SettingModal: React.FC<SettingModalProps> = ({
       <div
         onClick={onClose}
         className={`absolute inset-0 transition-opacity duration-300 ease-in-out ${
-          isOpen ? "bg-gray-900/50 opacity-100 pointer-events-auto" : "opacity-0"
+          isOpen 
+            ? "bg-gray-900/50 opacity-100 pointer-events-auto" 
+            : "opacity-0 pointer-events-none" // ← add pointer-events-none when closed
         }`}
       />
 
-      {/* Desktop Modal (centered) - Hidden on mobile */}
-<div className="hidden md:flex md:items-center md:justify-center md:h-full md:p-4 pointer-events-none">
-        <div
-          role="dialog"
-          aria-modal="true"
-          ref={modalRef}
-          tabIndex={-1}
-          onClick={(e) => e.stopPropagation()}
-          className={`${widthClass} ${className} max-h-[90vh] transform transition-all duration-300 ease-out pointer-events-auto bg-white rounded-2xl shadow-2xl overflow-hidden ${
-            isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
-          }`}
-        >
+        {/* Desktop Modal (centered) - Hidden on mobile */}
+        <div className={`hidden md:flex md:items-center md:justify-center md:h-full md:p-4 pointer-events-none`}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            ref={modalRef}
+            tabIndex={-1}
+            onClick={(e) => e.stopPropagation()}
+            className={`${widthClass} ${className} max-h-[90vh] transform transition-all duration-300 ease-out bg-white rounded-2xl shadow-2xl overflow-hidden ${
+              isOpen 
+                ? "opacity-100 scale-100 pointer-events-auto" 
+                : "opacity-0 scale-95 pointer-events-none" // ← was always pointer-events-auto
+            }`}
+          >
           <div className="flex flex-col max-h-[90vh]">
             {/* Header */}
             {title && (
@@ -160,7 +164,9 @@ const SettingModal: React.FC<SettingModalProps> = ({
           transform: isOpen ? `translateY(${dragY}px)` : 'translateY(100%)',
           transition: isDragging ? 'none' : 'transform 300ms ease-out',
         }}
-        className="md:hidden fixed left-0 right-0 bottom-0 h-[95vh] pointer-events-auto bg-white rounded-t-3xl shadow-2xl flex flex-col"
+        className={`md:hidden fixed left-0 right-0 bottom-0 h-[95vh] bg-white rounded-t-3xl shadow-2xl flex flex-col ${
+          isOpen ? 'pointer-events-auto' : 'pointer-events-none' // ← add this
+        }`}
       >
         {/* Drag Handle */}
         <div className="flex-shrink-0 flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">

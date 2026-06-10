@@ -1,6 +1,8 @@
 import { Button } from "../../../components/widgets/button";
+import CountrySelect from "../../../components/widgets/country-select";
 import { Input } from "../../../components/widgets/input";
 import { Label } from "../../../components/widgets/label";
+import PhoneInput from "../../../components/widgets/phone-input";
 import { useAuthStore } from "../store/authStore";
 // import { Textarea } from "../../../components/widgets/textarea";
 // import { useAdminResgister } from "../hooks/useAdminResgister";
@@ -25,12 +27,12 @@ const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrg
             <div className="max-w-2xl w-full mx-auto">
                 <h3 className="text-3xl font-bold mb-4">Organisation Details</h3>
                 <p className="text-gray-400 mb-8">
-                    Provide your organisation information to securely create your admin account.
+                    <b>Tell us about your organization.</b> These details will help us set up your Kora workspace, appear in reports, and allow your team to identify the organization they are working under.
                 </p>
 
                 <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Organisation Name */}
-                    <div className="grid gap-2">
+                    <div className="grid gap-2 md:col-span-2">
                         <Label htmlFor="name">Organisation Name</Label>
                         <Input
                             id="name"
@@ -43,7 +45,6 @@ const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrg
                             onChange={handleOrgChange}
                         />
                     </div>
-                    <div></div>
 
                     <div className="grid gap-2">
                         <Label htmlFor="email">Organisation's Email</Label>
@@ -61,30 +62,29 @@ const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrg
 
                     <div className="grid gap-2">
                         <Label htmlFor="phone" required={false}>Organisation's Phone</Label>
-                        <Input
-                            prefix="+237"
-                            id="phone"
-                            maxLength={50}
-                            name="phone"
-                            type="text"
-                            placeholder="XXX - XXX - XXX"
-                            // prefixElement={<label className="text-primary">(+237) |</label>}
+                        <PhoneInput
                             value={orgForm.phone}
-                            onChange={handleOrgChange}
+                            hasError={!!orgErrors.phone}
+                            defaultCountryCode="CM"
+                            onChange={(fullPhone) =>
+                            handleOrgChange({
+                                target: { name: "phone", value: fullPhone },
+                            } as React.ChangeEvent<HTMLInputElement>)
+                            }
                         />
                     </div>
                     
 
                     <div className="grid gap-2">
                         <Label htmlFor="country" required={false}>Country</Label>
-                        <Input
-                            id="country"
-                            maxLength={50}
-                            name="country"
-                            type="text"
-                            placeholder="Organisation's Country"
+                        <CountrySelect
                             value={orgForm.country}
-                            onChange={handleOrgChange}
+                            hasError={!!orgErrors.country}
+                            onChange={(countryName) =>
+                            handleOrgChange({
+                                target: { name: "country", value: countryName },
+                            } as React.ChangeEvent<HTMLInputElement>)
+                            }
                         />
                     </div>
 

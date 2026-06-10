@@ -16,7 +16,7 @@ const startServer = async () => {
         //     await sequelize.sync({ alter: true });
         //     console.log('Database synced with alter: true (development mode)');
         // }
-        // await sequelize.sync({ alter: true });
+        // await sequelize.sync({ force: true });
         // console.log('Tables synced ✅');
         // Then: start server
         app.listen(port, '0.0.0.0', () => {
