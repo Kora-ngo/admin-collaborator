@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useToastStore } from "../../../store/toastStore";
 import type { Membership } from "../../../types/membership";
 import { useMembershipStore } from "../store/membershipStore"
@@ -11,6 +11,7 @@ export const useMembership = () => {
     const {getData, filterData, updateData, createData, fetchOneData, toggleData} = useMembershipStore();
     const showToast = useToastStore((state) => state.showToast);
     const {organisation} = useAuthStore();
+    const { checkEmail } = useMembershipStore();
 
     const [form, setForm] = useState<Partial<Membership & {
         email?: string;
@@ -46,6 +47,47 @@ export const useMembership = () => {
 
     const handleSearch = (value: string) => {
         setSearchTerm(value);
+    };
+
+    // Email check state
+    const [emailStatus, setEmailStatus] = useState<{
+        type: "success" | "error" | "warning" | "info";
+        message: string;
+    } | null>(null);
+    const [emailChecking, setEmailChecking] = useState(false);
+    const emailDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleEmailChange = (value: string) => {
+        setForm((prev) => ({ ...prev, email: value }));
+        setEmailStatus(null);
+
+        // Clear previous debounce
+        if (emailDebounceRef.current) clearTimeout(emailDebounceRef.current);
+
+        // Basic email format check
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) return; // Don't check invalid format
+
+        // Debounce the API call
+        emailDebounceRef.current = setTimeout(async () => {
+            setEmailChecking(true);
+            try {
+                console.log("EMAIL CHECKED --> ", value);
+                const result = await checkEmail(value.trim().toLowerCase());
+
+                console.log("Results --> ", result);
+
+
+                const resultType = result.type as any;
+
+                setEmailStatus({
+                    type: resultType,
+                    message: result.message,
+                });
+            } finally {
+                setEmailChecking(false);
+            }
+        }, 600);
     };
 
 
@@ -109,6 +151,7 @@ export const useMembership = () => {
             email: false,
             password: false
         });
+        setEmailStatus(null);
     };
 
 
@@ -191,6 +234,10 @@ export const useMembership = () => {
         handleStatusChange,
         handleRoleChange,
         handleDatePresetChange,
+
+        emailStatus,
+        emailChecking,
+        handleEmailChange,
 
         handleSubmit,
         handleView,

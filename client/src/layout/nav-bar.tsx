@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuthStore } from "../features/auth/store/authStore";
+import InfoModal from "../components/widgets/info-modal";
 
 interface NavbarProps {
     toggleSidebar: () => void;
@@ -10,6 +11,7 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
         const {user, role} = useAuthStore();
 
         const location = useLocation();
+        const [isInfoOpen, setIsInfoOpen] = useState(false);
 
 
         const titles: Record<string, string> = {
@@ -40,7 +42,8 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
     }, []);
 
     return ( 
-            <header className="antialiased ">
+           <>
+             <header className="antialiased ">
                 <nav className="px-4 lg:px-6 py-4">
                     <div className="flex flex-wrap justify-between items-center">
                         <div className="flex justify-start items-center">
@@ -71,6 +74,19 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
                         </div>
 
                         <div className="relative flex items-center gap-3" ref={dropdownRef}>
+
+                        {/* Info Button */}
+                        <button
+                            onClick={() => setIsInfoOpen(true)}
+                            title="Platform Guide"
+                            className="w-9 h-9 rounded-full border-2 border-primary/30 bg-primary/5 flex items-center justify-center text-primary hover:bg-primary/10 hover:border-primary/50 transition-all"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                            </svg>
+                        </button>
+
+
                         {/* Profile Circle */}
                         <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-lg uppercase cursor-pointer">
                             {user!.name ? user!.name.charAt(0) : "A"}
@@ -86,6 +102,15 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
                     </div>
                 </nav>
             </header>
+
+                {/* Info Modal - manually triggered, dismissible */}
+                <InfoModal
+                    isOpen={isInfoOpen}
+                    onClose={() => setIsInfoOpen(false)}
+                    dismissible={true}
+                />
+
+           </>
      );
 }
  

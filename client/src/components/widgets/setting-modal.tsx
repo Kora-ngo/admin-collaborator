@@ -104,7 +104,7 @@ const SettingModal: React.FC<SettingModalProps> = ({
         className={`absolute inset-0 transition-opacity duration-300 ease-in-out ${
           isOpen 
             ? "bg-gray-900/50 opacity-100 pointer-events-auto" 
-            : "opacity-0 pointer-events-none" // ← add pointer-events-none when closed
+            : "opacity-0 pointer-events-none"
         }`}
       />
 
@@ -119,7 +119,7 @@ const SettingModal: React.FC<SettingModalProps> = ({
             className={`${widthClass} ${className} max-h-[90vh] transform transition-all duration-300 ease-out bg-white rounded-2xl shadow-2xl overflow-hidden ${
               isOpen 
                 ? "opacity-100 scale-100 pointer-events-auto" 
-                : "opacity-0 scale-95 pointer-events-none" // ← was always pointer-events-auto
+                : "opacity-0 scale-95 pointer-events-none" 
             }`}
           >
           <div className="flex flex-col max-h-[90vh]">
@@ -165,7 +165,7 @@ const SettingModal: React.FC<SettingModalProps> = ({
           transition: isDragging ? 'none' : 'transform 300ms ease-out',
         }}
         className={`md:hidden fixed left-0 right-0 bottom-0 h-[95vh] bg-white rounded-t-3xl shadow-2xl flex flex-col ${
-          isOpen ? 'pointer-events-auto' : 'pointer-events-none' // ← add this
+          isOpen ? 'pointer-events-auto' : 'pointer-events-none' 
         }`}
       >
         {/* Drag Handle */}

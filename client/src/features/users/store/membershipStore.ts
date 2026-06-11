@@ -14,6 +14,7 @@ interface MembershipState {
     filterData: (page: number, filters: any) => Promise<any>
     updateData: (id: number, data: Membership) => Promise<any>
     toggleData: (id: number, status: string) => Promise<any>
+    checkEmail: (email: string) => Promise<{ type: string; message: string }>
 }
 
 const endpoint = "membership";
@@ -139,6 +140,18 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     }
     },
 
+    checkEmail: async (email: string) => {
+        try {
+            const response = await axiosInstance.get(`${endpoint}/check-email`, {
+                params: { email },
+            });
+            console.log("Repsonse --> ", response);
+            return response.data;
+        } catch (error: any) {
+            const errorToast = handleApiError(error);
+            return errorToast;
+        }
+    },
 
 }));
 

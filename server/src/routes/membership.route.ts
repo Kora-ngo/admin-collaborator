@@ -11,6 +11,8 @@ router.get('/search', verifyToken, MembershipController.search);
 
 router.get('/filter', verifyToken, MembershipController.filter);
 
+router.get("/check-email", verifyToken, requireRole('admin'), MembershipController.checkMemberEmail);
+
 router.get('/:id', verifyToken, MembershipController.fetchOne);
 
 router.get('/', verifyToken, MembershipController.fetchAll);

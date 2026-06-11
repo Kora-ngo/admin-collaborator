@@ -183,7 +183,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-1.5 px-3 py-2.5 border-r border-gray-200 hover:bg-gray-50 transition-colors rounded-l-md flex-shrink-0"
+          className="flex items-center gap-1 px-3 py-2.5 border-r border-gray-200 hover:bg-gray-50 transition-colors rounded-l-md flex-shrink-0"
         >
           <span className="text-lg leading-none">{selectedCountry.flag}</span>
           <span className="text-sm font-medium text-gray-700">{selectedCountry.dial}</span>

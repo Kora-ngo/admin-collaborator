@@ -25,7 +25,7 @@ const sequelize = process.env.DATABASE_URL
         username: process.env.DB_USER || 'root',
         password: process.env.DB_PASSWORD || '',
         database: process.env.DB_NAME || 'kora',
-        logging: process.env.NODE_ENV === 'development' ? console.log : false,
+        logging: process.env.NODE_ENV === 'development' ? (msg) => { if (msg.includes("ERROR")) console.error(msg); }: false,
       });
 
 export default sequelize;

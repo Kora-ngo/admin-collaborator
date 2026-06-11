@@ -8,6 +8,7 @@ import { generateUniqueUid } from "../utils/generateUniqueUid.js";
 import bcrypt from "bcryptjs";
 import { logAudit } from "../utils/auditLogger.js";
 import { validateMemberDeletion } from "../utils/validateMemberDeletion.js";
+import sequelize from "../config/database.js";
 
 const MembershipController = {
 
@@ -220,146 +221,155 @@ const MembershipController = {
 
     create: async (req: Request, res: Response) => {
         try {
+            const body = req.body;
 
-        const body = req.body;
-
-        // Required: email, organization_id, role
-        if (!body.name || !body.email || !body.organization_id || !body.role) {
-            return res.status(400).json({
-                type: 'error',
-                message: 'fields_required',
-            });
-        }
-
-        const email = body.email.trim().toLowerCase();
-
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if(!emailRegex.test(email)){
-           return  res.status(400).json({ type: 'error', message: "invalid_email_format" });
-        }
-
-        // Validate role
-        const allowedRoles = ['admin', 'collaborator', 'enumerator'];
-        if (!allowedRoles.includes(body.role)) {
-            return res.status(400).json({
-                type: 'error',
-                message: 'invalid_role',
-            });
-        }
-
-        // Step 1: Find user by email
-        let userData = await UserModel.findOne({
-            where: { email },
-        });
-
-        let user = userData?.dataValues;
-
-        let userId: number;
-
-        // Step 2: If user doesn't exist → create new user
-        if (!user) {
-            const userUid = await generateUniqueUid('users');
-
-            const name = body.name?.trim();
-            const phone = body.phone?.trim() || null;
-
-            // Password: use provided or generate a temporary one (you can adjust policy later)
-            const password = body.password; // fallback for MVP
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            user = await UserModel.create({
-                uid: userUid,
-                name,
-                email,
-                phone,
-                password: hashedPassword,
-                status: 'true',
-                date_of: new Date(),
-                update_of: new Date(),
-            });
-
-        }
-
-        userId = user.id;
-
-
-
-        // Step 3: Check if this user already has an active membership in this organization
-        const existingMembership = await MembershipModel.findOne({
-            where: {
-                user_id: userId,
-                organization_id: body.organization_id,
-                status: 'true',
-            },
-        });
-
-
-        if (existingMembership) {
-            return res.status(409).json({
-                type: 'error',
-                message: 'user_already_in_organization',
-            });
-        }
-
-
-        // Step 4: Create the membership
-        const newMembership = await MembershipModel.create({
-            user_id: userId,
-            organization_id: body.organization_id,
-            role: body.role,
-            status: 'true',
-            date_of: new Date(),
-        });
-
-
-        // Step 5: Return full details
-        const membershipWithDetails = await MembershipModel.findByPk(newMembership.id, {
-            include: [
-                { model: UserModel, as: 'user', attributes: ['id', 'name', 'email', 'phone'] },
-                { model: OrganisationModel, as: 'organization', attributes: ['id', 'name'] },
-            ],
-        });
-
-
-        await logAudit({
-            req,
-            action: "Create",
-            entityType: "user",
-            entityId: newMembership.id,
-            metadata: {
-                name: body.name,
-                email: body.email,
-                role: body.role,
-                status: "true"
+            if (!body.name || !body.email || !body.organization_id || !body.role) {
+                return res.status(400).json({ type: 'error', message: 'fields_required' });
             }
-        });
 
-        res.status(201).json({
-            type: 'success',
-            message: 'done',
-            data: membershipWithDetails,
-        });
+            const email = body.email.trim().toLowerCase();
 
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({ type: 'error', message: "invalid_email_format" });
+            }
 
-        }catch (error: any) {
-                console.error("Membership: Create error:", error);
+            const allowedRoles = ['admin', 'collaborator', 'enumerator'];
+            if (!allowedRoles.includes(body.role)) {
+                return res.status(400).json({ type: 'error', message: 'invalid_role' });
+            }
 
-                if (error.name === 'SequelizeUniqueConstraintError') {
-                    return res.status(409).json({
-                        type: 'error',
-                        message: 'record_already_exists',
+            // ── Start transaction ──────────────────────────────────────
+            const result = await sequelize.transaction(async (t) => {
+
+                // Step 1: Find existing user
+                const userData = await UserModel.findOne({
+                    where: { email },
+                    transaction: t,
+                });
+
+                if (userData) {
+                    const existingMembership = await MembershipModel.findOne({
+                        where: {
+                            user_id: userData.dataValues.id,
+                            organization_id: body.organization_id,
+                        },
+                        attributes: ["id", "status"],
+                        transaction: t,
                     });
+
+                    // Active membership → hard block
+                    if (existingMembership?.dataValues.status === "true") {
+                        throw { statusCode: 409, type: "error", message: "user_already_in_organization" };
+                    }
+
+                    // Inactive/deleted → delete both cleanly inside the transaction
+                    if (
+                        existingMembership?.dataValues.status === "false" ||
+                        existingMembership?.dataValues.status === "deleted"
+                    ) {
+                        await MembershipModel.destroy({
+                            where: { id: existingMembership.dataValues.id },
+                            transaction: t,
+                        });
+
+                        await UserModel.destroy({
+                            where: { id: userData.dataValues.id },
+                            transaction: t,
+                        });
+                    }
                 }
 
-                res.status(500).json({
-                    type: 'error',
-                    message: 'server_error',
+                // Step 2: Create fresh user (always at this point)
+                const userUid = await generateUniqueUid('users');
+                const hashedPassword = await bcrypt.hash(body.password, 10);
+
+                const newUser = await UserModel.create({
+                    uid: userUid,
+                    name: body.name.trim(),
+                    email,
+                    phone: body.phone?.trim() || null,
+                    password: hashedPassword,
+                    status: 'true',
+                    date_of: new Date(),
+                    update_of: new Date(),
+                }, { transaction: t });
+
+                const userId = (newUser as any).id as number;
+
+
+                console.log("New --> ", newUser);
+
+
+                console.log("Oragnisation --> ", body.organization_id);
+                console.log("Role --> ", body.role);
+                console.log("User ID --> ", userId);
+
+
+                // Step 3: Create membership
+                const newMembership = await MembershipModel.create({
+                    user_id: userId,
+                    organization_id: body.organization_id,
+                    role: body.role,
+                    status: 'true',
+                    date_of: new Date(),
+                }, { transaction: t });
+
+                // Step 4: Fetch full details (still inside transaction)
+                const membershipWithDetails = await MembershipModel.findByPk(
+                    newMembership.dataValues.id,
+                    {
+                        include: [
+                            { model: UserModel, as: 'user', attributes: ['id', 'name', 'email', 'phone'] },
+                            { model: OrganisationModel, as: 'organization', attributes: ['id', 'name'] },
+                        ],
+                        transaction: t,
+                    }
+                );
+
+                return { newMembership, membershipWithDetails };
+            });
+            // ── Transaction committed ──────────────────────────────────
+
+            // Audit log outside transaction (non-critical, no rollback needed)
+            await logAudit({
+                req,
+                action: "Create",
+                entityType: "user",
+                entityId: result.newMembership.dataValues.id,
+                metadata: {
+                    name: body.name,
+                    email: body.email,
+                    role: body.role,
+                    status: "true",
+                },
+            });
+
+            return res.status(201).json({
+                type: 'success',
+                message: 'done',
+                data: result.membershipWithDetails,
+            });
+
+        } catch (error: any) {
+            console.error("Membership: Create error:", error);
+
+            // Known business logic errors thrown inside transaction
+            if (error.statusCode) {
+                return res.status(error.statusCode).json({
+                    type: error.type,
+                    message: error.message,
                 });
-    }
+            }
 
+            if (error.name === 'SequelizeUniqueConstraintError') {
+                return res.status(409).json({ type: 'error', message: 'record_already_exists' });
+            }
 
+            return res.status(500).json({ type: 'error', message: 'server_error' });
+        }
     },
+
 
     update: async (req: Request, res: Response) => {
         try{
@@ -776,6 +786,105 @@ const MembershipController = {
             res.status(500).json({ type: 'error', message: 'server_error' });
         }
     },
+
+    checkMemberEmail: async (req: Request, res: Response) => {
+        try {
+            const { email } = req.query;
+
+            console.log("EMAIL ---> ", email);
+
+            if (!email || typeof email !== "string") {
+                return res.status(400).json({
+                    type: "error",
+                    message: "email_required",
+                });
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({ 
+                    type: "error", 
+                    message: "invalid_email_format" 
+                });
+            }
+
+            const user = await UserModel.findOne({
+                where: { email },
+                attributes: ["id", "email", "status"],
+            });
+
+            if (!user) {
+                return res.status(200).json({
+                    type: "success",
+                    message: "email_available",
+                });
+            }
+
+            console.log("USER FOUND ---> ", user?.dataValues);
+
+
+            // User exists and is active → check their membership status
+            if (user) {
+                const membership = await MembershipModel.findOne({
+                    where: {
+                        user_id: user.dataValues.id,
+                    },
+                    attributes: ["id", "status", "organization_id"],
+                });
+
+                console.log("MEMBER FOUND ---> ", membership?.dataValues);
+
+                // No membership at all → treat as available
+                if (!membership) {
+                    return res.status(200).json({
+                        type: "success",
+                        message: "email_available",
+                    });
+                }
+
+                // Membership is active
+                if (membership.dataValues.status === "true") {
+                    return res.status(200).json({
+                        type: "error",
+                        message: "email_already_exists",
+                    });
+                }
+
+                // Membership is inactive/deleted → check if it belongs to THIS org
+                if (membership.dataValues.status === "false" || membership.dataValues.status === "deleted") {
+                    const sameOrg = membership.dataValues.organization_id === req.user?.organizationId;
+
+                    console.log("Membership id ---> ", membership.dataValues.organization_id);
+                    console.log("Organisation id ---> ", req.user?.organizationId);
+
+                    if (sameOrg) {
+                        return res.status(200).json({
+                            type: "warning",
+                            message: "email_exists_deleted",
+                        });
+                    }
+
+                    // Belongs to another org → reveal nothing
+                    return res.status(200).json({
+                        type: "error",
+                        message: "email_already_exists",
+                    });
+                }
+            }
+
+            // Fallback
+            return res.status(200).json({
+                type: "error",
+                message: "email_already_exists",
+            });
+        } catch (error) {
+            console.error("checkMemberEmail error:", error);
+            return res.status(500).json({
+                type: "error",
+                message: "server_error",
+            });
+        }
+    }
 
     };
 
