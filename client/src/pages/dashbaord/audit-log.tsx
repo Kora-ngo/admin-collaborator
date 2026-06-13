@@ -55,10 +55,11 @@ const AuditLogs = () => {
     }, [getData]);
 
     const getActionColor = (action: string) => {
-        if (action.includes('created') || action.includes('login')) return 'green';
-        if (action.includes('approved')) return 'blue';
-        if (action.includes('rejected') || action.includes('deleted')) return 'red';
-        if (action.includes('updated') || action.includes('edited')) return 'yellow';
+        if (action.includes('created') || action.includes('login') || action.includes('Synched')) return 'blue';
+        if (action.includes('approved')) return 'green';
+        if (action.includes('rejected') || action.includes('Deleted')) return 'red';
+        if (action.includes('Blocked')) return 'yellow';
+        if (action.includes('updated') || action.includes('edited') || action.includes('Enabled')) return 'purple';
         return 'gray';
     };
 
@@ -110,7 +111,7 @@ const AuditLogs = () => {
             label: "Module",
             visibleOn: "md",
             render: (row) => (
-                <span>{row.entity_type.toString().toUpperCase()}</span>
+                <span>{row.entity_type == "user" ? "MEMBER" : row.entity_type.toString().toUpperCase()}</span>
             )
         },
         {
@@ -170,12 +171,12 @@ const AuditLogs = () => {
                                             <SelectInput
                                                 options={[
                                                     { label: "All Entities", value: "" },
-                                                    { label: "Auth", value: "auth" },
-                                                    { label: "Beneficiary", value: "beneficiary" },
-                                                    { label: "Delivery", value: "delivery" },
-                                                    { label: "Project", value: "project" },
-                                                    { label: "User", value: "user" },
-                                                    { label: "Sync", value: "sync" }
+                                                    // { label: "Auth", value: "auth" },
+                                                    { label: "Beneficiaries", value: "beneficiary" },
+                                                    { label: "Deliveries", value: "delivery" },
+                                                    // { label: "Project", value: "project" },
+                                                    { label: "Members", value: "user" },
+                                                    // { label: "Synched", value: "Synched" }
                                                 ]}
                                                 value={filters.entityType}
                                                 onChange={(e) => handleEntityTypeChange(e.target.value)}

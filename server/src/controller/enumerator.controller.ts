@@ -100,6 +100,7 @@ const EnumeratorController = {
                     req,
                     action: "Logged In",
                     entityType: "auth",
+                    platform: "mobile",
                     entityId: userExist.id,
                     metadata: {
                         name: userExist?.name,
@@ -153,10 +154,24 @@ const EnumeratorController = {
                 const membershipData = await MembershipModel.findByPk(authUser.membershipId);
                 const membership = membershipData?.dataValues;
 
-                if (!membership || membership.status !== 'true') {
+                if (membership!.status == 'blocked') {
                     return res.status(403).json({
                         type: 'error',
                         message: 'invalid_or_inactive_membership',
+                    });
+                }
+
+                if (!membership || membership.status == 'false') {
+                    return res.status(403).json({
+                        type: 'error',
+                        message: 'user_inactive_or_not_found',
+                    });
+                }
+
+                if (!membership || membership.status != 'true') {
+                    return res.status(403).json({
+                        type: 'error',
+                        message: 'unauthorized',
                     });
                 }
 
@@ -898,6 +913,7 @@ if (deliveries && deliveries.length > 0) {
                     req,
                     action: 'Synched',
                     entityType: "delivery",
+                    platform: "web",
                     entityId: deliveryRecord.id,
                     metadata: {
                         status: 'pending',

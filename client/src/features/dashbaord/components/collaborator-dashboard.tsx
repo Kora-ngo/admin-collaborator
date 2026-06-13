@@ -18,7 +18,7 @@ const CollaboratorDashboard = () => {
         getValidationQueue
     } = useDashboardStore();
 
-    const [activeTab, setActiveTab] = useState<'beneficiaries' | 'deliveries'>('beneficiaries');
+    const [activeTab, setActiveTab] = useState<'Families' | 'deliveries'>('Families');
 
     useEffect(() => {
         getCollaboratorMetrics();
@@ -93,7 +93,7 @@ const CollaboratorDashboard = () => {
         },
         {
             key: "beneficiary",
-            label: "Beneficiary",
+            label: "Families",
             visibleOn: "always",
             render: (row) => row.beneficiary?.head_name || "-"
         },
@@ -164,7 +164,7 @@ const CollaboratorDashboard = () => {
                 <div className="bg-gray-100 rounded-lg p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-semibold text-gray-700">Pending Beneficiaries</p>
+                            <p className="text-sm font-semibold text-gray-700">Pending Families</p>
                             <p className="text-3xl font-bold text-gray-900 mt-2">
                                 {collaboratorMetrics?.pendingBeneficiaries || 0}
                             </p>
@@ -212,14 +212,14 @@ const CollaboratorDashboard = () => {
                 {/* Tabs */}
                 <div className="flex border-b border-gray-200 mb-4">
                     <button
-                        onClick={() => setActiveTab('beneficiaries')}
+                        onClick={() => setActiveTab('Families')}
                         className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
-                            activeTab === 'beneficiaries'
+                            activeTab === 'Families'
                                 ? 'border-primary text-primary'
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                        Beneficiaries ({validationQueue?.pendingBeneficiaries?.length || 0})
+                        Families ({validationQueue?.pendingBeneficiaries?.length || 0})
                     </button>
                     <button
                         onClick={() => setActiveTab('deliveries')}
@@ -234,11 +234,11 @@ const CollaboratorDashboard = () => {
                 </div>
 
                 {/* Tab Content */}
-                {activeTab === 'beneficiaries' ? (
+                {activeTab === 'Families' ? (
                     validationQueue?.pendingBeneficiaries?.length > 0 ? (
                         <Table columns={beneficiaryColumns} data={validationQueue.pendingBeneficiaries} />
                     ) : (
-                        <p className="text-gray-500 text-center py-8">No pending beneficiaries</p>
+                        <p className="text-gray-500 text-center py-8">No pending Family</p>
                     )
                 ) : (
                     validationQueue?.pendingDeliveries?.length > 0 ? (

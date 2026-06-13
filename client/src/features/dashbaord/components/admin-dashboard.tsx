@@ -27,8 +27,8 @@ const AdminDashbaord = () => {
 
     const projectColumns: (TableColumn | null)[] = [
         { key: "name", label: "Project Name", visibleOn: "always" },
-        { key: "familiesRegistered", label: "Beneficaries", visibleOn: "always" },
-        { key: "deliveriesCompleted", label: "Beneficaries", visibleOn: "always" },
+        { key: "familiesRegistered", label: "Families", visibleOn: "always" },
+        { key: "deliveriesCompleted", label: "Deliveries", visibleOn: "always" },
         { key: "daysLeft", label: "Days Lefts", visibleOn: "sm", render: (row) => 
              {
                 return  <>
