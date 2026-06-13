@@ -5,7 +5,6 @@ import welcome_validate from "../../assets/info/validate.png";
 
 import welcome_enum from "../../assets/info/mobiles.png";
 import welcome_check from "../../assets/info/checklist.png";
-import welcome_system from "../../assets/info/system.png";
 
 
 interface Slide {
