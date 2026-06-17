@@ -236,7 +236,7 @@ const InfoModal: React.FC<InfoModalProps> = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           style={{ transform: `translateY(${dragY}px)`, transition: isDragging ? "none" : "transform 300ms ease-out" }}
-          className="md:hidden fixed left-0 right-0 bottom-0 h-[58vh] z-[62] bg-white rounded-t-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300"
+          className="md:hidden fixed left-0 right-0 bottom-0 h-[92vh] z-[62] bg-white rounded-t-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300"
         >
         {/* Drag handle (only show if dismissible) */}
         {dismissible && (
