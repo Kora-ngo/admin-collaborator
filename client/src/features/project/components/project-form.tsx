@@ -9,7 +9,7 @@ import { useAssitanceSelect } from "../hooks/useAssitanceSelect";
 import { useCollaboratorSelect } from "../hooks/useCollaboratorSelect";
 import { useProject } from "../hooks/useProject";
 import { useProjectImage } from "../hooks/useProjectImage";
-import { getFileIcon } from "../../../utils/fileIcons";
+// import { getFileIcon } from "../../../utils/fileIcons";
 import { useProjectStore } from "../store/projectStore";
 
 interface ProjectFormProps {
@@ -53,21 +53,21 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
     } = useProject();
     
     const {
-        isDragging, 
+        // isDragging, 
         uploadedFiles, 
         setUploadedFiles, 
-        handleFileChange, 
-        handleDragOver, 
-        handleDragLeave, 
-        handleDrop, 
-        handleRemoveFile, 
-        formatFileSize 
+        // handleFileChange, 
+        // handleDragOver, 
+        // handleDragLeave, 
+        // handleDrop, 
+        // handleRemoveFile, 
+        // formatFileSize 
     } = useProjectImage();
     
     const {loading} = useProjectStore();
 
     // State for managing existing media files (for edit mode)
-    const [existingMedia, setExistingMedia] = useState<any[]>([]);
+    // const [existingMedia, setExistingMedia] = useState<any[]>([]);
     const [mediaToDelete, setMediaToDelete] = useState<number[]>([]);
 
     // State for locked items (computed from project data)
@@ -78,7 +78,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
         const handleFetch = async () => {
             if (!id) {
                 // Reset states for add mode
-                setExistingMedia([]);
+                // setExistingMedia([]);
                 setMediaToDelete([]);
                 setLockedEnumeratorIds([]);
                 setLockedAssistanceIds([]);
@@ -91,9 +91,9 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
             const projectData = await handleView(id);
 
             // Set existing media files
-            if (projectData.mediaLinks) {
-                setExistingMedia(projectData.mediaLinks);
-            }
+            // if (projectData.mediaLinks) {
+            //     setExistingMedia(projectData.mediaLinks);
+            // }
 
             // Calculate locked enumerators
             const lockedEnumIds: number[] = [];
@@ -183,10 +183,10 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
     };
 
     // Handle removing existing media
-    const handleRemoveExistingMedia = (mediaId: number) => {
-        setMediaToDelete(prev => [...prev, mediaId]);
-        setExistingMedia(prev => prev.filter(m => m.media.id !== mediaId));
-    };
+    // const handleRemoveExistingMedia = (mediaId: number) => {
+    //     setMediaToDelete(prev => [...prev, mediaId]);
+    //     setExistingMedia(prev => prev.filter(m => m.media.id !== mediaId));
+    // };
 
     const handleValidate = async () => {
         const isValid = await handleSubmit(id, uploadedFiles, mediaToDelete);
@@ -455,182 +455,6 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
 
             </div>
 
-            {/* File Uploader - Images & Documents */}
-            <div className="grid gap-2 mt-8">
-                <Label htmlFor="project_files" required={false}>
-                    {id ? "Manage Project Files" : "Project Files"}
-                </Label>
-
-                {/* Existing Media Files (Edit Mode) */}
-                {id && existingMedia.length > 0 && (
-                    <div className="mb-4 space-y-2">
-                        <p className="text-sm font-medium text-gray-700">
-                            Current Files ({existingMedia.length})
-                        </p>
-                        <div className="max-h-48 overflow-y-auto space-y-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                            {existingMedia.map((mediaLink) => (
-                                <div
-                                    key={mediaLink.media.id}
-                                    className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <img
-                                            src={getFileIcon(mediaLink.media.file_name)}
-                                            alt={`${mediaLink.media.file_name} icon`}
-                                            className="w-12 h-12 object-contain flex-shrink-0"
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-900 truncate">
-                                                {mediaLink.media.file_name}
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                {formatFileSize(mediaLink.media.size)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveExistingMedia(mediaLink.media.id)}
-                                        className="flex-shrink-0 ml-3 text-red-500 hover:text-red-700 transition-colors"
-                                        title="Remove file"
-                                    >
-                                        <svg
-                                            className="w-5 h-5"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M6 18L18 6M6 6l12 12"
-                                            />
-                                        </svg>
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Upload Zone */}
-                <label
-                    htmlFor="project_files"
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all ${
-                        isDragging
-                            ? 'border-primary bg-primary/5 scale-[1.02]'
-                            : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
-                    }`}
-                >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <svg
-                            className={`w-8 h-8 mb-2 transition-colors ${
-                                isDragging ? 'text-primary' : 'text-gray-400'
-                            }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                            />
-                        </svg>
-                        <p className={`mb-1 text-sm ${isDragging ? 'text-primary font-semibold' : 'text-gray-500'}`}>
-                            {isDragging ? (
-                                <span className="font-bold">Drop files here</span>
-                            ) : (
-                                <>
-                                    <span className="font-semibold">Click to upload</span> or drag and drop
-                                </>
-                            )}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                            {id ? "Add more files" : "Images Only (MAX. 50KB each)"}
-                        </p>
-                    </div>
-                    <input
-                        id="project_files"
-                        type="file"
-                        className="hidden"
-                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
-                        multiple
-                        onChange={handleFileChange}
-                    />
-                </label>
-
-                {/* Uploaded Files List */}
-                {uploadedFiles.length > 0 && (
-                    <div className="mt-3 space-y-4 py-2 bg-gray-50 border-gray-200 border-1 rounded-md">
-                        <div className="flex mt-2 px-2 items-center justify-between">
-                            <p className="text-sm font-medium text-gray-700">
-                                New Files to Upload ({uploadedFiles.length})
-                            </p>
-                            {uploadedFiles.length > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={() => setUploadedFiles([])}
-                                    className="text-xs text-red-600 hover:text-red-800 underline"
-                                >
-                                    Clear all
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="max-h-48 px-2 overflow-y-auto space-y-2">
-                            {uploadedFiles.map((file, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <span className="text-2xl flex-shrink-0">
-                                            <img
-                                                src={getFileIcon(file.name)}
-                                                alt={`${file.name} icon`}
-                                                className="w-12 h-12 object-contain"
-                                            />
-                                        </span>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-900 truncate">
-                                                {file.name}
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                {formatFileSize(file.size)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveFile(index)}
-                                        className="flex-shrink-0 ml-3 text-red-500 hover:text-red-700 transition-colors"
-                                    >
-                                        <svg
-                                            className="w-5 h-5"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M6 18L18 6M6 6l12 12"
-                                            />
-                                        </svg>
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
 
             <div className="border-t-1 border-gray-200 mt-8">
                 <div className="my-4 flex gap-4 justify-end">
