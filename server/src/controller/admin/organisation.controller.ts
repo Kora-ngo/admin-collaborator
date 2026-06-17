@@ -314,176 +314,183 @@ const OrganisationController = {
         }
     },
 
-    deleteOrganisation: async (req: Request, res: Response) => {
-        const transaction = await sequelize.transaction();
+deleteOrganisation: async (req: Request, res: Response) => {
+    const transaction = await sequelize.transaction();
 
-        try {
-            const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-            const orgData = await OrganisationModel.findByPk(id);
-            const org = orgData?.dataValues;
-            if (!org) {
-                await transaction.rollback();
-                return res.status(404).json({ type: 'error', message: 'organisation_not_found' });
-            }
+        const orgData = await OrganisationModel.findByPk(id);
+        if (!orgData) {
+            await transaction.rollback();
+            return res.status(404).json({ type: 'error', message: 'organisation_not_found' });
+        }
 
-            // 1. Get all project IDs for this org
-            const projects = await ProjectModel.findAll({
-                where: { organisation_id: id },
-                attributes: ['id'],
-                transaction
-            });
-            const projectIds = projects.map(p => p.id);
+        // Disable FK checks for the duration
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { transaction });
 
-            // 2. Get all beneficiary IDs
-            const beneficiaries = await BeneficiaryModel.findAll({
-                where: { project_id: { [Op.in]: projectIds } },
-                attributes: ['id'],
-                transaction
-            });
-            const beneficiaryIds = beneficiaries.map(b => b.id);
+        // 1. Get all project IDs for this org
+        const projects = await ProjectModel.findAll({
+            where: { organisation_id: id },
+            attributes: ['id'],
+            transaction
+        });
+        const projectIds = projects.map(p => (p as any).id);
 
-            // 3. Get all delivery IDs
-            const deliveries = await DeliveryModel.findAll({
-                where: { project_id: { [Op.in]: projectIds } },
-                attributes: ['id'],
-                transaction
-            });
-            const deliveryIds = deliveries.map(d => d.id);
+        // 2. Get all beneficiary IDs
+        const beneficiaries = await BeneficiaryModel.findAll({
+            where: { project_id: { [Op.in]: projectIds } },
+            attributes: ['id'],
+            transaction
+        });
+        const beneficiaryIds = beneficiaries.map(b => (b as any).id);
 
-            // 4. Delete DeliveryItems
+        // 3. Get all delivery IDs
+        const deliveries = await DeliveryModel.findAll({
+            where: { project_id: { [Op.in]: projectIds } },
+            attributes: ['id'],
+            transaction
+        });
+        const deliveryIds = deliveries.map(d => (d as any).id);
+
+        // 4. Delete DeliveryItems
+        if (deliveryIds.length > 0) {
             await DeliveryItemModel.destroy({
                 where: { delivery_id: { [Op.in]: deliveryIds } },
                 transaction
             });
+        }
 
-            // 5. Delete Deliveries
-            await DeliveryModel.destroy({
-                where: { id: { [Op.in]: deliveryIds } },
-                transaction
-            });
+        // 5. Delete Deliveries
+        await DeliveryModel.destroy({
+            where: { project_id: { [Op.in]: projectIds } },
+            transaction
+        });
 
-            // 6. Delete BeneficiaryMembers
+        // 6. Delete BeneficiaryMembers
+        if (beneficiaryIds.length > 0) {
             await BeneficiaryMemberModel.destroy({
                 where: { beneficiary_id: { [Op.in]: beneficiaryIds } },
                 transaction
             });
+        }
 
-            // 7. Delete Beneficiaries
-            await BeneficiaryModel.destroy({
-                where: { id: { [Op.in]: beneficiaryIds } },
-                transaction
-            });
+        // 7. Delete Beneficiaries
+        await BeneficiaryModel.destroy({
+            where: { project_id: { [Op.in]: projectIds } },
+            transaction
+        });
 
-            // 8. Delete SyncBatches
-            await SyncBatchModel.destroy({
-                where: { project_id: { [Op.in]: projectIds } },
-                transaction
-            });
+        // 8. Delete SyncBatches
+        await SyncBatchModel.destroy({
+            where: { project_id: { [Op.in]: projectIds } },
+            transaction
+        });
 
-            // 9. Delete AuditLogs
-            await AuditLogModel.destroy({
-                where: { organisation_id: id },
-                transaction
-            });
+        // 9. Delete AuditLogs
+        await AuditLogModel.destroy({
+            where: { organisation_id: id },
+            transaction
+        });
 
-            // 10. Get all membership IDs
-            const memberships = await MembershipModel.findAll({
-                where: { organization_id: id },
-                attributes: ['id'],
-                transaction
-            });
-            const membershipIds = memberships.map(m => m.id);
+        // 10. Get all membership IDs
+        const memberships = await MembershipModel.findAll({
+            where: { organization_id: id },
+            attributes: ['id'],
+            transaction
+        });
+        const membershipIds = memberships.map(m => (m as any).id);
 
-            // 11. Delete ProjectMembers
+        // 11. Delete ProjectMembers
+        if (membershipIds.length > 0) {
             await ProjectMemberModel.destroy({
                 where: { membership_id: { [Op.in]: membershipIds } },
                 transaction
             });
+        }
 
-            // 12. Delete ProjectAssistances
+        // 12. Delete ProjectAssistances
+        if (projectIds.length > 0) {
             await ProjectAssistanceModel.destroy({
                 where: { project_id: { [Op.in]: projectIds } },
                 transaction
             });
+        }
 
-            // 13. Get all media IDs for this org
-            const mediaList = await Media.findAll({
-                where: { organisation_id: id },
-                attributes: ['id'],
-                transaction
-            });
-            const mediaIds = mediaList.map(m => m.id);
+        // 13. Delete MediaLinks + Media
+        const mediaList = await Media.findAll({
+            where: { organisation_id: id },
+            attributes: ['id'],
+            transaction
+        });
+        const mediaIds = mediaList.map(m => (m as any).id);
 
-            // 14. Delete MediaLinks
+        if (mediaIds.length > 0) {
             await MediaLink.destroy({
                 where: { media_id: { [Op.in]: mediaIds } },
                 transaction
             });
-
-            // 15. Delete Media
-            await Media.destroy({
-                where: { organisation_id: id },
-                transaction
-            });
-
-            // 16. Get all assistance IDs for this org
-            const assistances = await AssistanceModel.findAll({
-                where: { organization_id: id },
-                attributes: ['id'],
-                transaction
-            });
-            const assistanceIds = assistances.map(a => a.id);
-
-            // 17. Delete Assistances
-            await AssistanceModel.destroy({
-                where: { id: { [Op.in]: assistanceIds } },
-                transaction
-            });
-
-            // 18. Delete AssistanceTypes
-            await AssistanceTypeModel.destroy({
-                where: { organization_id: id },
-                transaction
-            });
-
-            // 19. Delete Projects
-            await ProjectModel.destroy({
-                where: { organisation_id: id },
-                transaction
-            });
-
-            // 20. Delete Memberships
-            await MembershipModel.destroy({
-                where: { organization_id: id },
-                transaction
-            });
-
-            // 21. Delete Subscription
-            await SubscriptionModel.destroy({
-                where: { organization_id: id },
-                transaction
-            });
-
-            // 22. Delete Organisation
-            await OrganisationModel.destroy({
-                where: { id },
-                transaction
-            });
-
-            await transaction.commit();
-
-            return res.status(200).json({
-                type: 'success',
-                message: 'organisation_permanently_deleted',
-            });
-
-        } catch (error) {
-            await transaction.rollback();
-            console.error('Organisation delete error:', error);
-            return res.status(500).json({ type: 'error', message: 'server_error' });
         }
-    },
+
+        await Media.destroy({
+            where: { organisation_id: id },
+            transaction
+        });
+
+        // 14. Delete Assistances FIRST (child), then AssistanceTypes (parent)
+        await AssistanceModel.destroy({
+            where: { organization_id: id },
+            transaction
+        });
+
+        await AssistanceTypeModel.destroy({
+            where: { organization_id: id },
+            transaction
+        });
+
+        // 15. Delete Projects
+        await ProjectModel.destroy({
+            where: { organisation_id: id },
+            transaction
+        });
+
+        // 16. Delete Memberships
+        await MembershipModel.destroy({
+            where: { organization_id: id },
+            transaction
+        });
+
+        // 17. Delete Subscription
+        await SubscriptionModel.destroy({
+            where: { organization_id: id },
+            transaction
+        });
+
+        // 18. Delete Organisation
+        await OrganisationModel.destroy({
+            where: { id },
+            transaction
+        });
+
+        // Re-enable FK checks before commit
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 1', { transaction });
+
+        await transaction.commit();
+
+        return res.status(200).json({
+            type: 'success',
+            message: 'organisation_permanently_deleted',
+        });
+
+    } catch (error) {
+        // Always re-enable FK checks on error too
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 1').catch(() => {});
+        await transaction.rollback();
+        console.error('Organisation delete error:', error);
+        return res.status(500).json({ type: 'error', message: 'server_error' });
+    }
+},
+
 };
 
 export default OrganisationController;

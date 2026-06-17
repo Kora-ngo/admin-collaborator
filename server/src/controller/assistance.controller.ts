@@ -17,9 +17,11 @@ const AssistanceController = {
 
             const status = req.query.status as string;
 
+            console.info("Status ----> ", status);
+
 
             const whereClause: any = {
-                created_by: req.user?.userId,
+                // created_by: req.user?.userId,
                 organization_id: req.user?.organizationId
             };
 
@@ -71,6 +73,7 @@ const AssistanceController = {
             });
 
             const totalPages = Math.ceil(count / limit);
+
 
             res.status(200).json({
                 type: 'success',

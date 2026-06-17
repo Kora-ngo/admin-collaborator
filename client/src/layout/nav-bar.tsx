@@ -13,6 +13,9 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
         const location = useLocation();
         const [isInfoOpen, setIsInfoOpen] = useState(false);
 
+        const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+        const [welcomeName, setWelcomeName] = useState("");
+
 
         const titles: Record<string, string> = {
         "/dashbaord": "Dashboard",
@@ -40,6 +43,23 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+
+    useEffect(() => {
+        const flag = localStorage.getItem('show_welcome_modal');
+        
+        if (flag) {
+            setWelcomeName(flag === 'true' ? '' : flag); // flag holds the fname
+            // Slight delay so dashboard finishes loading first
+            setTimeout(() => setShowWelcomeModal(true), 1000);
+            // Clear immediately so it never shows again on refresh
+            localStorage.removeItem('show_welcome_modal');
+        }
+    }, []);
+
+    const handleWelcomeClose = () => {
+        setShowWelcomeModal(false);
+    };
 
     return ( 
            <>
@@ -108,6 +128,15 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
                     isOpen={isInfoOpen}
                     onClose={() => setIsInfoOpen(false)}
                     dismissible={true}
+                />
+
+                {/* Welcome modal */}
+                <InfoModal
+                    isOpen={showWelcomeModal}
+                    onClose={handleWelcomeClose}
+                    dismissible={false}
+                    fromRegistration={true}
+                    userName={welcomeName}
                 />
 
            </>

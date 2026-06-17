@@ -34,6 +34,8 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
 
             const {data} = await axiosInstance.get(getEndpoint, { params });
 
+            console.log("Hello World ---> ", data);
+
 
 
             set({
@@ -127,6 +129,9 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
 
 
         const response = await axiosInstance.get("/assistance/filter", { params });
+
+        console.log("Filter Hello World ---> ", response);
+
 
         set({
         data: response.data.data,

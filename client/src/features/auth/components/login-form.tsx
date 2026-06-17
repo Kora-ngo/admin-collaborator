@@ -16,7 +16,7 @@ const LoginForm = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                     id="email"
-                    maxLength={30}
+                    maxLength={50}
                     name="email"
                     type="email"
                     placeholder="example@gmail.com"

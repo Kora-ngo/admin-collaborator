@@ -149,6 +149,10 @@ const SettingFeedback = ({ onSuccess }: FeedbackFormProps) => {
           </p>
         </div>
       </div>
+      <div className="mt-4">
+          <p className="text-sm text-gray-800 mt-1 font-medium">Or reach out to <span className="text-sm font-bold text-primary mx-1">hello@kora.onl</span>
+          </p>
+      </div>
 
       <div className="border-t border-gray-200 mt-8 pt-6">
         <div className="flex justify-end">

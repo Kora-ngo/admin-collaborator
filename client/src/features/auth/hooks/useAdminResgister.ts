@@ -151,7 +151,7 @@ export const useAdminResgister = () => {
 
 
     // Validate org data + submit both user and org together
-    const handleOrgData = async (): Promise<boolean> => {
+    const handleOrgData = async (onSuccess?: () => void): Promise<boolean> => {
 
         // Validate user data again (in case they went back and changed it)
         const { hasErrors: userHasErrors, userData } = validateUser(userForm);
@@ -173,10 +173,14 @@ export const useAdminResgister = () => {
 
         // ✅ Both validated - now register with BOTH datasets
         const toastMessage: ToastMessage = await resgister(userData, trimmedData);
-        
         showToast(toastMessage);
 
-        return toastMessage.type === "success";
+        if (toastMessage.type === "success") {
+            localStorage.setItem('show_welcome_modal', userForm.fname || 'true');
+            return true;
+        }
+
+        return false;
     };
 
     const handleUpdateOrganisation = async (): Promise<boolean> => {
