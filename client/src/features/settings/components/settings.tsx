@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import SettingAccount from "../admin/setting-modules/setting-account";
-import SettingOrganisation from "../admin/setting-modules/setting-organisation";
+import SettingAccount from "./setting-modules/setting-account";
+import SettingOrganisation from "./setting-modules/setting-organisation";
 import SettingNotifications from "./setting-modules/setting-notification";
 import SettingDataPrivacy from "./setting-modules/setting-data-privacy";
 import SettingSubscription from "./setting-modules/setting-subscription";
 import SettingHelp from "./setting-modules/setting-help";
 import brandImg from "../../assets/icons/brand.png";
-import { useAuthStore } from "../../features/auth/store/authStore";
+import { useAuthStore } from "../../auth/store/authStore";
 import SettingFeedback from "./setting-modules/setting-feedback";
 
 type SettingsTab =

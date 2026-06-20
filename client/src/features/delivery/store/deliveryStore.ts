@@ -1,7 +1,7 @@
 
 import { create } from "zustand";
-import type { Delivery } from "../../../types/delivery";
-import axiosInstance from "../../../utils/axiosInstance";
+import type { Delivery } from "../delivery";
+import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
 import type { Pagination } from "../../../types/pagination";
 

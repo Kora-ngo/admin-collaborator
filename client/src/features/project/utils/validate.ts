@@ -1,4 +1,4 @@
-import type { Project, ProjectMember } from "../../../types/project";
+import type { Project, ProjectMember } from "../project";
 
 type ProjectFormData = Partial<Project> & {
     selectedMembers: ProjectMember[];

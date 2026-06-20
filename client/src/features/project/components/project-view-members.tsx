@@ -2,7 +2,7 @@
 
 import DetailView from "../../../components/widgets/detail-view";
 import EmptyState from "../../../components/widgets/empty";
-import type { ProjectMember } from "../../../types/project";
+import type { ProjectMember } from "../project";
 
 interface ProjectViewMembersProps {
   selectedMembers: ProjectMember[] | undefined;

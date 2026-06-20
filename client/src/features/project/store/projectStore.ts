@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { Pagination } from "../../../types/pagination";
-import type { Project } from "../../../types/project";
-import axiosInstance from "../../../utils/axiosInstance";
+import type { Project } from "../project";
+import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
 import { fileToBase64 } from "../../../utils/fileToBase64";
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
-import type { Project, ProjectAssistance, ProjectMember } from "../../../types/project"
+import type { Project, ProjectAssistance, ProjectMember } from "../project"
 import type { Membership } from "../../../types/membership";
-import type { Assistance } from "../../../types/assistance";
+import type { Assistance } from "../../assistance/assistance";
 import { validateProject } from "../utils/validate";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useToastStore } from "../../../store/toastStore";

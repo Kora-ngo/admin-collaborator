@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { AuditLog } from "../../../types/auditLog";
-import axiosInstance from "../../../utils/axiosInstance";
+import type { AuditLog } from "../auditLog";
+import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
 import type { Pagination } from "../../../types/pagination";
 

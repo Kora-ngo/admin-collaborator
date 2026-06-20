@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAssistanceStore } from "../store/assistanceStore";
 import Loading from "../../../components/widgets/loading";
-import type { Assistance } from "../../../types/assistance";
+import type { Assistance } from "../assistance";
 import DetailView from "../../../components/widgets/detail-view";
 
 interface AssistanceProps {

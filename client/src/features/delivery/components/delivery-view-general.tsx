@@ -1,4 +1,4 @@
-import type { Delivery } from "../../../types/delivery";
+import type { Delivery } from "../delivery";
 import DetailView from "../../../components/widgets/detail-view";
 import { formatDate } from "../../../utils/formatDate";
 import StatusBadge from "../../../components/widgets/status-badge";

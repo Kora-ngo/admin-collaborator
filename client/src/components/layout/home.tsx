@@ -2,11 +2,11 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./nav-bar";
 import SideBar from "./side-bar";
 import { useState } from "react";
-import Popup from "../components/widgets/popup";
-import { useAuthStore } from "../features/auth/store/authStore";
-import SettingModal from "../components/widgets/setting-modal";
-import Settings from "../layout/admin/settings";
-import { Button } from "../components/widgets/button";
+import Popup from "../widgets/popup";
+import { useAuthStore } from "../../features/auth/store/authStore";
+import SettingModal from "../widgets/setting-modal";
+import Settings from "../../features/settings/components/settings";
+import { Button } from "../widgets/button";
 import notification from "../assets/icons/google_alerts.png";
 
 const Home = () => {

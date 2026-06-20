@@ -1,5 +1,5 @@
 
-import type { DeliveryItem } from "../../../types/delivery";
+import type { DeliveryItem } from "../delivery";
 import EmptyState from "../../../components/widgets/empty";
 
 interface DeliveryViewItemsProps {

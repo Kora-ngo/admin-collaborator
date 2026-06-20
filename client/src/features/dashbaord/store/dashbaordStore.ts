@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import axiosInstance from "../../../utils/axiosInstance";
+import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
 
 interface DashboardState {

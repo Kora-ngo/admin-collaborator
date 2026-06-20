@@ -1,4 +1,4 @@
-import EmptyState from "../../../components/widgets/empty";
+import EmptyState from "../../../../components/widgets/empty";
 
 const SettingNotifications = () => {
     return ( 

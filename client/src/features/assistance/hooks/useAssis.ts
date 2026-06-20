@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import type { Assistance } from "../../../types/assistance"
+import type { Assistance } from "../assistance"
 import { validateAssistance } from "../utils/validate";
 import { useToastStore } from "../../../store/toastStore";
 import type { ToastMessage } from "../../../types/toastMessage";

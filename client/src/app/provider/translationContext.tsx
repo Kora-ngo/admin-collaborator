@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from "react";
-import en from "../locales/en.json";
-import fr from "../locales/fr.json";
+import en from "../../lib/locales/en.json";
+import fr from "../../lib/locales/fr.json";
 
 type Lang = "en" | "fr";
 

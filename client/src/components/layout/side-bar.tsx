@@ -1,7 +1,7 @@
-import AdminSideBar from "./admin/admin-sidebar";
+import AdminSideBar from "../../features/settings/components/admin-sidebar";
 // import logo from "../assets/logo.svg";
-import { useAuthStore } from "../features/auth/store/authStore";
-import { getDaysLeftForSubscription } from "../utils/differenceInDays";
+import { useAuthStore } from "../../features/auth/store/authStore";
+import { getDaysLeftForSubscription } from "../../utils/differenceInDays";
 
 interface SideBarProps {
     isOpen: boolean;

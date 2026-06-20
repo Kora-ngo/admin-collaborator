@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import type { User } from "../../../types/user";
+import type { User } from "../../users/user";
 import { handleApiError } from "../../../utils/handleApiError";
-import axiosInstance from "../../../utils/axiosInstance";
+import axiosInstance from "../../../lib/axiosInstance";
 import type { Subscription } from "../../../types/subscription";
-import type { Organisation } from "../../../types/organisation";
-import type { Membership } from "../../../types/membership";
+import type { Organisation } from "../../settings/organisation";
 import type { ToastMessage } from "../../../types/toastMessage";
+import type { Membership } from "../../users/membership";
 interface AuthState {
     user: User | null,
     token: string | null,

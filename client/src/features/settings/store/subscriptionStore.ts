@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Subscription } from '../../../types/subscription';
 import type { Pagination } from '../../../types/pagination';
-import axiosInstance from '../../../utils/axiosInstance';
+import axiosInstance from '../../../lib/axiosInstance';
 
 interface SubscriptionStore {
     history: Subscription[];

@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToastStore } from "../store/toastStore";
-import { useAuthStore } from "../features/auth/store/authStore";
+import { useToastStore } from "../../store/toastStore";
+import { useAuthStore } from "../../features/auth/store/authStore";
 
 const RedirectRoute: React.FC<{children: ReactNode}> = ({children}) => {
     const navigate = useNavigate();

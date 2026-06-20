@@ -1,12 +1,12 @@
 // features/feedback/components/SettingFeedback.tsx
 
 import { useState } from "react";
-import { Button } from "../../../components/widgets/button";
-import { Input } from "../../../components/widgets/input";
-import { Label } from "../../../components/widgets/label";
-import { Textarea } from "../../../components/widgets/textarea";
-import { useToastStore } from "../../../store/toastStore";
-import { useFeedbackStore } from "../../../features/feedback/store/feedbackStore";
+import { Button } from "../../../../components/widgets/button";
+import { Input } from "../../../../components/widgets/input";
+import { Label } from "../../../../components/widgets/label";
+import { Textarea } from "../../../../components/widgets/textarea";
+import { useToastStore } from "../../../../store/toastStore";
+import { useFeedbackStore } from "../../../feedback/store/feedbackStore";
 
 interface FeedbackFormProps {
   onSuccess?: () => void;

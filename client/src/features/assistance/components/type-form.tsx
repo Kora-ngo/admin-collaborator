@@ -1,6 +1,6 @@
 import { Button } from "../../../components/widgets/button";
 import { Input } from "../../../components/widgets/input";
-import type { AssistanceType } from "../../../types/assistance";
+import type { AssistanceType } from "../assistance";
 // import { useAssistance } from "../hooks/useAssistance";
 
 interface TypeFormProps {

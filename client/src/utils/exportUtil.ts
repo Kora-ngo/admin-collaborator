@@ -1,6 +1,6 @@
 // src/utils/exportUtil.ts
 
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
 
 export const exportBeneficiariesToExcel = async (period: string): Promise<void> => {
     try {

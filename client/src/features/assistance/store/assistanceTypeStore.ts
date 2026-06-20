@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { AssistanceType } from "../../../types/assistance";
-import axiosInstance from "../../../utils/axiosInstance";
+import type { AssistanceType } from "../assistance";
+import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
 
 interface AssistanceTypeState {

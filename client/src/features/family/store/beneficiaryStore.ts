@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import type { Beneficiary } from "../../../types/beneficiary";
+import type { Beneficiary } from "../../delivery/beneficiary";
 import type { Pagination } from "../../../types/pagination";
-import axiosInstance from "../../../utils/axiosInstance";
+import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
 
 interface BeneficiaryState {

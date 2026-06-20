@@ -1,6 +1,6 @@
 // src/features/family/components/beneficiary-view-members.tsx
 
-import type { BeneficiaryMember } from "../../../types/beneficiary";
+import type { BeneficiaryMember } from "../../delivery/beneficiary";
 import { formatDate } from "../../../utils/formatDate";
 import EmptyState from "../../../components/widgets/empty";
 

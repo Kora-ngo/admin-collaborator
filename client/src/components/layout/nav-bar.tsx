@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuthStore } from "../features/auth/store/authStore";
-import InfoModal from "../components/widgets/info-modal";
+import { useAuthStore } from "../../features/auth/store/authStore";
+import InfoModal from "../widgets/info-modal";
 
 interface NavbarProps {
     toggleSidebar: () => void;

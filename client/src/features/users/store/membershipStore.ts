@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import type { Membership } from "../../../types/membership"
 import type { Pagination } from "../../../types/pagination"
-import axiosInstance from "../../../utils/axiosInstance"
+import axiosInstance from "../../../lib/axiosInstance"
 import { handleApiError } from "../../../utils/handleApiError"
 
 interface MembershipState {

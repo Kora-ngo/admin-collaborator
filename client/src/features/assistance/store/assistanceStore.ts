@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { Assistance } from "../../../types/assistance";
-import axiosInstance from "../../../utils/axiosInstance";
+import type { Assistance } from "../assistance";
+import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
 import type { Pagination } from "../../../types/pagination";
 

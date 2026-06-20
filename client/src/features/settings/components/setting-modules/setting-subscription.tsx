@@ -1,13 +1,13 @@
 // src/features/settings/components/setting-subscription.tsx
 
 import { useState } from "react";
-import { useAuthStore } from "../../../features/auth/store/authStore";
-import StatusBadge from "../../../components/widgets/status-badge";
-import { formatDate } from "../../../utils/formatDate";
-import { getDaysLeftForSubscription } from "../../../utils/differenceInDays";
-import { useSubscription } from "../../../features/settings/hooks/useSubscription";
-import Loading from "../../../components/widgets/loading";
-import EmptyState from "../../../components/widgets/empty";
+import { useAuthStore } from "../../../auth/store/authStore";
+import StatusBadge from "../../../../components/widgets/status-badge";
+import { formatDate } from "../../../../utils/formatDate";
+import { getDaysLeftForSubscription } from "../../../../utils/differenceInDays";
+import { useSubscription } from "../../hooks/useSubscription";
+import Loading from "../../../../components/widgets/loading";
+import EmptyState from "../../../../components/widgets/empty";
 
 const SettingSubscription = () => {
   const { subscription } = useAuthStore(); // assume you add history to store later
