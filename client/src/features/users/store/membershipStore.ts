@@ -1,8 +1,9 @@
 import { create } from "zustand"
-import type { Membership } from "../../../types/membership"
+import type { Membership } from "../membership"
 import type { Pagination } from "../../../types/pagination"
-import axiosInstance from "../../../lib/axiosInstance"
 import { handleApiError } from "../../../utils/handleApiError"
+import { membershipApi } from "../membershipApi"
+import type { ToastMessage } from "../../../types/toastMessage"
 
 interface MembershipState {
     data: Membership[],
@@ -10,14 +11,12 @@ interface MembershipState {
     pagination: Pagination | null,
     createData: (data: Membership) => Promise<any>,
     getData: (page?: number, searchTerm?: string, status?: string) => Promise<any>,
-    fetchOneData: (id: number) => Promise<Membership>,
+    fetchOneData: (id: number) => Promise<Membership | ToastMessage>,
     filterData: (page: number, filters: any) => Promise<any>
     updateData: (id: number, data: Membership) => Promise<any>
     toggleData: (id: number, status: string) => Promise<any>
     checkEmail: (email: string) => Promise<{ type: string; message: string }>
 }
-
-const endpoint = "membership";
 
 export const useMembershipStore = create<MembershipState>((set) => ({
     data: [],
@@ -25,20 +24,14 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     pagination: null,
 
     getData: async (page, searchTerm = "", status) => {
-
         try{
             set({loading: true, data: []});
-            const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
-            const params: any = { page, limit: 5, status };
 
-            if (searchTerm.trim()) params.q = searchTerm.trim();
-
-
-            const {data} = await axiosInstance.get(getEndpoint, { params });
+            const result = await membershipApi.list(page, searchTerm, status);
 
             set({
-                data: data.data,
-                pagination: data.pagination
+                data: result.data,
+                pagination: result.pagination
             });
 
         }catch(error: any){
@@ -52,13 +45,8 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     createData: async (data) => {
         try{
             set({loading: true});
-
-            const response = await axiosInstance.post(endpoint, data);
-            return response.data;
-
-            
+            return await membershipApi.create(data);
         }catch(error: any){
-
             const errorToast = handleApiError(error);
             return errorToast;
         }finally{
@@ -68,11 +56,7 @@ export const useMembershipStore = create<MembershipState>((set) => ({
 
     fetchOneData: async (id) => {
         try{
-
-            const response = await axiosInstance.get(`${endpoint}/${id}`);
-            return response.data.data;
-
-            
+            return await membershipApi.fetchOne(id);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -82,11 +66,7 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     updateData: async (id, data) => {
         try{
             set({loading: true});
-
-            const response = await axiosInstance.put(`${endpoint}/${id}`, data);
-            return response.data;
-
-            
+            return await membershipApi.update(id, data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -97,18 +77,12 @@ export const useMembershipStore = create<MembershipState>((set) => ({
 
     toggleData: async (id, status) => {
         try{
-
-
-        const response = await axiosInstance.put(`${endpoint}/toggle/${id}`, {status: status});
-        return response.data;
-
-            
+            return await membershipApi.toggle(id, status);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
         }
     },
-
 
     filterData: async (
         page = 1,
@@ -121,16 +95,11 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     try {
         set({ loading: true, data: [] });
 
-        const params: any = { page, limit: 5 };
-        if (filters.status) params.status = filters.status;
-        if (filters.role) params.role = filters.role;
-        if (filters.datePreset) params.datePreset = filters.datePreset;
-
-        const response = await axiosInstance.get("/membership/filter", { params });
+        const result = await membershipApi.filter(page, filters);
 
         set({
-        data: response.data.data,
-        pagination: response.data.pagination,
+            data: result.data,
+            pagination: result.pagination,
         });
     }catch(error: any){
             const errorToast = handleApiError(error);
@@ -142,11 +111,7 @@ export const useMembershipStore = create<MembershipState>((set) => ({
 
     checkEmail: async (email: string) => {
         try {
-            const response = await axiosInstance.get(`${endpoint}/check-email`, {
-                params: { email },
-            });
-            console.log("Repsonse --> ", response);
-            return response.data;
+            return await membershipApi.checkEmail(email);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -154,4 +119,3 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     },
 
 }));
-

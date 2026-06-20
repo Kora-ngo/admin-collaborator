@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
+import { dashboardApi } from "../dashbaordApi";
 
 interface DashboardState {
     // Admin data
@@ -39,7 +39,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     getKeyMetrics: async () => {
         try {
             set({ loading: true });
-            const { data } = await axiosInstance.get('/dashboard/admin/key-metrics');
+            const data = await dashboardApi.getKeyMetrics();
             set({ keyMetrics: data.data });
             return data;
         } catch (error: any) {
@@ -52,7 +52,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     getProjectProgress: async () => {
         try {
             set({ loading: true });
-            const { data } = await axiosInstance.get('/dashboard/admin/project-progress');
+            const data = await dashboardApi.getProjectProgress();
             set({ projectProgress: data.data });
             return data;
         } catch (error: any) {
@@ -65,7 +65,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     getProjectAlert: async () => {
         try {
             set({ loading: true });
-            const { data } = await axiosInstance.get('/dashboard/admin/alerts');
+            const data = await dashboardApi.getProjectAlert();
             set({ projectAlert: data });
             return data;
         } catch (error: any) {
@@ -79,7 +79,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     getCollaboratorMetrics: async () => {
         try {
             set({ loading: true });
-            const { data } = await axiosInstance.get('/dashboard/collaborator/key-metrics');
+            const data = await dashboardApi.getCollaboratorMetrics();
             set({ collaboratorMetrics: data.data });
             return data;
         } catch (error: any) {
@@ -92,7 +92,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     getEnumeratorActivity: async () => {
         try {
             set({ loading: true });
-            const { data } = await axiosInstance.get('/dashboard/collaborator/enumerator-activity');
+            const data = await dashboardApi.getEnumeratorActivity();
             set({ enumeratorActivity: data.data });
             return data;
         } catch (error: any) {
@@ -105,7 +105,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     getValidationQueue: async () => {
         try {
             set({ loading: true });
-            const { data } = await axiosInstance.get('/dashboard/collaborator/validation-queue');
+            const data = await dashboardApi.getValidationQueue();
             set({ validationQueue: data.data });
             return data;
         } catch (error: any) {

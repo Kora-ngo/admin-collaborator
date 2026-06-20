@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import type { Beneficiary } from "../../delivery/beneficiary";
+import type { Beneficiary } from "../beneficiary";
 import type { Pagination } from "../../../types/pagination";
-import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
+import { beneficiaryApi } from "../beneficiaryApi";
 
 interface BeneficiaryState {
     data: Beneficiary[];
@@ -15,8 +15,6 @@ interface BeneficiaryState {
     deleteData: (id: number, status: string) => Promise<any>
 }
 
-const endpoint = "beneficiaries";
-
 export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({ 
     data: [],
     loading: false,
@@ -25,20 +23,15 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
     getData: async (page = 1, searchTerm = "") => {
         try {
             set({ loading: true, data: [] });
-            const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
-            const params: any = { page, limit: 10 };
 
-            if (searchTerm.trim()) params.q = searchTerm.trim();
-
-            const { data } = await axiosInstance.get(getEndpoint, { params });
+            const result = await beneficiaryApi.list(page, searchTerm);
 
             set({
-                data: data.data,
-                pagination: data.pagination
+                data: result.data,
+                pagination: result.pagination
             });
 
-
-            return data;
+            return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -49,35 +42,25 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
 
     fetchOneData: async (id) => {
         try {
-            const response = await axiosInstance.get(`${endpoint}/${id}`);
-            return response.data.data;
+            return await beneficiaryApi.fetchOne(id);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             throw errorToast;
         }
     },
 
-    filterData: async (page = 1, filters: {
-        reviewStatus?: string;
-        projectId?: number;
-        datePreset?: string;
-    }) => {
+    filterData: async (page = 1, filters) => {
         try {
             set({ loading: true, data: [] });
 
-            const params: any = { page, limit: 10 };
-            if (filters.reviewStatus) params.reviewStatus = filters.reviewStatus;
-            if (filters.projectId) params.projectId = filters.projectId;
-            if (filters.datePreset) params.datePreset = filters.datePreset;
-
-            const response = await axiosInstance.get(`${endpoint}/filter`, { params });
+            const result = await beneficiaryApi.filter(page, filters);
 
             set({
-                data: response.data.data,
-                pagination: response.data.pagination
+                data: result.data,
+                pagination: result.pagination
             });
 
-            return response.data;
+            return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -88,31 +71,19 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
 
     reviewBeneficiary: async (id, action, note) => {
         try {
-            const response = await axiosInstance.put(`${endpoint}/review/${id}`, {
-                action,
-                review_note: note
-            });
-            return response.data;
+            return await beneficiaryApi.review(id, action, note);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
         }
     },
 
-
     deleteData: async (id, status) => {
         try{
-
-
-        const response = await axiosInstance.put(`${endpoint}/${id}`, {status: status});
-        return response.data;
-
-            
+            return await beneficiaryApi.updateStatus(id, status);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
         }
     },
-
-
 }));

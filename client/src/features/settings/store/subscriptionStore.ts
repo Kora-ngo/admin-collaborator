@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Subscription } from '../../../types/subscription';
 import type { Pagination } from '../../../types/pagination';
-import axiosInstance from '../../../lib/axiosInstance';
+import { settingApi } from '../settingApi';
 
 interface SubscriptionStore {
     history: Subscription[];
@@ -14,8 +14,6 @@ interface SubscriptionStore {
     getCurrentSubscription: () => Promise<void>;
 }
 
-const endpoint = 'subscription';
-
 export const useSubscriptionStore = create<SubscriptionStore>((set) => ({
     history: [],
     currentSubscription: null,
@@ -25,8 +23,7 @@ export const useSubscriptionStore = create<SubscriptionStore>((set) => ({
     getHistory: async () => {
         set({ loading: true });
         try {
-            const response = await axiosInstance.get(`${endpoint}`);
-
+            const response = await settingApi.getHistory();
             
             if (response.data.type === 'success') {
                 set({
@@ -43,7 +40,7 @@ export const useSubscriptionStore = create<SubscriptionStore>((set) => ({
     getCurrentSubscription: async () => {
         set({ loading: true });
         try {
-            const response = await axiosInstance.get(`${endpoint}/current`);
+            const response = await settingApi.getCurrent();
             
             if (response.data.type === 'success') {
                 set({

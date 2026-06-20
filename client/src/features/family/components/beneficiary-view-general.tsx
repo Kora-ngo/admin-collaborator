@@ -1,6 +1,6 @@
 // src/features/family/components/beneficiary-view-general.tsx
 
-import type { Beneficiary } from "../../delivery/beneficiary";
+import type { Beneficiary } from "../beneficiary";
 import DetailView from "../../../components/widgets/detail-view";
 import { formatDate } from "../../../utils/formatDate";
 import StatusBadge from "../../../components/ui/status-badge";

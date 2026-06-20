@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import axiosInstance from '../../../lib/axiosInstance';
-import { handleApiError } from '../../../utils/handleApiError';
+import { handleApiError } from "../../../utils/handleApiError";
+import { feedbackApi } from '../feedbackApi';
 
 interface FeedbackStore {
     loading: boolean;
@@ -14,12 +14,9 @@ export const useFeedbackStore = create<FeedbackStore>((set) => ({
         try {
             set({ loading: true });
 
-            const response = await axiosInstance.post('/feedback', {
-                message,
-                email: email || undefined
-            });
+            const data = await feedbackApi.send(message, email);
 
-            return response.data;
+            return data;
 
         } catch (error: any) {
             const errorToast = handleApiError(error);

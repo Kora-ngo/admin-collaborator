@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import type { Pagination } from "../../../types/pagination";
 import type { Project } from "../project";
-import axiosInstance from "../../../lib/axiosInstance";
+import { projectApi } from "../../project/projectApi";
 import { handleApiError } from "../../../utils/handleApiError";
 import { fileToBase64 } from "../../../utils/fileToBase64";
+import type { ToastMessage } from "../../../types/toastMessage";
 
 interface ProjectState {
     data: Project[];
@@ -11,14 +12,12 @@ interface ProjectState {
     pagination: Pagination | null;
     createData: (projectData: any, files?: File[]) => Promise<any>;
     getData: (page?: number, searchTerm?: string) => Promise<any>;
-    fetchOneData: (id: number) => Promise<Project>;
+    fetchOneData: (id: number) => Promise<Project | ToastMessage>;
     filterData: (page: number, filters: any) => Promise<any>;
     updateData: (id: number, data: any, files?: File[]) => Promise<any>;
     toggleData: (id: number, status: string) => Promise<any>;
     // checkCanDelete: (id: number) => Promise<any>;
 }
-
-const endpoint = "projects";
 
 export const useProjectStore = create<ProjectState>((set) => ({
     data: [],
@@ -28,16 +27,12 @@ export const useProjectStore = create<ProjectState>((set) => ({
     getData: async (page = 1, searchTerm = "") => {
         try {
             set({ loading: true, data: [] });
-            const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
-            const params: any = { page, limit: 5 };
-
-            if (searchTerm.trim()) params.q = searchTerm.trim();
-
-            const { data } = await axiosInstance.get(getEndpoint, { params });
+            
+            const result = await projectApi.list(page, searchTerm);
 
             set({
-                data: data.data,
-                pagination: data.pagination
+                data: result.data,
+                pagination: result.pagination
             });
 
         } catch (error: any) {
@@ -47,7 +42,6 @@ export const useProjectStore = create<ProjectState>((set) => ({
             set({ loading: false });
         }
     },
-
 
     createData: async (projectData, files) => {
         try {
@@ -67,8 +61,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
                 files: fileData
             };
 
-            const response = await axiosInstance.post(endpoint, data);
-            return response.data;
+            return await projectApi.create(data);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -79,8 +72,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
     fetchOneData: async (id) => {
         try {
-            const response = await axiosInstance.get(`${endpoint}/${id}`);
-            return response.data.data;
+            return await projectApi.fetchOne(id);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -116,14 +108,15 @@ export const useProjectStore = create<ProjectState>((set) => ({
             }catch(err){
             }
 
-
-            const response = await axiosInstance.put(`/${endpoint}/${id}`, {
+            const payload = {
                 ...data,
                 files: filesData
-            });
+            };
+
+            const response = await projectApi.update(id, payload);
 
             set({ loading: false });
-            return response.data;
+            return response;
         } catch (error: any) {
             console.error('Failed to update project:', error);
             set({ loading: false });
@@ -136,11 +129,9 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
     toggleData: async (id, status) => {
         try {
-
             console.log("Project ID ---> ", id);
             console.log("Status ---> ", status);
-            const response = await axiosInstance.put(`${endpoint}/toggle/${id}`, { status });
-            return response.data;
+            return await projectApi.toggle(id, status);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -154,15 +145,11 @@ export const useProjectStore = create<ProjectState>((set) => ({
         try {
             set({ loading: true, data: [] });
 
-            const params: any = { page, limit: 5 };
-            if (filters.status) params.status = filters.status;
-            if (filters.datePreset) params.datePreset = filters.datePreset;
-
-            const response = await axiosInstance.get(`${endpoint}/filter`, { params });
+            const result = await projectApi.filter(page, filters);
 
             set({
-                data: response.data.data,
-                pagination: response.data.pagination,
+                data: result.data,
+                pagination: result.pagination,
             });
         } catch (error: any) {
             const errorToast = handleApiError(error);

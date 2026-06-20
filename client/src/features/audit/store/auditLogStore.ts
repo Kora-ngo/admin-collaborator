@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import type { AuditLog } from "../auditLog";
-import axiosInstance from "../../../lib/axiosInstance";
 import { handleApiError } from "../../../utils/handleApiError";
 import type { Pagination } from "../../../types/pagination";
+import { auditApi } from "../auditApi";
 
 interface AuditLogState {
     data: AuditLog[];
@@ -12,8 +12,6 @@ interface AuditLogState {
     filterData: (page: number, filters: any) => Promise<any>;
 }
 
-const endpoint = "audit-logs";
-
 export const useAuditLogStore = create<AuditLogState>((set) => ({
     data: [],
     loading: false,
@@ -22,19 +20,15 @@ export const useAuditLogStore = create<AuditLogState>((set) => ({
     getData: async (page = 1, searchTerm = "") => {
         try {
             set({ loading: true, data: [] });
-            const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
-            const params: any = { page, limit: 20 };
 
-            if (searchTerm.trim()) params.q = searchTerm.trim();
-
-            const { data } = await axiosInstance.get(getEndpoint, { params });
+            const result = await auditApi.list(page, searchTerm);
 
             set({
-                data: data.data,
-                pagination: data.pagination
+                data: result.data,
+                pagination: result.pagination
             });
 
-            return data;
+            return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -47,20 +41,14 @@ export const useAuditLogStore = create<AuditLogState>((set) => ({
         try {
             set({ loading: true, data: [] });
 
-            const params: any = { page, limit: 20 };
-            if (filters.entityType) params.entityType = filters.entityType;
-            if (filters.actorRole) params.actorRole = filters.actorRole;
-            if (filters.platform) params.platform = filters.platform;
-            if (filters.datePreset) params.datePreset = filters.datePreset;
-
-            const response = await axiosInstance.get(`${endpoint}/filter`, { params });
+            const result = await auditApi.filter(page, filters);
 
             set({
-                data: response.data.data,
-                pagination: response.data.pagination
+                data: result.data,
+                pagination: result.pagination
             });
 
-            return response.data;
+            return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;

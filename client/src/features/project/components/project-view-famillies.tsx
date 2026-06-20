@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import EmptyState from "../../../components/ui/empty";
-import type { Beneficiary } from "../../delivery/beneficiary";
+import type { Beneficiary } from "../../family/beneficiary";
 import { useAuthStore } from "../../auth/store/authStore";
 import Accordion from "../../../components/ui/accordion";
 import { calculateAge } from "../../../utils/calculateAge";

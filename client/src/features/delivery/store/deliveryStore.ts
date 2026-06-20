@@ -1,7 +1,6 @@
-
 import { create } from "zustand";
 import type { Delivery } from "../delivery";
-import axiosInstance from "../../../lib/axiosInstance";
+import { deliveryApi } from "../../delivery/deliveryApi";
 import { handleApiError } from "../../../utils/handleApiError";
 import type { Pagination } from "../../../types/pagination";
 
@@ -16,8 +15,6 @@ interface DeliveryState {
     deleteData: (id: number, status: string) => Promise<any>
 }
 
-const endpoint = "deliveries";
-
 export const useDeliveryStore = create<DeliveryState>((set) => ({
     data: [],
     loading: false,
@@ -26,19 +23,15 @@ export const useDeliveryStore = create<DeliveryState>((set) => ({
     getData: async (page = 1, searchTerm = "") => {
         try {
             set({ loading: true, data: [] });
-            const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
-            const params: any = { page, limit: 10 };
 
-            if (searchTerm.trim()) params.q = searchTerm.trim();
-
-            const { data } = await axiosInstance.get(getEndpoint, { params });
+            const result = await deliveryApi.list(page, searchTerm);
 
             set({
-                data: data.data,
-                pagination: data.pagination
+                data: result.data,
+                pagination: result.pagination
             });
 
-            return data;
+            return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -49,8 +42,7 @@ export const useDeliveryStore = create<DeliveryState>((set) => ({
 
     fetchOneData: async (id) => {
         try {
-            const response = await axiosInstance.get(`${endpoint}/${id}`);
-            return response.data.data;
+            return await deliveryApi.fetchOne(id);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             throw errorToast;
@@ -61,19 +53,14 @@ export const useDeliveryStore = create<DeliveryState>((set) => ({
         try {
             set({ loading: true, data: [] });
 
-            const params: any = { page, limit: 10 };
-            if (filters.reviewStatus) params.reviewStatus = filters.reviewStatus;
-            if (filters.projectId) params.projectId = filters.projectId;
-            if (filters.datePreset) params.datePreset = filters.datePreset;
-
-            const response = await axiosInstance.get(`${endpoint}/filter`, { params });
+            const result = await deliveryApi.filter(page, filters);
 
             set({
-                data: response.data.data,
-                pagination: response.data.pagination
+                data: result.data,
+                pagination: result.pagination
             });
 
-            return response.data;
+            return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
@@ -84,27 +71,17 @@ export const useDeliveryStore = create<DeliveryState>((set) => ({
 
     reviewDelivery: async (id, action, note) => {
         try {
-            const response = await axiosInstance.put(`${endpoint}/review/${id}`, {
-                action,
-                review_note: note
-            });
-            return response.data;
+            return await deliveryApi.review(id, action, note);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
         }
     },
 
-
     deleteData: async (id, status) => {
-        try{
-
-
-        const response = await axiosInstance.put(`${endpoint}/${id}`, {status: status});
-        return response.data;
-
-            
-        }catch(error: any){
+        try {
+            return await deliveryApi.updateStatus(id, status);
+        } catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
         }
