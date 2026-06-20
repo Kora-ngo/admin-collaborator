@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "../../../components/widgets/button";
+import { Button } from "../../../components/ui/button";
 
 interface ActionOption {
   value: string;

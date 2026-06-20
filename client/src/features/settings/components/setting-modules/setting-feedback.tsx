@@ -1,10 +1,10 @@
 // features/feedback/components/SettingFeedback.tsx
 
 import { useState } from "react";
-import { Button } from "../../../../components/widgets/button";
-import { Input } from "../../../../components/widgets/input";
-import { Label } from "../../../../components/widgets/label";
-import { Textarea } from "../../../../components/widgets/textarea";
+import { Button } from "../../../../components/ui/button";
+import { Input } from "../../../../components/ui/input";
+import { Label } from "../../../../components/ui/label";
+import { Textarea } from "../../../../components/ui/textarea";
 import { useToastStore } from "../../../../store/toastStore";
 import { useFeedbackStore } from "../../../feedback/store/feedbackStore";
 

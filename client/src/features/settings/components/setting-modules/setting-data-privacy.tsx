@@ -1,6 +1,6 @@
-import { Button } from "../../../../components/widgets/button";
-import { Label } from "../../../../components/widgets/label";
-import { SelectInput } from "../../../../components/widgets/select-input";
+import { Button } from "../../../../components/ui/button";
+import { Label } from "../../../../components/ui/label";
+import { SelectInput } from "../../../../components/ui/select-input";
 
 const SettingDataPrivacy = () => {
   const modules = [

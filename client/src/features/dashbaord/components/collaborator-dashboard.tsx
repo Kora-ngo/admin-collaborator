@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useDashboardStore } from "../store/dashbaordStore";
-import Loading from "../../../components/widgets/loading";
+import Loading from "../../../components/ui/loading";
 import type { TableColumn } from "../../../components/widgets/table";
 import { formatDate } from "../../../utils/formatDate";
 import Table from "../../../components/widgets/table";

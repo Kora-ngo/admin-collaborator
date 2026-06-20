@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useAuthStore } from "../../../auth/store/authStore";
-import StatusBadge from "../../../../components/widgets/status-badge";
+import StatusBadge from "../../../../components/ui/status-badge";
 import { formatDate } from "../../../../utils/formatDate";
 import { getDaysLeftForSubscription } from "../../../../utils/differenceInDays";
 import { useSubscription } from "../../hooks/useSubscription";
-import Loading from "../../../../components/widgets/loading";
-import EmptyState from "../../../../components/widgets/empty";
+import Loading from "../../../../components/ui/loading";
+import EmptyState from "../../../../components/ui/empty";
 
 const SettingSubscription = () => {
   const { subscription } = useAuthStore(); // assume you add history to store later

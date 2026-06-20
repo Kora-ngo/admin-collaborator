@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button } from "../../../components/widgets/button";
+import { Button } from "../../../components/ui/button";
 import TypeView from "./type-view";
 import TypeForm from "./type-form";
 import { useAssistance } from "../hooks/useAssistance";

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Button } from "../../../components/widgets/button";
-import { Input } from "../../../components/widgets/input";
-import { Label } from "../../../components/widgets/label";
-import { SelectInput } from "../../../components/widgets/select-input";
-import { Textarea } from "../../../components/widgets/textarea";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { SelectInput } from "../../../components/ui/select-input";
+import { Textarea } from "../../../components/ui/textarea";
 import { useAssis } from "../hooks/useAssis";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 

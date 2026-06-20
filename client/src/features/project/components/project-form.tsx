@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Button } from "../../../components/widgets/button";
-import { Input } from "../../../components/widgets/input";
-import { Label } from "../../../components/widgets/label";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 import Tag from "../../../components/widgets/tag";
-import { Textarea } from "../../../components/widgets/textarea";
-import { SelectInput } from "../../../components/widgets/select-input";
+import { Textarea } from "../../../components/ui/textarea";
+import { SelectInput } from "../../../components/ui/select-input";
 import { useAssitanceSelect } from "../hooks/useAssitanceSelect";
 import { useCollaboratorSelect } from "../hooks/useCollaboratorSelect";
 import { useProject } from "../hooks/useProject";

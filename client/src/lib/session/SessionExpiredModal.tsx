@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button } from '../../components/widgets/button';
+import { Button } from '../../components/ui/button';
 import Popup from '../../components/widgets/popup';
 
 

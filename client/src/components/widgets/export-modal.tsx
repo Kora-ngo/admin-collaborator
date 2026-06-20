@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button } from "./button";
-import { SelectInput } from "./select-input";
+import { Button } from "../ui/button";
+import { SelectInput } from "../ui/select-input";
 import Popup from "./popup";
 
 interface ExportPopupProps {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMembershipStore } from "../store/membershipStore";
 import type { Membership } from "../../../types/membership";
-import Loading from "../../../components/widgets/loading";
+import Loading from "../../../components/ui/loading";
 import DetailView from "../../../components/widgets/detail-view";
 
 interface MembershipViewProps {

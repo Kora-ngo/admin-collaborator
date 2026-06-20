@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import { ActionButton } from "../../components/widgets/action-button";
 import { FilterToggleButton } from "../../components/widgets/filter-button";
 import SearchInput from "../../components/widgets/search-input";
-import StatusBadge from "../../components/widgets/status-badge";
+import StatusBadge from "../../components/ui/status-badge";
 import type { TableColumn } from "../../components/widgets/table";
 import Table from "../../components/widgets/table";
-import Modal from "../../components/widgets/modal";
+import Modal from "../../components/ui/modal";
 import { formatDate } from "../../utils/formatDate";
-import EmptyState from "../../components/widgets/empty";
-import Loading from "../../components/widgets/loading";
-import { SelectInput } from "../../components/widgets/select-input";
+import EmptyState from "../../components/ui/empty";
+import Loading from "../../components/ui/loading";
+import { SelectInput } from "../../components/ui/select-input";
 import { useAuditLogStore } from "../../features/audit/store/auditLogStore";
 import { useAuditLog } from "../../features/audit/hooks/useAuditLog";
 import AuditLogView from "../../features/audit/components/audit-log-view";
-import ActionIcon from "../../components/widgets/action-icon";
+import ActionIcon from "../../components/ui/action-icon";
 import { useAuthStore } from "../../features/auth/store/authStore";
 
 const AuditLogs = () => {

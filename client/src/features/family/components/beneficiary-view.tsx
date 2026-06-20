@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useBeneficiaryStore } from "../store/beneficiaryStore";
-import Loading from "../../../components/widgets/loading";
+import Loading from "../../../components/ui/loading";
 import type { Beneficiary } from "../../delivery/beneficiary";
 import BeneficiaryViewGeneral from "./beneficiary-view-general";
 import BeneficiaryViewMembers from "./beneficiary-view-members";

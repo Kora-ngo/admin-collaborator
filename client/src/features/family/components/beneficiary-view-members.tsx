@@ -2,7 +2,7 @@
 
 import type { BeneficiaryMember } from "../../delivery/beneficiary";
 import { formatDate } from "../../../utils/formatDate";
-import EmptyState from "../../../components/widgets/empty";
+import EmptyState from "../../../components/ui/empty";
 
 interface BeneficiaryViewMembersProps {
     members: BeneficiaryMember[];

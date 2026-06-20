@@ -1,4 +1,4 @@
-import { Button } from "../../../components/widgets/button";
+import { Button } from "../../../components/ui/button";
 import { useAuthStore } from "../store/authStore";
 
 interface AccountViewProps {

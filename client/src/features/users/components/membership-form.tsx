@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useMembership } from "../hooks/useMember";
-import { Label } from "../../../components/widgets/label";
-import { Input } from "../../../components/widgets/input";
-import { SelectInput } from "../../../components/widgets/select-input";
-import { Button } from "../../../components/widgets/button";
+import { Label } from "../../../components/ui/label";
+import { Input } from "../../../components/ui/input";
+import { SelectInput } from "../../../components/ui/select-input";
+import { Button } from "../../../components/ui/button";
 import { useMembershipStore } from "../store/membershipStore";
 import PhoneInput from "../../../components/widgets/phone-input";
 

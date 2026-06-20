@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import DetailView from "../../../components/widgets/detail-view";
 import type { ProjectAssistance } from "../project";
-import EmptyState from "../../../components/widgets/empty";
+import EmptyState from "../../../components/ui/empty";
 
 interface ProjectViewAssistanceProps {
     selectedAssistance: ProjectAssistance[] |undefined

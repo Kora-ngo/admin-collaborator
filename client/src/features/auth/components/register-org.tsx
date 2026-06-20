@@ -1,7 +1,7 @@
-import { Button } from "../../../components/widgets/button";
+import { Button } from "../../../components/ui/button";
 import CountrySelect from "../../../components/widgets/country-select";
-import { Input } from "../../../components/widgets/input";
-import { Label } from "../../../components/widgets/label";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 import PhoneInput from "../../../components/widgets/phone-input";
 import { useAuthStore } from "../store/authStore";
 // import { Textarea } from "../../../components/widgets/textarea";

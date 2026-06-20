@@ -3,7 +3,7 @@
 import type { Beneficiary } from "../../delivery/beneficiary";
 import DetailView from "../../../components/widgets/detail-view";
 import { formatDate } from "../../../utils/formatDate";
-import StatusBadge from "../../../components/widgets/status-badge";
+import StatusBadge from "../../../components/ui/status-badge";
 
 interface BeneficiaryViewGeneralProps {
     data: Beneficiary;

@@ -1,7 +1,7 @@
 // src/features/project/components/project-view-members.tsx
 
 import DetailView from "../../../components/widgets/detail-view";
-import EmptyState from "../../../components/widgets/empty";
+import EmptyState from "../../../components/ui/empty";
 import type { ProjectMember } from "../project";
 
 interface ProjectViewMembersProps {

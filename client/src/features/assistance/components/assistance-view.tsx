@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAssistanceStore } from "../store/assistanceStore";
-import Loading from "../../../components/widgets/loading";
+import Loading from "../../../components/ui/loading";
 import type { Assistance } from "../assistance";
 import DetailView from "../../../components/widgets/detail-view";
 

@@ -1,7 +1,7 @@
 import type { Delivery } from "../delivery";
 import DetailView from "../../../components/widgets/detail-view";
 import { formatDate } from "../../../utils/formatDate";
-import StatusBadge from "../../../components/widgets/status-badge";
+import StatusBadge from "../../../components/ui/status-badge";
 
 interface DeliveryViewGeneralProps {
     data: Delivery;

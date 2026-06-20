@@ -1,24 +1,24 @@
 import { create } from "zustand";
 import type { Assistance } from "../assistance";
-import axiosInstance from "../../../lib/axiosInstance";
-import { handleApiError } from "../../../utils/handleApiError";
 import type { Pagination } from "../../../types/pagination";
+import { assistanceApi, type AssistanceFilters } from "../assistanceApi";
+import { handleApiError } from "../../../utils/handleApiError";
+import type { ToastMessage } from "../../../types/toastMessage";
 
-interface AssiantnceState {
+
+interface AssistanceState {
     data: Assistance[],
     loading: boolean,
     pagination: Pagination | null,
     createData: (data: Assistance) => Promise<any>,
     getData: (page?: number, searchTerm?: string, status?: string) => Promise<any>,
-    fetchOneData: (id: number) => Promise<Assistance>,
-    filterData: (page: number, filters: any) => Promise<any>
+    fetchOneData: (id: number) => Promise<Assistance | ToastMessage>,
+    filterData: (page: number, filters: AssistanceFilters) => Promise<any>
     updateData: (id: number, data: Assistance) => Promise<any>
     toggleData: (id: number, status: string) => Promise<any>
 }
 
-const endpoint = "assistance";
-
-export const useAssistanceStore = create<AssiantnceState>((set) => ({
+export const useAssistanceStore = create<AssistanceState>((set) => ({
     data: [],
     loading: false,
     pagination: null,
@@ -26,21 +26,12 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
     getData: async (page, searchTerm = "", status) => {
         try{
             set({loading: true, data: []});
-            const getEndpoint = searchTerm.trim() ? `${endpoint}/search` : endpoint;
-            const params: any = { page, limit: 5, status};
 
-            if (searchTerm.trim()) params.q = searchTerm.trim();
-
-
-            const {data} = await axiosInstance.get(getEndpoint, { params });
-
-            console.log("Hello World ---> ", data);
-
-
+            const result = await assistanceApi.list(page, searchTerm, status);
 
             set({
-                data: data.data,
-                pagination: data.pagination
+                data: result.data,
+                pagination: result.pagination
             });
 
         }catch(error: any){
@@ -54,11 +45,7 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
     createData: async (data) => {
         try{
             set({loading: true});
-
-            const response = await axiosInstance.post(endpoint, data);
-            return response.data;
-
-            
+            return await assistanceApi.create(data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -69,11 +56,7 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
 
     fetchOneData: async (id) => {
         try{
-
-            const response = await axiosInstance.get(`${endpoint}/${id}`);
-            return response.data.data;
-
-            
+            return await assistanceApi.fetchOne(id);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -83,11 +66,7 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
     updateData: async (id, data) => {
         try{
             set({loading: true});
-
-            const response = await axiosInstance.put(`${endpoint}/${id}`, data);
-            return response.data;
-
-            
+            return await assistanceApi.update(id, data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -98,53 +77,29 @@ export const useAssistanceStore = create<AssiantnceState>((set) => ({
 
     toggleData: async (id, status) => {
         try{
-
-
-        const response = await axiosInstance.put(`${endpoint}/toggle/${id}`, {status: status});
-        return response.data;
-
-            
+            return await assistanceApi.toggle(id, status);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
         }
     },
 
+    filterData: async (page = 1, filters) => {
+        try {
+            set({ loading: true, data: [] });
 
-    filterData: async (
-        page = 1,
-        filters: {
-            status?: "true" | "false";
-            typeId?: number;
-            datePreset?: string;
-        }
-    ) => {
-    try {
-        set({ loading: true, data: [] });
+            const result = await assistanceApi.filter(page, filters);
 
-        const params: any = { page, limit: 5 };
-        if (filters.status) params.status = filters.status;
-        if (filters.typeId) params.typeId = filters.typeId;
-        if (filters.datePreset) params.datePreset = filters.datePreset;
-
-
-        const response = await axiosInstance.get("/assistance/filter", { params });
-
-        console.log("Filter Hello World ---> ", response);
-
-
-        set({
-        data: response.data.data,
-        pagination: response.data.pagination,
-        });
-    }catch(error: any){
+            set({
+                data: result.data,
+                pagination: result.pagination,
+            });
+        }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
-    }finally {
-        set({ loading: false });
-    }
+        }finally {
+            set({ loading: false });
+        }
     },
-
-
 
 }))

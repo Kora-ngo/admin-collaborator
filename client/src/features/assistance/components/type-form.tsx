@@ -1,5 +1,5 @@
-import { Button } from "../../../components/widgets/button";
-import { Input } from "../../../components/widgets/input";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
 import type { AssistanceType } from "../assistance";
 // import { useAssistance } from "../hooks/useAssistance";
 

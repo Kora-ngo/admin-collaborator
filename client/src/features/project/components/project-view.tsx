@@ -3,7 +3,7 @@ import ProjectViewMembers from "./project-view-members";
 import ProjectViewGeneral from "./project-view-general";
 import ProjectViewAssistance from "./project-view-assistance";
 import ProjectViewFamilies from "./project-view-famillies";
-import Loading from "../../../components/widgets/loading";
+import Loading from "../../../components/ui/loading";
 import type { ProjectFormData } from "../hooks/useProject";
 import { useProjectStore } from "../store/projectStore";
 import ProjectViewDeliverires from "./project-view-deliveries";

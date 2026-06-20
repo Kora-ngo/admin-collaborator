@@ -1,5 +1,5 @@
 import React from 'react';
-import ActionIcon  from './action-icon'; // Adjust import based on your project
+import ActionIcon  from '../ui/action-icon'; // Adjust import based on your project
 
 interface TagProps {
   label: string | React.ReactNode;

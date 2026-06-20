@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { Button } from "../../../components/widgets/button";
-import { Input } from "../../../components/widgets/input";
-import { Label } from "../../../components/widgets/label";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 import { useLogin } from "../hooks/useLogin";
 import { useAuthStore } from "../store/authStore";
 

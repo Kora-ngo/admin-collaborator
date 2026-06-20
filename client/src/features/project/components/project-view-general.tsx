@@ -1,8 +1,8 @@
 // src/features/project/components/project-view-general.tsx
 
 import DetailView from "../../../components/widgets/detail-view";
-import EmptyState from "../../../components/widgets/empty";
-import StatusBadge from "../../../components/widgets/status-badge";
+import EmptyState from "../../../components/ui/empty";
+import StatusBadge from "../../../components/ui/status-badge";
 import { formatDate } from "../../../utils/formatDate";
 
 interface ProjectViewGeneralProps {

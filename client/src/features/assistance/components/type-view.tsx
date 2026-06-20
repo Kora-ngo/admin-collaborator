@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import ActionIcon from "../../../components/widgets/action-icon";
-import EmptyState from "../../../components/widgets/empty";
+import ActionIcon from "../../../components/ui/action-icon";
+import EmptyState from "../../../components/ui/empty";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 import { useAssistance } from "../hooks/useAssistance";
 

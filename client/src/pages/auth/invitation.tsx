@@ -1,6 +1,6 @@
 import logo from '../../assets/logo.svg';
-import { Button } from '../../components/widgets/button';
-import StatusBadge from '../../components/widgets/status-badge';
+import { Button } from '../../components/ui/button';
+import StatusBadge from '../../components/ui/status-badge';
 
 const Insitation = () => {
     return ( 
