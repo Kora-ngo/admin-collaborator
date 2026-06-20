@@ -7,7 +7,7 @@ import SettingNotifications from "./setting-modules/setting-notification";
 import SettingDataPrivacy from "./setting-modules/setting-data-privacy";
 import SettingSubscription from "./setting-modules/setting-subscription";
 import SettingHelp from "./setting-modules/setting-help";
-import brandImg from "../../assets/icons/brand.png";
+import brandImg from "../../../assets/icons/brand.png";
 import { useAuthStore } from "../../auth/store/authStore";
 import SettingFeedback from "./setting-modules/setting-feedback";
 

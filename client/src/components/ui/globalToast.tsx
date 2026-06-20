@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import Toast from '../components/widgets/toast';
-import { useToastStore } from '../store/toastStore';
-import { getMessage } from './getMessage';
+import { useToastStore } from '../../store/toastStore';
+import Toast from '../widgets/toast';
+import { getMessage } from '../../utils/getMessage';
+
 
 const GlobalToast: React.FC = () => {
   const { toast, hideToast } = useToastStore();

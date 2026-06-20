@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
-import Tag from "../../../components/widgets/tag";
 import { Textarea } from "../../../components/ui/textarea";
 import { SelectInput } from "../../../components/ui/select-input";
 import { useAssitanceSelect } from "../hooks/useAssitanceSelect";
@@ -11,6 +10,7 @@ import { useProject } from "../hooks/useProject";
 import { useProjectImage } from "../hooks/useProjectImage";
 // import { getFileIcon } from "../../../utils/fileIcons";
 import { useProjectStore } from "../store/projectStore";
+import Tag from "../../../components/ui/tag";
 
 interface ProjectFormProps {
     id: number | any,
