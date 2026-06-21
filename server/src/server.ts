@@ -2,7 +2,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import app from './app.js';
 import sequelize from './config/database.js';
-import SuperAdminModel from './models/SuperAdmin.js';
 import os from 'os';
 
 // Loading the environment variable from .env 

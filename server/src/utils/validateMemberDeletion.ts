@@ -1,5 +1,8 @@
 import { Op } from "sequelize";
-import { BeneficiaryModel, DeliveryModel, OrganisationModel } from "../models/index.js";
+import BeneficiaryModel from "../modules/beneficiary/beneficiary.model.js";
+import DeliveryModel from "../modules/delivery/delivery.model.js";
+import OrganisationModel from "../modules/organisation/organisation.model.js";
+
 
 export async function validateMemberDeletion(
     membershipId: number, 

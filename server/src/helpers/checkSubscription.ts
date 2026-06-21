@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import SubscriptionModel from '../models/Subscription.js'; // adjust path
+import SubscriptionModel from '../modules/subscription/subscription.model.js';
 
 interface SubscriptionCheckResult {
   isActive: boolean;
