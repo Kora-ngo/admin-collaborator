@@ -1,7 +1,7 @@
 import  express, {type Request, type Response, type NextFunction} from "express";
 import routes from "./routes/index.js";
 import cors from 'cors';
-import { handleGlobalError } from "./utils/handleGlobalError.js";
+import { handleGlobalError } from "./shared/utils/handleGlobalError.js";
 
 const app = express();
 

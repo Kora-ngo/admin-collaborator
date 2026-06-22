@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { Op } from "sequelize";
 import ProjectMemberModel from "../project-member/project.member.model.js";
-import { logAudit } from "../../utils/auditLogger.js";
+import { logAudit } from "../../shared/utils/auditLogger.js";
 import { BeneficiaryMemberModel, BeneficiaryModel, MembershipModel, ProjectModel, UserModel } from "../index.js";
 
 const BeneficiaryController = {

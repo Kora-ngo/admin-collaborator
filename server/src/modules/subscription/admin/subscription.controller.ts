@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import sequelize from 'sequelize/lib/sequelize';
 import SubscriptionModel from '../subscription.model.js';
-import { generateUniqueUid } from '../../../utils/generateUniqueUid.js';
+import { generateUniqueUid } from '../../../shared/utils/generateUniqueUid.js';
 import { OrganisationModel } from '../../index.js';
 
 // Shared include

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { Op } from "sequelize";
-import { logAudit } from "../../utils/auditLogger.js";
+import { logAudit } from "../../shared/utils/auditLogger.js";
 import { AssistanceModel, AssistanceTypeModel, BeneficiaryModel, DeliveryItemModel, DeliveryModel, MembershipModel, ProjectMemberModel, ProjectModel, UserModel } from "../index.js";
 
 

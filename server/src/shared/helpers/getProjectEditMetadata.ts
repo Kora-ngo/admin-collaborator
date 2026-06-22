@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
-import DeliveryModel from "../modules/delivery/delivery.model.js";
-import DeliveryItemModel from "../modules/delivery-item/delivery-item.model.js";
-import BeneficiaryModel from "../modules/beneficiary/beneficiary.model.js";
+import DeliveryModel from "../../modules/delivery/delivery.model.js";
+import DeliveryItemModel from "../../modules/delivery-item/delivery-item.model.js";
+import BeneficiaryModel from "../../modules/beneficiary/beneficiary.model.js";
 
 export async function getProjectEditMetadata(projectId: number) {
     // Get assistances used in deliveries

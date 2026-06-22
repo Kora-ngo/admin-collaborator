@@ -1,5 +1,5 @@
 import { type Request, type Response } from 'express';
-import emailService from '../../utils/emailService.js';
+import emailService from '../../shared/utils/emailService.js';
 import { UserModel, MembershipModel, OrganisationModel } from '../index.js';
 
 

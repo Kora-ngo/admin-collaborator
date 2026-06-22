@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { checkAndUpdateSubscription } from '../helpers/checkSubscription.js';
+import { checkAndUpdateSubscription } from '../shared/helpers/checkSubscription.js';
 
 export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;

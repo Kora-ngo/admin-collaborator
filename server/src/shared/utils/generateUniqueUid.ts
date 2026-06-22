@@ -1,6 +1,6 @@
 // utils/generateUniqueUid.ts
 
-import sequelize from '../config/database.js';
+import sequelize from '../../config/database.js';
 import { QueryTypes } from 'sequelize';
 
 const VALID_TABLES = [

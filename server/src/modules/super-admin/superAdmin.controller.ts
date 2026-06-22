@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { generateUniqueUid } from '../../utils/generateUniqueUid.js';
+import { generateUniqueUid } from '../../shared/utils/generateUniqueUid.js';
 import SuperAdminModel from './superAdmin.model.js';
 
 

@@ -2,10 +2,10 @@ import type { Request, Response } from "express";
 import { Op } from 'sequelize';
 import bcrypt from "bcryptjs";
 import sequelize from "../../config/database.js";
-import { generateUniqueUid } from "../../utils/generateUniqueUid.js";
-import { logAudit } from "../../utils/auditLogger.js";
+import { generateUniqueUid } from "../../shared/utils/generateUniqueUid.js";
+import { logAudit } from "../../shared/utils/auditLogger.js";
 import type { MembershipCreationAttributes } from "./types/memebership.js";
-import { validateMemberDeletion } from "../../utils/validateMemberDeletion.js";
+import { validateMemberDeletion } from "../../shared/utils/validateMemberDeletion.js";
 import {MembershipModel, OrganisationModel, ProjectMemberModel} from "../index.js";
 import UserModel from "../user/user.model.js";
 

@@ -1,4 +1,4 @@
-import transporter from '../config/email.js';
+import transporter from '../../config/email.js';
 
 interface SendEmailOptions {
     to: string;

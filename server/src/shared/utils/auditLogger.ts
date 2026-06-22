@@ -1,6 +1,6 @@
 
 import type { Request } from 'express';
-import AuditLogModel from '../modules/audit-log/audit-log.model.js';
+import AuditLogModel from '../../modules/audit-log/audit-log.model.js';
 
 interface LogAuditParams {
     req: Request;

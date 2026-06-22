@@ -1,7 +1,7 @@
 import { type Request, type Response } from 'express';
 import { Op } from 'sequelize';
 import * as XLSX from 'xlsx';
-import { logAudit } from '../../utils/auditLogger.js';
+import { logAudit } from '../../shared/utils/auditLogger.js';
 import {
     BeneficiaryModel,
     BeneficiaryMemberModel,

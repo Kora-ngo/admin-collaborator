@@ -6,8 +6,8 @@ import MembershipModel from '../membership/membership.model.js';
 import OrganisationModel from '../organisation/organisation.model.js';
 import SubscriptionModel from '../subscription/subscription.model.js';
 import sequelize from '../../config/database.js';
-import { generateUniqueUid } from '../../utils/generateUniqueUid.js';
-import { logAudit } from '../../utils/auditLogger.js';
+import { generateUniqueUid } from '../../shared/utils/generateUniqueUid.js';
+import { logAudit } from '../../shared/utils/auditLogger.js';
 
 
 

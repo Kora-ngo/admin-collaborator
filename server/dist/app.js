@@ -1,7 +1,7 @@
 import express, {} from "express";
 import routes from "./routes/index.js";
 import cors from 'cors';
-import { handleGlobalError } from "./utils/handleGlobalError.js";
+import { handleGlobalError } from "./shared/utils/handleGlobalError.js";
 const app = express();
 // Allow my frontend dureing dev
 app.use(cors({

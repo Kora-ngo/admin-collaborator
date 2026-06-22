@@ -2,10 +2,10 @@ import { type Request, type Response } from 'express';
 import { Op } from 'sequelize';
 import { ProjectModel, ProjectMemberModel, ProjectAssistanceModel, MembershipModel, AssistanceModel, UserModel, MediaLink, Media, BeneficiaryModel, AssistanceTypeModel, DeliveryItemModel, DeliveryModel, BeneficiaryMemberModel } from '../index.js';
 import sequelize from '../../config/database.js';
-import { base64ToBuffer } from '../../utils/base64ToBuffer.js';
+import { base64ToBuffer } from '../../shared/utils/base64ToBuffer.js';
 import MediaController from '../media/media.controller.js';
-import { bulkUpdateProjectStatuses, updateProjectStatusInDB } from '../../helpers/projectStatus.js';
-import { getProjectEditMetadata } from '../../helpers/getProjectEditMetadata.js';
+import { bulkUpdateProjectStatuses, updateProjectStatusInDB } from '../../shared/helpers/projectStatus.js';
+import { getProjectEditMetadata } from '../../shared/helpers/getProjectEditMetadata.js';
 
 
 const ProjectController = {
