@@ -1,23 +1,8 @@
 import type { Request, Response } from 'express';
 import { Op, fn, col, literal } from 'sequelize';
 import sequelize from '../../../config/database.js';
-import OrganisationModel from '../organisation.model.js';
-import UserModel from '../../user/user.model.js';
-import MembershipModel from '../../membership/membership.model.js';
-import ProjectModel from '../../project/project.model.js';
-import AssistanceModel from '../../assistance/assistance.model.js';
+import { OrganisationModel, UserModel, MembershipModel, ProjectModel, AssistanceModel, BeneficiaryModel, DeliveryModel, DeliveryItemModel, BeneficiaryMemberModel, SyncBatchModel, AuditLogModel, ProjectMemberModel, ProjectAssistanceModel, Media, MediaLink, AssistanceTypeModel } from '../../index.js';
 import SubscriptionModel from '../../subscription/subscription.model.js';
-import BeneficiaryModel from '../../beneficiary/beneficiary.model.js';
-import DeliveryModel from '../../delivery/delivery.model.js';
-import DeliveryItemModel from '../../delivery-item/delivery-item.model.js';
-import BeneficiaryMemberModel from '../../beneficiary-member/beneficiary-member.model.js';
-import SyncBatchModel from '../../sync-batch/sync-batch.model.js';
-import AuditLogModel from '../../audit-log/audit-log.model.js';
-import ProjectMemberModel from '../../project-member/project.member.model.js';
-import ProjectAssistanceModel from '../../project-assistance/project-assistance.model.js';
-import Media from '../../media/media.model.js';
-import MediaLink from '../../media-link/media-link.model.js';
-import AssistanceTypeModel from '../../assistance-type/assistance-type.model.js';
 
 const OrganisationController = {
 

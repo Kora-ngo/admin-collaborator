@@ -1,8 +1,7 @@
 import { type Request, type Response } from 'express';
 import emailService from '../../utils/emailService.js';
-import MembershipModel from '../membership/membership.model.js';
-import UserModel from '../user/user.model.js';
-import OrganisationModel from '../organisation/organisation.model.js';
+import { UserModel, MembershipModel, OrganisationModel } from '../index.js';
+
 
 const FeedbackController = {
     /**

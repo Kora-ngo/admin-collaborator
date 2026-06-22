@@ -1,13 +1,8 @@
 import type { Request, Response } from "express";
 import { Op } from "sequelize";
 import ProjectMemberModel from "../project-member/project.member.model.js";
-import BeneficiaryModel from "./beneficiary.model.js";
-import ProjectModel from "../project/project.model.js";
-import BeneficiaryMemberModel from "../beneficiary-member/beneficiary-member.model.js";
-import MembershipModel from "../membership/membership.model.js";
-import UserModel from "../user/user.model.js";
 import { logAudit } from "../../utils/auditLogger.js";
-
+import { BeneficiaryMemberModel, BeneficiaryModel, MembershipModel, ProjectModel, UserModel } from "../index.js";
 
 const BeneficiaryController = {
 

@@ -5,7 +5,7 @@
 
 import AssistanceModel from "./assistance/index.js";
 import AssistanceTypeModel from "./assistance-type/index.js";
-import AuditLogModel from "./audit-log/audit-log.model.js";
+import AuditLogModel from "./audit-log/index.js";
 import BeneficiaryModel from "./beneficiary/index.js";
 import BeneficiaryMemberModel from  "./beneficiary-member/index.js";
 import DeliveryModel from "./delivery/index.js";

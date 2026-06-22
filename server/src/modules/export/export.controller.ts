@@ -2,15 +2,17 @@ import { type Request, type Response } from 'express';
 import { Op } from 'sequelize';
 import * as XLSX from 'xlsx';
 import { logAudit } from '../../utils/auditLogger.js';
-import BeneficiaryModel from '../beneficiary/beneficiary.model.js';
-import ProjectModel from '../project/project.model.js';
-import BeneficiaryMemberModel from '../beneficiary-member/beneficiary-member.model.js';
-import MembershipModel from '../membership/membership.model.js';
-import UserModel from '../user/user.model.js';
-import DeliveryModel from '../delivery/delivery.model.js';
-import DeliveryItemModel from '../delivery-item/delivery-item.model.js';
-import AssistanceModel from '../assistance/assistance.model.js';
-import AssistanceTypeModel from '../assistance-type/assistance-type.model.js';
+import {
+    BeneficiaryModel,
+    BeneficiaryMemberModel,
+    DeliveryModel,
+    DeliveryItemModel,
+    ProjectModel,
+    MembershipModel,
+    UserModel,
+    AssistanceModel,
+    AssistanceTypeModel
+} from '../index.js';
 
 const ExportController = {
 

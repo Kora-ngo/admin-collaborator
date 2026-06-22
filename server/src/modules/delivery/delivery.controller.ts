@@ -1,16 +1,7 @@
 import type { Request, Response } from "express";
-
 import { Op } from "sequelize";
 import { logAudit } from "../../utils/auditLogger.js";
-import ProjectMemberModel from "../project-member/project.member.model.js";
-import DeliveryModel from "./delivery.model.js";
-import ProjectModel from "../project/project.model.js";
-import BeneficiaryModel from "../beneficiary/beneficiary.model.js";
-import DeliveryItemModel from "../delivery-item/delivery-item.model.js";
-import AssistanceModel from "../assistance/assistance.model.js";
-import AssistanceTypeModel from "../assistance-type/assistance-type.model.js";
-import MembershipModel from "../membership/membership.model.js";
-import UserModel from "../user/user.model.js";
+import { AssistanceModel, AssistanceTypeModel, BeneficiaryModel, DeliveryItemModel, DeliveryModel, MembershipModel, ProjectMemberModel, ProjectModel, UserModel } from "../index.js";
 
 
 const DeliveryController = { 

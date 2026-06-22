@@ -1,15 +1,13 @@
 import type { Request, Response } from "express";
 import { Op } from 'sequelize';
 import bcrypt from "bcryptjs";
-import ProjectMemberModel from "../project-member/project.member.model.js";
-import MembershipModel from "./membership.model.js";
-import UserModel from "../user/user.model.js";
-import OrganisationModel from "../organisation/organisation.model.js";
 import sequelize from "../../config/database.js";
 import { generateUniqueUid } from "../../utils/generateUniqueUid.js";
 import { logAudit } from "../../utils/auditLogger.js";
 import type { MembershipCreationAttributes } from "./types/memebership.js";
 import { validateMemberDeletion } from "../../utils/validateMemberDeletion.js";
+import {MembershipModel, OrganisationModel, ProjectMemberModel} from "../index.js";
+import UserModel from "../user/user.model.js";
 
 
 const MembershipController = {

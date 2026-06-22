@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { Op } from "sequelize";
-
+import { AssistanceModel, AssistanceTypeModel, BeneficiaryMemberModel, BeneficiaryModel, DeliveryItemModel, DeliveryModel, Media, MediaLink, ProjectAssistanceModel, ProjectMemberModel, ProjectModel, SyncBatchModel } from "../index.js";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 import UserModel from "../user/user.model.js";
@@ -8,21 +8,9 @@ import MembershipModel from "../membership/membership.model.js";
 import SubscriptionModel from "../subscription/subscription.model.js";
 import { logAudit } from "../../utils/auditLogger.js";
 import sequelize from "../../config/database.js";
-import ProjectModel from "../project/project.model.js";
-import ProjectMemberModel from "../project-member/project.member.model.js";
-import { generateUniqueUid } from "../../utils/generateUniqueUid.js";
-import SyncBatchModel from "../sync-batch/sync-batch.model.js";
-import BeneficiaryModel from "../beneficiary/beneficiary.model.js";
-import BeneficiaryMemberModel from "../beneficiary-member/beneficiary-member.model.js";
-import DeliveryModel from "../delivery/delivery.model.js";
-import AssistanceModel from "../assistance/assistance.model.js";
-import DeliveryItemModel from "../delivery-item/delivery-item.model.js";
-import OrganisationModel from "../organisation/organisation.model.js";
-import ProjectAssistanceModel from "../project-assistance/project-assistance.model.js";
-import AssistanceTypeModel from "../assistance-type/assistance-type.model.js";
-import MediaLink from "../media-link/media-link.model.js";
-import Media from "../media/media.model.js";
 import { bulkUpdateProjectStatuses } from "../../helpers/projectStatus.js";
+import { generateUniqueUid } from "../../utils/generateUniqueUid.js";
+import OrganisationModel from "../organisation/organisation.model.js";
 
 const EnumeratorController = {
 
@@ -925,7 +913,7 @@ if (deliveries && deliveries.length > 0) {
                     req,
                     action: 'Synched',
                     entityType: "delivery",
-                    platform: "web",
+                    platform: "mobile",
                     entityId: deliveryRecord.id,
                     metadata: {
                         status: 'pending',

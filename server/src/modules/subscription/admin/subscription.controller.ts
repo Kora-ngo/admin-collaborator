@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import sequelize from 'sequelize/lib/sequelize';
-import OrganisationModel from '../../organisation/organisation.model.js';
 import SubscriptionModel from '../subscription.model.js';
 import { generateUniqueUid } from '../../../utils/generateUniqueUid.js';
+import { OrganisationModel } from '../../index.js';
 
 // Shared include
 const subIncludes = [

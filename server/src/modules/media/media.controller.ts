@@ -3,8 +3,7 @@ import { type Request, type Response } from 'express';
 import { v2 as cloudinary } from 'cloudinary';
 import sequelize from '../../config/database.js';
 import Media from './media.model.js';
-import MediaLink from '../media-link/media-link.model.js';
-
+import { MediaLink } from "../index.js";
 
 
 dotenv.config();

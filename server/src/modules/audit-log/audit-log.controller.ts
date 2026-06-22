@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { Op } from "sequelize";
 import ProjectMemberModel from "../project-member/project.member.model.js";
+import { Op } from "sequelize";
 import AuditLogModel from "./audit-log.model.js";
 import MembershipModel from "../membership/membership.model.js";
 import UserModel from "../user/user.model.js";

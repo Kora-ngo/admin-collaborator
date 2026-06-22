@@ -1,9 +1,8 @@
 import { type Request, type Response } from 'express';
 import { json, Op } from 'sequelize';
 import type { AssistanceCreationAttributes, AssistanceTypeAttributes, AssistanceTypeCreationAttributes } from './types/assistance.js';
+import { AssistanceModel, AssistanceTypeModel } from '../index.js';
 import { generateUniqueUid } from '../../utils/generateUniqueUid.js';
-import AssistanceModel from './assistance.model.js';
-import AssistanceTypeModel from '../assistance-type/assistance-type.model.js';
 
 const AssistanceController = {
     

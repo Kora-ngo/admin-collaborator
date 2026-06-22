@@ -1,11 +1,13 @@
 import { type Request, type Response } from 'express';
 import { Op, or, Sequelize } from 'sequelize';
-import ProjectModel from '../project/project.model.js';
-import BeneficiaryModel from '../beneficiary/beneficiary.model.js';
-import DeliveryModel from '../delivery/delivery.model.js';
-import ProjectMemberModel from '../project-member/project.member.model.js';
-import MembershipModel from '../membership/membership.model.js';
-import UserModel from '../user/user.model.js';
+import { 
+    ProjectModel, 
+    ProjectMemberModel, 
+    MembershipModel, 
+    BeneficiaryModel, 
+    DeliveryModel, 
+    UserModel 
+} from '../index.js';
 
 
 const DashboardController = {

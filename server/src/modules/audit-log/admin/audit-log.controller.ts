@@ -1,10 +1,7 @@
 import type { Request, Response } from 'express';
 import { Op } from 'sequelize';
+import { AuditLogModel, MembershipModel, OrganisationModel, UserModel } from '../../index.js';
 import sequelize from 'sequelize/lib/sequelize';
-import MembershipModel from '../../membership/membership.model.js';
-import UserModel from '../../user/user.model.js';
-import OrganisationModel from '../../organisation/organisation.model.js';
-import AuditLogModel from '../audit-log.model.js';
 
 // Shared include — used across all methods
 const auditIncludes = [
