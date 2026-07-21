@@ -16,6 +16,7 @@ import Deliveries from './pages/dashbaord/deliveries'
 import AuditLog from './pages/dashbaord/audit-log'
 import { useSessionGuard } from './helpers/session/useSessionGuard'
 import ForgotPassword from './pages/auth/forgot-password'
+import Maintenance from './pages/other/maintennace'
 
 function App() {
   const token = localStorage.getItem('token');
@@ -61,7 +62,8 @@ function App() {
     return (
       <BrowserRouter basename="/space">
         <Routes>
-          <Route path="/" element={<Login />} />
+          {/* <Route path="/" element={<Login />} /> */}
+          <Route path="/" element={<Maintenance />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/invitation" element={<Invitation />} />
