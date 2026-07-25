@@ -143,7 +143,7 @@ const SettingFeedback = ({ onSuccess }: FeedbackFormProps) => {
             value={formData.email}
             onChange={handleChange}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-sm text-gray-700 mt-1">
             We'll use the email associated with your user account to contact you if needed.
             Only provide a different email here if your user account email is not available.
           </p>

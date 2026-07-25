@@ -37,6 +37,12 @@ const SettingSubscription = () => {
     },
   ];
 
+  const Field = ({ label, value }: { label: string; value: string | undefined }) => (
+    <div className="flex flex-col gap-0.5">
+        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
+        <p className="text-sm font-medium text-gray-800">{value || "—"}</p>
+    </div>
+);
 
 
    // Get status badge color and text
@@ -64,50 +70,77 @@ const SettingSubscription = () => {
   };
 
   // Current Subscription Tab Content
-  const renderCurrent = () => (
+ const renderCurrent = () => (
     <div className="space-y-6">
-      <div className="relative border rounded-md border-gray-200 p-6 bg-white">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <p className="text-sm font-semibold text-gray-500">Subscription Plan</p>
-            <p className="text-lg font-medium mt-1">
-              {subscription ? subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) : "Free"}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm font-semibold text-gray-500">Subscription Status</p>
-            <div className="mt-1">
-              <StatusBadge 
-                text={subscription?.status === "true" ? "Active" : "Inactive"} 
-                color="purple" 
-              />
+        {/* Subscription Identity Card */}
+        <div className="flex items-start gap-4 p-5 bg-gray-100/40 rounded-xl border border-gray-200">
+            {/* Icon / Avatar */}
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className=" size-8">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+              </svg>
             </div>
-          </div>
 
-          <div>
-            <p className="text-sm font-semibold text-gray-500">Expired At</p>
-            <p className="text-lg font-medium mt-1">
-              {formatDate(subscription?.expiresAt!, false) || "N/A"}
-            </p>
-          </div>
+            <div className="flex-1 min-w-0 pt-1">
+                <div className="flex items-center gap-3">
+                    <p className="text-base font-semibold text-gray-900">
+                        {subscription ? subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) : "Free"} Subscription
+                    </p>
+                </div>
+                
+                <p className="text-sm text-gray-500 mt-0.5">
+                    {subscription?.expiresAt 
+                        ? `Expires ${formatDate(subscription.expiresAt, false)}` 
+                        : "No active subscription"}
+                        <span className="text-gray-300 px-3">|</span>
+                    <StatusBadge 
+                        text={subscription?.status === "true" ? "Active" : "Inactive"} 
+                        color="purple" 
+                    />
+                </p>
+            </div>
 
-          <div>
-            <p className="text-sm font-semibold text-gray-500">Days Left</p>
-            <p className="text-lg font-medium mt-1">
-              {getDaysLeftForSubscription(subscription?.expiresAt!) + " Days"}
-            </p>
-          </div>
+            {/* Optional Renew button (you can enable when needed) */}
+            
+            <a 
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=hello@kora.onl"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 px-4 py-2 text-sm font-medium text-primary border border-primary/30 hover:bg-primary/5 rounded-lg transition-colors">
+                Renew
+            </a>
+           
         </div>
-      </div>
 
-      {/* <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
-        <p className="text-sm text-accent-800 font-medium">
-          To renew your subscription, contact <span className="font-bold">kora.support@ngo.com</span>
-        </p>
-      </div> */}
+        {/* Details Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-100 rounded-xl overflow-hidden border border-gray-100">
+            {[
+                { 
+                    label: "Subscription Plan", 
+                    value: subscription ? subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) : "Free" 
+                },
+                { 
+                    label: "Status", 
+                    value: subscription?.status === "true" ? "Active" : "Inactive" 
+                },
+                { 
+                    label: "Expires At", 
+                    value: formatDate(subscription?.expiresAt!, false) || "N/A" 
+                },
+                { 
+                    label: "Days Left", 
+                    value: `${getDaysLeftForSubscription(subscription?.expiresAt!)} Days` 
+                },
+            ].map((item, i) => (
+                <div key={i} className="bg-white px-4 py-3">
+                    <Field label={item.label} value={item.value} />
+                </div>
+            ))}
+        </div>
+
+        {/* Renewal Notice */}
     </div>
-  );
+);
 
   // History Tab Content (placeholder table - replace with real data later)
   const renderHistory = () => {

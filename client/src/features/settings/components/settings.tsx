@@ -10,6 +10,7 @@ import SettingHelp from "./setting-modules/setting-help";
 import brandImg from "../../../assets/icons/brand.png";
 import { useAuthStore } from "../../auth/store/authStore";
 import SettingFeedback from "./setting-modules/setting-feedback";
+import SettingDataProtection from "./setting-modules/setting-data-protection";
 
 type SettingsTab =
   | "account"
@@ -17,6 +18,7 @@ type SettingsTab =
   | "notifications"
   | "data-privacy"
   | "subscription-billing"
+  | "data-protection"
   | "help-support"
   | "language"
   | "feedback";
@@ -77,6 +79,16 @@ const Settings = () => {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
               </svg>
+            ),
+          },
+
+          {
+            key: "data-protection" as const,
+            label: "Data Protection",
+            icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+            </svg>
             ),
           },
         ]
@@ -154,16 +166,16 @@ const Settings = () => {
           </ul>
 
           {/* Branding footer – desktop only */}
-          <div className="mt-50 mb-10 px-6">
+          <div className="flex mt-50 mb-10 px-4">
             <img src={brandImg} className="h-8 opacity-50" alt="Brand" />
-            <p className="font-semibold text-sm ml-6 text-gray-300 mt-2">v1.0.1</p>
+            <p className="font-semibold text-sm ml-1 text-gray-300 mt-2"> - v1.0.1</p>
           </div>
         </div>
 
         {/* CONTENT AREA – full width on mobile, flex-1 on desktop */}
         <div className="flex-1 overflow-y-auto bg-gray-50/50">
           <div className="p-4 md:p-6 lg:p-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+            <h1 className="text-xl md:text-1xl font-bold text-gray-900 mb-6">
               {getTabDisplayName(activeTab)}
             </h1>
 
@@ -172,6 +184,7 @@ const Settings = () => {
             {activeTab === "notifications" && <SettingNotifications />}
             {activeTab === "data-privacy" && <SettingDataPrivacy />}
             {activeTab === "subscription-billing" && <SettingSubscription />}
+            {activeTab === "data-protection" && <SettingDataProtection />}
             {activeTab === "help-support" && <SettingHelp />}
             {activeTab === "feedback" && <SettingFeedback />}
             {activeTab === "language" && (

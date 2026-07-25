@@ -34,8 +34,9 @@ type FilterToggleButtonProps = {
   isOpen: boolean;
   onToggle: () => void;
   className?: string;
-  openText?: string;  // optional text when open
-  closedText?: string; // optional text when closed
+  openText?: string;
+  closedText?: string;
+  showIcon?: boolean; // ← add this
 };
 
 export const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
@@ -44,19 +45,20 @@ export const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
   className = "",
   openText = "Filter",
   closedText = "Filter",
+  showIcon = true, // ← default: icon visible
 }) => {
   return (
-  <button
-    onClick={onToggle}
-    className={`flex items-center gap-2 px-3 py-2 border rounded-md transition-colors
-      ${isOpen ? "bg-gray-400 text-white border-gray-400" : "bg-white text-gray-700 border-gray-300"}
-      hover:${isOpen ? "bg-gray-600" : "bg-gray-50"} focus:outline-none focus:ring-2 focus:ring-primary/50
-      ${className}`}
-  >
-    {isOpen ? closeIcon : filterIcon}
-    <span className="font-medium text-sm">
-      {isOpen ? openText : closedText}
-    </span>
-  </button>
+    <button
+      onClick={onToggle}
+      className={`flex items-center gap-2 px-3 py-2 border rounded-md transition-colors
+        ${isOpen ? "bg-gray-400 text-white border-gray-400" : "bg-white text-gray-700 border-gray-300"}
+        hover:${isOpen ? "bg-gray-600" : "bg-gray-50"} focus:outline-none focus:ring-2 focus:ring-primary/50
+        ${className}`}
+    >
+      {showIcon && (isOpen ? closeIcon : filterIcon)}
+      <span className="font-medium text-sm">
+        {isOpen ? openText : closedText}
+      </span>
+    </button>
   );
 };
