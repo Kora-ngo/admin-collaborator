@@ -35,7 +35,7 @@ router.use("/audit-logs", autditLogRoute);
 router.use("/export", exportRoute);
 router.use("/subscription", subscriptionRoute);
 router.use("/feedback", feedbackRoute);
-router.use("/api/backup", backupRouter);
+router.use("/backup", backupRouter);
 // Mobile-based
 router.use("/mobile", enumeratorRoute);
 // Stay awake

@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"tsc -w\" \"nodemon dist/server.js\"",
+    "dev": "nodemon --ignore 'storage/' --ignore 'storage/**' dist/server.js",
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node dist/server.js"

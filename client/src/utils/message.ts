@@ -73,9 +73,11 @@ export const messages: MessageItem[] = [
 
 
     // Media -------------------------->
-    {key: "media_not_found", message: "Image not Found"}
+    {key: "media_not_found", message: "Image not Found"},
 
 
+    // backup --------------------------->
+    {key: "backup_already_running", message: "A backup operating is currently running"}
 
 
 

@@ -8,6 +8,13 @@ if (process.env.NODE_ENV !== 'production') {
     dotenv.config();
 }
 const port = Number(process.env.PORT) || 5000;
+// This prevents nodemon from restarting on unhandled promise rejections:
+process.on("uncaughtException", (err) => {
+    console.error("❌ Uncaught Exception:", err);
+});
+process.on("unhandledRejection", (reason) => {
+    console.error("❌ Unhandled Rejection:", reason);
+});
 const startServer = async () => {
     try {
         await sequelize.authenticate();
@@ -16,7 +23,7 @@ const startServer = async () => {
         //     await sequelize.sync({ alter: true });
         //     console.log('Database synced with alter: true (development mode)');
         // }
-        // await sequelize.sync({ force: true });
+        // await sequelize.sync({ alter: true });
         // console.log('Tables synced ✅');
         // Then: start server
         app.listen(port, '0.0.0.0', () => {

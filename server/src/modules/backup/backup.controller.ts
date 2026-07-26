@@ -14,6 +14,7 @@ const BackupController = {
 
         try {
             // 1. Validate prerequisites
+            console.log("🔵 Step 1: Validating prerequisites...");
             const { valid, code, org } = await BackupService.validatePrerequisites(organisationId);
 
             if (!valid) {
@@ -28,8 +29,10 @@ const BackupController = {
                     message: code,
                 });
             }
+            console.log("✅ Step 1 done");
 
             // 2. Create record as "processing"
+            console.log("🔵 Step 2: Creating backup record...");
             const backupRecord = await BackupRepository.create({
                 organisation_id: organisationId,
                 created_by: userId,
@@ -40,15 +43,21 @@ const BackupController = {
             });
 
             backupId = backupRecord.id;
+            console.log("✅ Step 2 done — backupId:", backupId);
 
             // 3. Collect all org data
+            console.log("🔵 Step 3: Collecting data...");
             const collectedData = await BackupService.collectData(organisationId, org);
+            console.log("✅ Step 3 done");
 
             // 4. Build .kora archive
+            console.log("🔵 Step 4: Building .kora file...");
             const { filePath, fileName, fileSize, checksum } =
                 await BackupService.buildKoraFile(backupId!, organisationId, org.name, collectedData);
+            console.log("✅ Step 4 done —", fileName);
 
             // 5. Mark as completed
+            console.log("🔵 Step 5: Marking as completed...");
             await BackupRepository.markCompleted(backupId!, {
                 file_name: fileName,
                 file_size: fileSize,
@@ -56,8 +65,7 @@ const BackupController = {
                 checksum,
                 version: 1,
             });
-
-            console.log(`✅ Backup completed: ${fileName} (${fileSize} bytes)`);
+            console.log("✅ Step 5 done");
 
             return res.status(201).json({
                 type: "success",
@@ -73,9 +81,8 @@ const BackupController = {
             });
 
         } catch (error) {
-            console.error("Backup create error:", error);
+            console.error("❌ Backup create error at step:", error);
 
-            // Mark as failed
             if (backupId) {
                 await BackupRepository.markFailed(backupId).catch(() => {});
             }

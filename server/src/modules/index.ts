@@ -20,6 +20,7 @@ import ProjectMemberModel from "./project-member/index.js";
 import SubscriptionModel from "./subscription/index.js";
 import SyncBatchModel from "./sync-batch/index.js";
 import UserModel from "./user/index.js";
+import BackupModel from "./backup/backup.model.js";
 // super-admin has no associations defined in the original file — nothing to extract
 
 
@@ -48,5 +49,6 @@ export {
     SubscriptionModel,
 
     AuditLogModel,
+    BackupModel
 
 };
