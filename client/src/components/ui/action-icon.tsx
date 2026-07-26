@@ -1,3 +1,5 @@
+import Tooltip from "../widgets/tooltip";
+
 type IconProps = {
   name:
     | "trash"
@@ -7,7 +9,7 @@ type IconProps = {
     | "lock"
     | "white_lock_tag"
     | "unlock"
-    | "check" 
+    | "check"
     | "file"
     | "restore"
     | "close"
@@ -21,6 +23,11 @@ type IconProps = {
     | "spinner";
   className?: string;
   onClick?: () => void;
+  /** Override the default tooltip text */
+  tooltip?: string;
+  /** Hide the tooltip completely */
+  hideTooltip?: boolean;
+  position?: "top" | "bottom" | "left" | "right";
 };
 
 const icons = {
@@ -156,6 +163,56 @@ const icons = {
 
 };
 
-export default function ActionIcon({ name, onClick, className }: IconProps) {
-  return (<span className={onClick ? "cursor-pointer" : className} onClick={onClick}>{icons[name]}</span>);
+
+const defaultTooltips: Record<IconProps["name"], string> = {
+  trash: "Delete",
+  view: "View details",
+  edit: "Edit",
+  group: "Manage group",
+  lock: "Lock",
+  white_lock_tag: "Locked",
+  unlock: "Unlock",
+  check: "Confirm",
+  file: "Files / Attachments",
+  restore: "Restore",
+  close: "Close",
+  setting: "Settings",
+  disable: "No action",
+  attach: "Attach file",
+  delivery: "Delivery",
+  assign: "Assign",
+  unassign: "Unassign",
+  close_red: "Close",
+  spinner: "Loading…",
+};
+
+export default function ActionIcon({
+  name,
+  onClick,
+  className = "",
+  tooltip,
+  hideTooltip = false,
+  position = "top",
+}: IconProps) {
+  const icon = (
+    <span
+      className={`${onClick ? "cursor-pointer" : ""} ${className}`.trim()}
+      onClick={onClick}
+    >
+      {icons[name]}
+    </span>
+  );
+
+  // Skip tooltip for spinner or when explicitly hidden
+  if (hideTooltip || name === "spinner") {
+    return icon;
+  }
+
+  const text = tooltip ?? defaultTooltips[name];
+
+  return (
+    <Tooltip text={text} position={position}>
+      {icon}
+    </Tooltip>
+  );
 }

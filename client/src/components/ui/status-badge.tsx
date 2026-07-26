@@ -6,6 +6,7 @@ type BadgeColor =
   | "yellow"
   | "blue"
   | "gray"
+  | "black"
   | "accent"
   | "purple"
   | "orange";
@@ -28,6 +29,8 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ color = "gray", text }) => {
         return "bg-blue-100 text-blue-700";
       case "gray":
         return "bg-gray-100 text-gray-700";
+      case "black":
+        return "bg-gray-800 text-white";
       case "accent":
         return "bg-accent/20 text-accent";
       case "purple":

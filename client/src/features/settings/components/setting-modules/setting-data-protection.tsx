@@ -4,11 +4,24 @@ import { FilterToggleButton } from "../../../../components/widgets/filter-button
 import { Button } from "../../../../components/ui/button";
 import { useBackup } from "../../hooks/useBackup";
 import BackupHistoryRow from "../widgets/backup-history-row";
+import BackupDeleteNotice from "../widgets/backup-delete-notice";
 
 
 const SettingDataProtection = () => {
     const [activeTab, setActiveTab] = useState<"Backup & Restore" | "history">("Backup & Restore");
     const [isAutomatic, setIsAutomatic] = useState(false);
+
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+
+    const handleDeleteClick = (id: number) => {
+        // Actually delete — called on second click via the row
+        handleDelete(id);
+        setPendingDeleteId(null);
+    };
+
+    const handleCancelDelete = () => {
+        setPendingDeleteId(null);
+    };
 
     const {
         backups,
@@ -140,49 +153,58 @@ const SettingDataProtection = () => {
         </div>
     );
 
-    const renderHistory = () => (
-        <div className="space-y-4">
-            <h3 className="text-base font-semibold text-gray-900">Recent Backups</h3>
+const renderHistory = () => (
+    <div className="space-y-4 relative">
+        <h3 className="text-base font-semibold text-gray-900">Recent Backups</h3>
 
-            {backups.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-gray-400">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                    </div>
-                    <p className="text-sm font-medium text-gray-500">No backup history</p>
-                    <p className="text-xs text-gray-400 mt-1">Backups you create will appear here</p>
+        {backups.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-gray-400">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
                 </div>
-            ) : (
-                <div className="overflow-x-auto border border-gray-100 rounded-xl">
-                    <table className="min-w-full divide-y divide-gray-100">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-100">
-                            {backups.map((backup) => (
-                                <BackupHistoryRow
-                                    key={backup.id}
-                                    backup={backup}
-                                    onDownload={handleDownload}
-                                    onDelete={handleDelete}
-                                    formatFileSize={formatFileSize}
-                                    downloading={downloading}
-                                />
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </div>
-    );
+                <p className="text-sm font-medium text-gray-500">No backup history</p>
+                <p className="text-xs text-gray-400 mt-1">Backups you create will appear here</p>
+            </div>
+        ) : (
+            <div className="overflow-x-auto border border-gray-100 rounded-xl">
+                <table className="min-w-full divide-y divide-gray-100">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-100">
+                        {backups.map((backup) => (
+                            <BackupHistoryRow
+                                key={backup.id}
+                                backup={backup}
+                                onDownload={handleDownload}
+                                onDelete={handleDeleteClick}
+                                formatFileSize={formatFileSize}
+                                downloading={downloading}
+                                pendingDeleteId={pendingDeleteId}
+                                onPendingDelete={setPendingDeleteId}
+                            />
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        )}
+
+        {/* Delete confirmation notice */}
+        <BackupDeleteNotice
+            isVisible={pendingDeleteId !== null}
+            onConfirm={() => {}} // handled by row second click
+            onCancel={handleCancelDelete}
+        />
+    </div>
+);
 
     return (
         <div className="space-y-8">

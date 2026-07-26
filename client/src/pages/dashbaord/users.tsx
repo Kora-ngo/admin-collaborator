@@ -166,6 +166,7 @@ const User = () => {
                     role === "admin" ?
                     (
                         <ActionIcon name={row.status === "blocked" ? "unlock" : "lock"}
+                            tooltip={row.status === "blocked" ? "Enable this member" : "Disable this member"}
                             onClick={() => {
                                 setSelectedRecord({
                                     id: row.id,

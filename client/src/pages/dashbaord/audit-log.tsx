@@ -66,7 +66,7 @@ const AuditLogs = () => {
     const getRoleBadgeColor = (role: string) => {
         if (role === 'admin') return 'purple';
         if (role === 'collaborator') return 'blue';
-        if (role === 'enumerator') return 'green';
+        if (role === 'enumerator') return 'yellow';
         return 'gray';
     };
 
@@ -121,7 +121,7 @@ const AuditLogs = () => {
             render: (row) => (
                 <StatusBadge
                     text={row.platform}
-                    color={row.platform === 'web' ? 'blue' : 'green'}
+                    color={row.platform === 'web' ? 'gray' : 'black'}
                 />
             )
         },
