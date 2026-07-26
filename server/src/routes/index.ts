@@ -21,6 +21,7 @@ import adminMembershipRouter  from '../modules/membership/admin/membership.route
 import adminProjectRouter from '../modules/project/project.route.js';
 import auditLogRouter  from '../modules/audit-log/admin/audit-log.route.js';
 import subscriptionRouter from '../modules/subscription/admin/subscription.route.js';
+import backupRouter  from "../modules/backup/backup.route.js";
 
 
 
@@ -40,7 +41,7 @@ router.use("/audit-logs", autditLogRoute);
 router.use("/export", exportRoute);
 router.use("/subscription", subscriptionRoute);
 router.use("/feedback", feedbackRoute);
-
+router.use("/api/backup", backupRouter);
 
 // Mobile-based
 router.use("/mobile", enumeratorRoute);
