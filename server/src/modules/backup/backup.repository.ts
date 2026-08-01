@@ -1,7 +1,6 @@
 import BackupModel from "./backup.model.js";
 import type { BackupRecord } from "./types/backup.types.js";
 
-
 const BackupRepository = {
 
     create: async (data: Omit<BackupRecord, "id" | "created_at">): Promise<BackupModel> => {
@@ -29,6 +28,12 @@ const BackupRepository = {
         });
     },
 
+    findAnyRunning: async (): Promise<BackupModel | null> => {
+        return BackupModel.findOne({
+            where: { action_status: "processing" },
+        });
+    },
+
     findAllByOrg: async (
         organisationId: number,
         page: number,
@@ -41,6 +46,45 @@ const BackupRepository = {
             limit,
             offset,
         });
+    },
+
+    // Latest backup per org — for overview
+    findLatestPerOrg: async (organisationIds: number[]): Promise<BackupModel[]> => {
+        if (organisationIds.length === 0) return [];
+
+        // Get latest completed backup for each org
+        const results: BackupModel[] = [];
+
+        for (const orgId of organisationIds) {
+            const latest = await BackupModel.findOne({
+                where: {
+                    organisation_id: orgId,
+                    status: "true",
+                },
+                order: [["created_at", "DESC"]],
+            });
+            if (latest) results.push(latest);
+        }
+
+        return results;
+    },
+
+    // Count stats per org
+    countByOrg: async (organisationId: number): Promise<{
+        total: number;
+        failed: number;
+        completed: number;
+    }> => {
+        const total = await BackupModel.count({
+            where: { organisation_id: organisationId, status: "true" },
+        });
+        const failed = await BackupModel.count({
+            where: { organisation_id: organisationId, status: "true", action_status: "failed" },
+        });
+        const completed = await BackupModel.count({
+            where: { organisation_id: organisationId, status: "true", action_status: "completed" },
+        });
+        return { total, failed, completed };
     },
 
     markCompleted: async (

@@ -1,6 +1,7 @@
 export type BackupType = "manual" | "automatic";
 export type BackupActionStatus = "processing" | "completed" | "failed";
 export type BackupStatus = "true" | "false";
+export type BackupFrequency = "daily" | "weekly" | "monthly";
 
 export interface BackupRecord {
     id?: number;
@@ -19,6 +20,7 @@ export interface BackupRecord {
 
 export interface BackupCreateResult {
     id: number;
+    organisation_id: number;
     file_name: string;
     file_size: number;
     checksum: string;
@@ -42,4 +44,24 @@ export interface BackupManifest {
         media: number;
     };
     checksum: string | null;
+}
+
+export interface BulkBackupResult {
+    total: number;
+    successful: number;
+    failed: number;
+    results: {
+        organisation_id: number;
+        organisation_name: string;
+        status: "success" | "failed";
+        backup_id?: number;
+        error?: string;
+    }[];
+}
+
+// Backup settings (in-memory for now, DB later)
+export interface BackupSettings {
+    automatic_enabled: boolean;
+    frequency: BackupFrequency;
+    retention_days: number | null; // null = forever
 }

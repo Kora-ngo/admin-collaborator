@@ -12,41 +12,40 @@ export interface ToastProps {
   className?: string;
 }
 
-const variantStyles: Record<ToastVariant, { 
-  iconColor: string; 
-  bgColor: string;
-  borderColor: string;
-  iconPath: string 
+const variantStyles: Record<ToastVariant, {
+  iconBg: string;
+  iconColor: string;
+  progressColor: string;
+  iconPath: string;
 }> = {
   success: {
-    iconColor: 'text-green-600',
-    bgColor: 'bg-green-50',
-    borderColor: 'border-green-200',
+    iconBg: 'bg-green-500/15',
+    iconColor: 'text-green-400',
+    progressColor: 'bg-green-500',
     iconPath: 'M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z',
   },
   error: {
-    iconColor: 'text-red-600',
-    bgColor: 'bg-red-50',
-    borderColor: 'border-red-200',
+    iconBg: 'bg-red-500/15',
+    iconColor: 'text-red-400',
+    progressColor: 'bg-red-500',
     iconPath: 'M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 13.5a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 1 1.5 0v4.5a.75.75 0 0 1-.75.75Zm0-7.5a.75.75 0 1 1 1.5 0v1.5a.75.75 0 0 1-1.5 0V8.25Z',
   },
   warning: {
-    iconColor: 'text-yellow-600',
-    bgColor: 'bg-yellow-50',
-    borderColor: 'border-yellow-200',
+    iconBg: 'bg-yellow-500/15',
+    iconColor: 'text-yellow-400',
+    progressColor: 'bg-yellow-500',
     iconPath: 'M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 13.5a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 1 1.5 0v4.5a.75.75 0 0 1-.75.75Zm0-7.5a.75.75 0 1 1 1.5 0v1.5a.75.75 0 0 1-1.5 0V8.25Z',
   },
   info: {
-    iconColor: 'text-blue-600',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-200',
+    iconBg: 'bg-blue-500/15',
+    iconColor: 'text-blue-400',
+    progressColor: 'bg-blue-500',
     iconPath: 'M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 13.5a.75.75 0 0 1-.75-.75v-3a.75.75 0 0 1 1.5 0v3a.75.75 0 0 1-.75.75Zm0-6.75a.75.75 0 1 1 1.5 0V9a.75.75 0 0 1-1.5 0V8.25Z',
   },
-
   no_network: {
-    iconColor: 'text-gray-600',
-    bgColor: 'bg-gray-50',
-    borderColor: 'border-blue-200',
+    iconBg: 'bg-gray-500/15',
+    iconColor: 'text-gray-400',
+    progressColor: 'bg-gray-400',
     iconPath: 'm3 3 8.735 8.735m0 0a.374.374 0 1 1 .53.53m-.53-.53.53.53m0 0L21 21M14.652 9.348a3.75 3.75 0 0 1 0 5.304m2.121-7.425a6.75 6.75 0 0 1 0 9.546m2.121-11.667c3.808 3.807 3.808 9.98 0 13.788m-9.546-4.242a3.733 3.733 0 0 1-1.06-2.122m-1.061 4.243a6.75 6.75 0 0 1-1.625-6.929m-.496 9.05c-3.068-3.067-3.664-7.67-1.79-11.334M12 12h.008v.008H12V12Z',
   },
 };
@@ -61,15 +60,17 @@ const Toast: React.FC<ToastProps> = ({
   className = '',
 }) => {
   const [visible, setVisible] = useState(false);
+  const [progressKey, setProgressKey] = useState(0);
 
   useEffect(() => {
     if (isOpen) {
       setVisible(true);
+      setProgressKey((k) => k + 1);
 
       if (autoClose > 0) {
         const timer = setTimeout(() => {
           setVisible(false);
-          setTimeout(onClose, 300); // Allow exit animation
+          setTimeout(onClose, 300);
         }, autoClose);
         return () => clearTimeout(timer);
       }
@@ -87,44 +88,36 @@ const Toast: React.FC<ToastProps> = ({
       role="alert"
       aria-live="polite"
       className={`
-        fixed bottom-6 sm:bottom-8
-        z-50
-
+        fixed bottom-6 sm:bottom-8 z-50
         max-w-[90%] sm:max-w-sm w-full
-
-        // ─── Mobile (default) ───
         left-1/2 -translate-x-1/2
-
-        // ─── Desktop / bigger screens ───
-        sm:left-auto sm:right-5
-        sm:translate-x-0
-
-        transition-all duration-500 ease-in-out
+        sm:left-auto sm:right-5 sm:translate-x-0
+        transition-all duration-300 ease-out
         ${visible
-          ? 'opacity-100 translate-y-0'
-          : 'opacity-0 translate-y-4 pointer-events-none'
+          ? 'opacity-100 translate-y-0 scale-100'
+          : 'opacity-0 translate-y-3 scale-95 pointer-events-none'
         }
         ${className}
       `}
     >
-      <div
-        className={`flex items-center gap-4 rounded-xl shadow-xl px-5 py-4 border ${styles.bgColor} ${styles.borderColor}`}
-      >
+      <div className="relative overflow-hidden flex items-start gap-3 rounded-2xl shadow-lg shadow-black/30 border border-gray-50 bg-gray-50 px-4 py-3.5">
 
-        {/* Icon */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className={`size-10 flex-shrink-0 ${styles.iconColor}`}
-        >
-          <path fillRule="evenodd" d={styles.iconPath} clipRule="evenodd" />
-        </svg>
+        {/* Icon badge */}
+        <div className={`flex-shrink-0 flex items-center justify-center size-9 rounded-full ${styles.iconBg}`}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className={`size-5 ${styles.iconColor}`}
+          >
+            <path fillRule="evenodd" d={styles.iconPath} clipRule="evenodd" />
+          </svg>
+        </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 text-base">{title}</h3>
-          <p className="text-sm text-gray-700 mt-1 break-words">{message}</p>
+        <div className="flex-1 min-w-0 pt-0.5">
+          <h3 className="font-semibold text-gray-900 text-sm leading-tight">{title}</h3>
+          <p className="text-sm text-gray-600 mt-0.5 break-words leading-snug">{message}</p>
         </div>
 
         {/* Close Button */}
@@ -133,12 +126,12 @@ const Toast: React.FC<ToastProps> = ({
             setVisible(false);
             setTimeout(onClose, 300);
           }}
-          className="ml-4 text-gray-500 hover:text-gray-700 transition"
+          className="flex-shrink-0 text-gray-500 hover:text-gray-300 hover:bg-gray-800 rounded-full p-1 transition-colors -mt-1 -mr-1"
           aria-label="Close"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="size-5"
+            className="size-4"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -149,7 +142,27 @@ const Toast: React.FC<ToastProps> = ({
             />
           </svg>
         </button>
+
+        {/* Progress bar */}
+        {autoClose > 0 && (
+          <div className="absolute bottom-0 left-0 h-1 w-full bg-gray-800">
+            <div
+              key={progressKey}
+              className={`h-full ${styles.progressColor}`}
+              style={{
+                animation: `toast-shrink ${autoClose}ms linear forwards`,
+              }}
+            />
+          </div>
+        )}
       </div>
+
+      <style>{`
+        @keyframes toast-shrink {
+          from { width: 100%; }
+          to { width: 0%; }
+        }
+      `}</style>
     </div>
   );
 };
