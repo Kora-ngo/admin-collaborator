@@ -106,7 +106,7 @@ const Maintenance = () => {
                             color: "#6b7280",
                             lineHeight: 1.6,
                         }}>
-                            We're upgrading our servers. Everything you see behind this message is coming back better, on <strong className="text-primary">August 2nd</strong>.
+                            We're upgrading our servers. Everything you see behind this message is coming back better, on <strong className="text-primary">August 10</strong>.
                         </p>
 
 
