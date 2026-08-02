@@ -116,6 +116,17 @@ const BackupRepository = {
             { where: { id } }
         );
     },
+
+
+    findCompletedById: async (id: number): Promise<BackupModel | null> => {
+        return BackupModel.findOne({
+            where: {
+                id,
+                status: "true",
+                action_status: "completed",
+            },
+        });
+    },
 };
 
 export default BackupRepository;

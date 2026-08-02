@@ -24,6 +24,7 @@ import ProjectMemberModel from "../project-member/project.member.model.js";
 import type { BackupManifest, BulkBackupResult } from "./types/backup.types.js";
 import BackupStorage from "./backup.storage.js";
 import { createRequire } from "module";
+import sequelize from "../../config/database.js";
 
 const KORA_VERSION = "1.0.0";
 
@@ -499,6 +500,319 @@ const BackupService = {
     verifyChecksum: async (filePath: string, expectedChecksum: string): Promise<boolean> => {
         const current = await computeChecksum(filePath);
         return current === expectedChecksum;
+    },
+
+
+    restoreFromBackup: async (
+        backupId: number,
+        organisationId: number
+    ): Promise<{ success: boolean; error?: string }> => {
+        const tempDir = path.join(os.tmpdir(), `kora_restore_${backupId}_${Date.now()}`);
+        const tempFilePath = path.join(os.tmpdir(), `restore_${backupId}.kora`);
+
+        try {
+            // 1. Find backup record
+            const backup = await BackupRepository.findCompletedById(backupId);
+            if (!backup) return { success: false, error: "backup_not_found" };
+
+            const backupData = backup.get({ plain: true }) as any;
+
+            // Ensure backup belongs to this org
+            if (backupData.organisation_id !== organisationId) {
+                return { success: false, error: "backup_not_found" };
+            }
+
+            // 2. Verify checksum
+            console.log("🔐 Verifying backup integrity...");
+            const isValid = await BackupService.verifyChecksum(
+                backupData.storage_path,
+                backupData.checksum
+            );
+            if (!isValid) return { success: false, error: "backup_corrupted" };
+
+            // 3. Download .kora from B2 to temp file
+            console.log("📥 Downloading .kora from B2...");
+            const stream = await BackupStorage.download(backupData.storage_path);
+            await new Promise<void>((resolve, reject) => {
+                const writeStream = fs.createWriteStream(tempFilePath);
+                stream.pipe(writeStream);
+                writeStream.on("finish", resolve);
+                writeStream.on("error", reject);
+            });
+
+            // 4. Extract ZIP (the .kora is a ZIP)
+            console.log("📦 Extracting .kora archive...");
+            fs.mkdirSync(tempDir, { recursive: true });
+
+            const { createRequire } = await import("module");
+            const req = createRequire(import.meta.url);
+            const AdmZip = req("adm-zip");
+            const zip = new AdmZip(tempFilePath);
+            zip.extractAllTo(tempDir, true);
+
+            // 5. Read JSON files
+            const readJson = (name: string) => {
+                const filePath = path.join(tempDir, name);
+                if (!fs.existsSync(filePath)) return null;
+                return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+            };
+
+            const manifest     = readJson("manifest.json");
+            const orgData      = readJson("organisation.json");
+            const projectsData = readJson("projects.json");
+            const membersData  = readJson("members.json");
+            const benefData    = readJson("beneficiaries.json");
+            const delivData    = readJson("deliveries.json");
+            const assData      = readJson("assistances.json");
+
+            console.log("OR DATA --> ", orgData);
+
+            if (!manifest || !orgData) {
+                return { success: false, error: "invalid_backup_file" };
+            }
+
+            console.log(`📋 Restoring: ${manifest.organisation_name} (v${manifest.version})`);
+
+            // 6. Restore inside a transaction
+
+            await sequelize.transaction(async (t: any) => {
+
+                await sequelize.transaction(async (t: any) => {
+
+    // Disable FK checks for clean restore
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { transaction: t });
+
+    try {
+        // ── Clear existing data ──────────────────────────────────
+        const projectIds = await ProjectModel.findAll({
+            where: { organisation_id: organisationId },
+            attributes: ["id"],
+            transaction: t,
+            raw: true,
+        }).then((rows: any[]) => rows.map((r: any) => r.id));
+
+        if (projectIds.length > 0) {
+            const benefIds = await BeneficiaryModel.findAll({
+                where: { project_id: { [Op.in]: projectIds } },
+                attributes: ["id"],
+                transaction: t,
+                raw: true,
+            }).then((rows: any[]) => rows.map((r: any) => r.id));
+
+            const delivIds = await DeliveryModel.findAll({
+                where: { project_id: { [Op.in]: projectIds } },
+                attributes: ["id"],
+                transaction: t,
+                raw: true,
+            }).then((rows: any[]) => rows.map((r: any) => r.id));
+
+            if (delivIds.length > 0) await DeliveryItemModel.destroy({ where: { delivery_id: { [Op.in]: delivIds } }, transaction: t });
+            if (benefIds.length > 0) await BeneficiaryMemberModel.destroy({ where: { beneficiary_id: { [Op.in]: benefIds } }, transaction: t });
+            await DeliveryModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
+            await BeneficiaryModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
+            await ProjectAssistanceModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
+            await ProjectMemberModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
+        }
+
+        await ProjectModel.destroy({ where: { organisation_id: organisationId }, transaction: t });
+        await AssistanceModel.destroy({ where: { organization_id: organisationId }, transaction: t });
+        await AssistanceTypeModel.destroy({ where: { organization_id: organisationId }, transaction: t });
+        await MembershipModel.destroy({ where: { organization_id: organisationId }, transaction: t });
+
+        console.log("✅ Existing data cleared");
+
+        // ── Restore assistance types ─────────────────────────────
+        if (assData?.assistance_types?.length > 0) {
+            await sequelize.query(
+                `INSERT IGNORE INTO assistance_type (${Object.keys(assData.assistance_types[0]).join(", ")}) VALUES ${
+                    assData.assistance_types.map((r: any) =>
+                        `(${Object.values(r).map((v: any) => v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`).join(", ")})`
+                    ).join(", ")
+                }`,
+                { transaction: t }
+            );
+            console.log(`✅ AssistanceTypes restored: ${assData.assistance_types.length}`);
+        }
+
+        // ── Restore assistances ──────────────────────────────────
+        if (assData?.assistances?.length > 0) {
+            await sequelize.query(
+                `INSERT IGNORE INTO assistance (${Object.keys(assData.assistances[0]).join(", ")}) VALUES ${
+                    assData.assistances.map((r: any) =>
+                        `(${Object.values(r).map((v: any) => v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`).join(", ")})`
+                    ).join(", ")
+                }`,
+                { transaction: t }
+            );
+            console.log(`✅ Assistances restored: ${assData.assistances.length}`);
+        }
+
+        // ── Restore users & memberships ──────────────────────────
+        if (membersData?.memberships?.length > 0) {
+            for (const m of membersData.memberships) {
+                if (m.user) {
+                    await sequelize.query(
+                        `INSERT IGNORE INTO users (id, uid, name, email, phone, password, status, date_of, update_of) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        {
+                            replacements: [
+                                m.user.id, m.user.uid, m.user.name, m.user.email,
+                                m.user.phone || null, m.user.password || "temp_password",
+                                m.user.status || "true",
+                                m.user.date_of || new Date(), m.user.update_of || new Date()
+                            ],
+                            transaction: t,
+                        }
+                    );
+                }
+            }
+
+            const cleanMemberships = membersData.memberships.map((m: any) => ({
+                id: m.id,
+                user_id: m.user_id,
+                organization_id: m.organization_id,
+                role: m.role,
+                status: m.status,
+                date_of: m.date_of,
+            }));
+
+            await sequelize.query(
+                `INSERT IGNORE INTO membership (id, user_id, organization_id, role, status, date_of) VALUES ${
+                    cleanMemberships.map((m: any) =>
+                        `(${m.id}, ${m.user_id}, ${m.organization_id}, '${m.role}', '${m.status}', '${m.date_of}')`
+                    ).join(", ")
+                }`,
+                { transaction: t }
+            );
+            console.log(`✅ Memberships restored: ${cleanMemberships.length}`);
+        }
+
+        // ── Restore projects ─────────────────────────────────────
+        if (projectsData?.projects?.length > 0) {
+            for (const p of projectsData.projects) {
+                const cols = Object.keys(p).join(", ");
+                const vals = Object.values(p).map((v: any) =>
+                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
+                ).join(", ");
+                await sequelize.query(
+                    `INSERT IGNORE INTO projects (${cols}) VALUES (${vals})`,
+                    { transaction: t }
+                );
+            }
+            console.log(`✅ Projects restored: ${projectsData.projects.length}`);
+        }
+
+        // ── Restore project assistances ──────────────────────────
+        if (projectsData?.project_assistances?.length > 0) {
+            for (const pa of projectsData.project_assistances) {
+                const cols = Object.keys(pa).join(", ");
+                const vals = Object.values(pa).map((v: any) =>
+                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
+                ).join(", ");
+                await sequelize.query(
+                    `INSERT IGNORE INTO project_assistances (${cols}) VALUES (${vals})`,
+                    { transaction: t }
+                );
+            }
+            console.log(`✅ ProjectAssistances restored: ${projectsData.project_assistances.length}`);
+        }
+
+        // ── Restore project members ──────────────────────────────
+        if (projectsData?.project_members?.length > 0) {
+            for (const pm of projectsData.project_members) {
+                const cols = Object.keys(pm).join(", ");
+                const vals = Object.values(pm).map((v: any) =>
+                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
+                ).join(", ");
+                await sequelize.query(
+                    `INSERT IGNORE INTO project_members (${cols}) VALUES (${vals})`,
+                    { transaction: t }
+                );
+            }
+            console.log(`✅ ProjectMembers restored: ${projectsData.project_members.length}`);
+        }
+
+        // ── Restore beneficiaries ────────────────────────────────
+        if (benefData?.beneficiaries?.length > 0) {
+            for (const b of benefData.beneficiaries) {
+                const cols = Object.keys(b).join(", ");
+                const vals = Object.values(b).map((v: any) =>
+                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
+                ).join(", ");
+                await sequelize.query(
+                    `INSERT IGNORE INTO beneficiaries (${cols}) VALUES (${vals})`,
+                    { transaction: t }
+                );
+            }
+            console.log(`✅ Beneficiaries restored: ${benefData.beneficiaries.length}`);
+        }
+
+        // ── Restore beneficiary members ──────────────────────────
+        if (benefData?.beneficiary_members?.length > 0) {
+            for (const bm of benefData.beneficiary_members) {
+                const cols = Object.keys(bm).join(", ");
+                const vals = Object.values(bm).map((v: any) =>
+                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
+                ).join(", ");
+                await sequelize.query(
+                    `INSERT IGNORE INTO beneficiary_members (${cols}) VALUES (${vals})`,
+                    { transaction: t }
+                );
+            }
+            console.log(`✅ BeneficiaryMembers restored: ${benefData.beneficiary_members.length}`);
+        }
+
+        // ── Restore deliveries ───────────────────────────────────
+        if (delivData?.deliveries?.length > 0) {
+            for (const d of delivData.deliveries) {
+                const cols = Object.keys(d).join(", ");
+                const vals = Object.values(d).map((v: any) =>
+                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
+                ).join(", ");
+                await sequelize.query(
+                    `INSERT IGNORE INTO deliveries (${cols}) VALUES (${vals})`,
+                    { transaction: t }
+                );
+            }
+            console.log(`✅ Deliveries restored: ${delivData.deliveries.length}`);
+        }
+
+        // ── Restore delivery items ───────────────────────────────
+        if (delivData?.delivery_items?.length > 0) {
+            for (const di of delivData.delivery_items) {
+                const cols = Object.keys(di).join(", ");
+                const vals = Object.values(di).map((v: any) =>
+                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
+                ).join(", ");
+                await sequelize.query(
+                    `INSERT IGNORE INTO delivery_items (${cols}) VALUES (${vals})`,
+                    { transaction: t }
+                );
+            }
+            console.log(`✅ DeliveryItems restored: ${delivData.delivery_items.length}`);
+        }
+
+    } finally {
+        // Always re-enable FK checks
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 1', { transaction: t });
+    }
+});
+
+            });
+
+            console.log(`✅ Restore completed for org ${organisationId}`);
+            return { success: true };
+
+        } catch (error: any) {
+            console.error("❌ Restore failed:", error.message);
+            return { success: false, error: error.message || "restore_failed" };
+
+        } finally {
+            // Cleanup temp files
+            if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+            if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
+            console.log("🧹 Temp files cleaned");
+        }
     },
 
 };

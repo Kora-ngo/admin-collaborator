@@ -362,6 +362,49 @@ const BackupController = {
             return res.status(500).json({ type: "error", message: "server_error" });
         }
     },
+
+    // POST /api/backup/restore
+    restore: async (req: Request, res: Response) => {
+        const { backup_id, organisation_id } = req.body;
+
+        try {
+            if (!backup_id || !organisation_id) {
+                return res.status(400).json({
+                    type: "error",
+                    message: "backup_id_and_organisation_id_required",
+                });
+            }
+
+            console.log(`🔄 Restore requested — backup: ${backup_id}, org: ${organisation_id}`);
+
+            const result = await BackupService.restoreFromBackup(
+                parseInt(backup_id),
+                parseInt(organisation_id)
+            );
+
+            if (!result.success) {
+                const statusMap: Record<string, number> = {
+                    backup_not_found: 404,
+                    backup_corrupted: 422,
+                    invalid_backup_file: 422,
+                };
+                return res.status(statusMap[result.error!] || 500).json({
+                    type: "error",
+                    message: result.error,
+                });
+            }
+
+            return res.status(200).json({
+                type: "success",
+                message: "restore_completed",
+            });
+
+        } catch (error) {
+            console.error("restore controller error:", error);
+            return res.status(500).json({ type: "error", message: "restore_failed" });
+        }
+    },
+
 };
 
 // Add missing import

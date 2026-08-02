@@ -33,6 +33,9 @@ router.get("/overview", verifySuperAdminToken, BackupController.fetchOverview);
 router.get("/org/:organisationId", verifySuperAdminToken, BackupController.fetchByOrg);
 
 router.get("/:id/download", verifySuperAdminToken, BackupController.download);
+
 router.delete("/:id", verifySuperAdminToken, BackupController.delete);
+
+router.post("/restore", verifySuperAdminToken, BackupController.restore);
 
 export default router;
