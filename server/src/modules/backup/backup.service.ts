@@ -25,6 +25,11 @@ import type { BackupManifest, BulkBackupResult } from "./types/backup.types.js";
 import BackupStorage from "./backup.storage.js";
 import { createRequire } from "module";
 import sequelize from "../../config/database.js";
+import Media from "../media/media.model.js";
+import MediaLink from "../media-link/media-link.model.js";
+import SyncBatchModel from "../sync-batch/sync-batch.model.js";
+import AuditLogModel from "../audit-log/audit-log.model.js";
+import { OrganisationRepository } from "../auth/auth.repository.js";
 
 const KORA_VERSION = "1.0.0";
 
@@ -154,116 +159,140 @@ const BackupService = {
 
         console.log("Let's GO ---> COLLECT DATA");
 
+        // ── Projects ─────────────────────────────────────────────────
         const projects = await ProjectModel.findAll({
             where: { organisation_id: organisationId },
             raw: true,
         });
-
-        console.log("BACKUP -- GET PROJECT");
-
         const projectIds = projects.map((p: any) => p.id);
+        console.log("BACKUP -- GET PROJECT:", projects.length);
 
-
-        console.log("BACKUP -- GET MEMBERSHIP");
-
+        // ── Memberships + Users ───────────────────────────────────────
         const memberships = await MembershipModel.findAll({
             where: { organization_id: organisationId },
             include: [{
                 model: UserModel,
                 as: "user",
-                attributes: ["id", "uid", "name", "email", "phone", "status"],
+                attributes: ["id", "uid", "name", "email", "phone", "status", "password", "date_of", "update_of"],
             }],
             raw: true,
             nest: true,
         });
-        
+        console.log("BACKUP -- GET MEMBERSHIP:", memberships.length);
 
+        // ── Subscription ──────────────────────────────────────────────
+        const subscriptions = await SubscriptionModel.findAll({
+            where: { organization_id: organisationId },
+            raw: true,
+        });
+        console.log("BACKUP -- GET SUBSCRIPTION:", subscriptions.length);
+
+        // ── Beneficiaries ─────────────────────────────────────────────
         const beneficiaries = projectIds.length > 0
             ? await BeneficiaryModel.findAll({
                 where: { project_id: { [Op.in]: projectIds } },
                 raw: true,
             })
             : [];
-
-        console.log("BACKUP -- GET BENEF");
-
         const beneficiaryIds = (beneficiaries as any[]).map((b) => b.id);
+        console.log("BACKUP -- GET BENEF:", beneficiaries.length);
 
-
-        console.log("BACKUP -- GET BENEF - MEMBS");
-
+        // ── Beneficiary Members ───────────────────────────────────────
         const beneficiaryMembers = beneficiaryIds.length > 0
             ? await BeneficiaryMemberModel.findAll({
                 where: { beneficiary_id: { [Op.in]: beneficiaryIds } },
                 raw: true,
             })
             : [];
+        console.log("BACKUP -- GET BENEF MEMBERS:", beneficiaryMembers.length);
 
+        // ── Deliveries ────────────────────────────────────────────────
         const deliveries = projectIds.length > 0
             ? await DeliveryModel.findAll({
                 where: { project_id: { [Op.in]: projectIds } },
                 raw: true,
             })
             : [];
-
-
-        console.log("BACKUP -- GET DEL");
-
         const deliveryIds = (deliveries as any[]).map((d) => d.id);
+        console.log("BACKUP -- GET DEL:", deliveries.length);
 
-
-        console.log("BACKUP -- GET DEL - ITEMS");
-
+        // ── Delivery Items ────────────────────────────────────────────
         const deliveryItems = deliveryIds.length > 0
             ? await DeliveryItemModel.findAll({
                 where: { delivery_id: { [Op.in]: deliveryIds } },
                 raw: true,
             })
             : [];
+        console.log("BACKUP -- GET DEL ITEMS:", deliveryItems.length);
 
-        console.log("BACKUP -- ASS");
-
+        // ── Assistances ───────────────────────────────────────────────
         const assistances = await AssistanceModel.findAll({
             where: { organization_id: organisationId },
             raw: true,
         });
+        console.log("BACKUP -- GET ASS:", assistances.length);
 
-
-        console.log("BACKUP -- GET ASS -TYPE");
-
+        // ── Assistance Types ──────────────────────────────────────────
         const assistanceTypes = await AssistanceTypeModel.findAll({
             where: { organization_id: organisationId },
             raw: true,
         });
+        console.log("BACKUP -- GET ASS TYPES:", assistanceTypes.length);
 
-
-        console.log("BACKUP -- GET PROJECT - ASS");
-
+        // ── Project Assistances ───────────────────────────────────────
         const projectAssistances = projectIds.length > 0
             ? await ProjectAssistanceModel.findAll({
                 where: { project_id: { [Op.in]: projectIds } },
                 raw: true,
             })
             : [];
+        console.log("BACKUP -- GET PROJECT ASS:", projectAssistances.length);
 
-        console.log("BACKUP -- GET PROJECT - MEMBS");
-
+        // ── Project Members ───────────────────────────────────────────
         const projectMembers = projectIds.length > 0
             ? await ProjectMemberModel.findAll({
                 where: { project_id: { [Op.in]: projectIds } },
                 raw: true,
             })
             : [];
+        console.log("BACKUP -- GET PROJECT MEMBERS:", projectMembers.length);
 
-        console.log("BACKUP -- GET MEDIA");
-    
-        const media = await MediaModel.findAll({
+        // ── Media ─────────────────────────────────────────────────────
+        const media = await Media.findAll({
             where: { organisation_id: organisationId },
             raw: true,
         });
+        const mediaIds = (media as any[]).map((m) => m.id);
+        console.log("BACKUP -- GET MEDIA:", media.length);
+
+        // ── Media Links ───────────────────────────────────────────────
+        const mediaLinks = mediaIds.length > 0
+            ? await MediaLink.findAll({
+                where: { media_id: { [Op.in]: mediaIds } },
+                raw: true,
+            })
+            : [];
+        console.log("BACKUP -- GET MEDIA LINKS:", mediaLinks.length);
+
+        // ── Sync Batches ──────────────────────────────────────────────
+        const syncBatches = projectIds.length > 0
+            ? await SyncBatchModel.findAll({
+                where: { project_id: { [Op.in]: projectIds } },
+                raw: true,
+            })
+            : [];
+        console.log("BACKUP -- GET SYNC BATCHES:", syncBatches.length);
+
+        // ── Audit Logs ────────────────────────────────────────────────
+        const auditLogs = await AuditLogModel.findAll({
+            where: { organisation_id: organisationId },
+            raw: true,
+        });
+        console.log("BACKUP -- GET AUDIT LOGS:", auditLogs.length);
 
         return {
             organisation: org,
+            subscription: subscriptions,
             projects,
             project_assistances: projectAssistances,
             project_members: projectMembers,
@@ -275,9 +304,11 @@ const BackupService = {
             assistances,
             assistance_types: assistanceTypes,
             media,
+            media_links: mediaLinks,
+            sync_batches: syncBatches,
+            audit_logs: auditLogs,
         };
     },
-
     // Run backup for a single org
     runBackupForOrg: async (
         organisationId: number,
@@ -414,7 +445,7 @@ const BackupService = {
         try {
             fs.mkdirSync(tempDir, { recursive: true });
 
-            // Write JSON files
+            // ── Write JSON files ─────────────────────────────────────
             writeJson(tempDir, "organisation.json", collectedData.organisation);
             writeJson(tempDir, "projects.json", {
                 projects: collectedData.projects,
@@ -434,7 +465,19 @@ const BackupService = {
                 assistances: collectedData.assistances,
                 assistance_types: collectedData.assistance_types,
             });
-            writeJson(tempDir, "media.json", { media: collectedData.media });
+            writeJson(tempDir, "media.json", {
+                media: collectedData.media,
+                media_links: collectedData.media_links,
+            });
+            writeJson(tempDir, "sync.json", {
+                sync_batches: collectedData.sync_batches,
+            });
+            writeJson(tempDir, "audit.json", {
+                audit_logs: collectedData.audit_logs,
+            });
+            writeJson(tempDir, "subscription.json", {
+                subscriptions: collectedData.subscription,
+            });
 
             const manifest: BackupManifest = {
                 version: 1,
@@ -450,11 +493,43 @@ const BackupService = {
                     deliveries: collectedData.deliveries.length,
                     assistances: collectedData.assistances.length,
                     media: collectedData.media.length,
+                    sync_batches: collectedData.sync_batches.length,
+                    audit_logs: collectedData.audit_logs.length,
+                    subscriptions: collectedData.subscription.length,
                 },
                 checksum: "pending",
             };
 
             writeJson(tempDir, "manifest.json", manifest);
+
+
+            // ── 🔍 DEBUG MODE — inspect JSON files before archiving ──
+            // console.log("\n📂 JSON files written to:", tempDir);
+            // console.log("📋 Manifest summary:", JSON.stringify(manifest.summary, null, 2));
+
+            // // List all files and their sizes
+            // const files = fs.readdirSync(tempDir);
+            // console.log("\n📁 Files in temp dir:");
+            // for (const file of files) {
+            //     const size = fs.statSync(path.join(tempDir, file)).size;
+            //     console.log(`   ${file} — ${(size / 1024).toFixed(2)} KB`);
+            // }
+
+            // // Copy temp dir to a readable location for inspection
+            // const inspectDir = path.join(process.cwd(), `debug_backup_${backupId}`);
+            // if (fs.existsSync(inspectDir)) fs.rmSync(inspectDir, { recursive: true, force: true });
+            // fs.cpSync(tempDir, inspectDir, { recursive: true });
+            // console.log(`\n✅ JSON files copied to: ${inspectDir}`);
+            // console.log("👆 Open that folder to inspect all JSON files\n");
+
+            // // ── Fake return for debug mode ────────────────────────────
+            // return {
+            //     filePath: inspectDir,
+            //     fileName,
+            //     fileSize: 0,
+            //     checksum: "debug_mode",
+            //     storageKey: "debug_mode",
+            // };
 
             // Build archive to temp path
             await buildArchive(tempDir, tempFilePath);
@@ -466,10 +541,10 @@ const BackupService = {
             const fileSize = fs.statSync(tempFilePath).size;
             if (fileSize === 0) throw new Error("Archive file is 0 bytes");
 
-            // Compute checksum
+            // // Compute checksum
             const checksum = await BackupStorage.computeChecksum(tempFilePath);
 
-            // Upload to B2
+            // // Upload to B2
             console.log(`📤 Uploading ${fileName} to B2...`);
             const { key } = await BackupStorage.upload(tempFilePath, fileName, organisationId);
             console.log(`✅ Uploaded to B2: ${key}`);
@@ -564,6 +639,10 @@ const BackupService = {
             const benefData    = readJson("beneficiaries.json");
             const delivData    = readJson("deliveries.json");
             const assData      = readJson("assistances.json");
+            const mediaData     = readJson("media.json");
+            const syncData      = readJson("sync.json"); 
+            const auditData     = readJson("audit.json"); 
+            const subData       = readJson("subscription.json");
 
             console.log("OR DATA --> ", orgData);
 
@@ -574,231 +653,155 @@ const BackupService = {
             console.log(`📋 Restoring: ${manifest.organisation_name} (v${manifest.version})`);
 
             // 6. Restore inside a transaction
-
             await sequelize.transaction(async (t: any) => {
 
-                await sequelize.transaction(async (t: any) => {
+            await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { transaction: t });
 
-    // Disable FK checks for clean restore
-    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { transaction: t });
+            try {
+                // ── Clear existing data ──────────────────────────────────
+                const projectIds = await ProjectModel.findAll({
+                    where: { organisation_id: organisationId },
+                    attributes: ["id"],
+                    transaction: t,
+                    raw: true,
+                }).then((rows: any[]) => rows.map((r: any) => r.id));
 
-    try {
-        // ── Clear existing data ──────────────────────────────────
-        const projectIds = await ProjectModel.findAll({
-            where: { organisation_id: organisationId },
-            attributes: ["id"],
-            transaction: t,
-            raw: true,
-        }).then((rows: any[]) => rows.map((r: any) => r.id));
+                if (projectIds.length > 0) {
+                    const benefIds = await BeneficiaryModel.findAll({
+                        where: { project_id: { [Op.in]: projectIds } },
+                        attributes: ["id"],
+                        transaction: t,
+                        raw: true,
+                    }).then((rows: any[]) => rows.map((r: any) => r.id));
 
-        if (projectIds.length > 0) {
-            const benefIds = await BeneficiaryModel.findAll({
-                where: { project_id: { [Op.in]: projectIds } },
-                attributes: ["id"],
-                transaction: t,
-                raw: true,
-            }).then((rows: any[]) => rows.map((r: any) => r.id));
+                    const delivIds = await DeliveryModel.findAll({
+                        where: { project_id: { [Op.in]: projectIds } },
+                        attributes: ["id"],
+                        transaction: t,
+                        raw: true,
+                    }).then((rows: any[]) => rows.map((r: any) => r.id));
 
-            const delivIds = await DeliveryModel.findAll({
-                where: { project_id: { [Op.in]: projectIds } },
-                attributes: ["id"],
-                transaction: t,
-                raw: true,
-            }).then((rows: any[]) => rows.map((r: any) => r.id));
-
-            if (delivIds.length > 0) await DeliveryItemModel.destroy({ where: { delivery_id: { [Op.in]: delivIds } }, transaction: t });
-            if (benefIds.length > 0) await BeneficiaryMemberModel.destroy({ where: { beneficiary_id: { [Op.in]: benefIds } }, transaction: t });
-            await DeliveryModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
-            await BeneficiaryModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
-            await ProjectAssistanceModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
-            await ProjectMemberModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
-        }
-
-        await ProjectModel.destroy({ where: { organisation_id: organisationId }, transaction: t });
-        await AssistanceModel.destroy({ where: { organization_id: organisationId }, transaction: t });
-        await AssistanceTypeModel.destroy({ where: { organization_id: organisationId }, transaction: t });
-        await MembershipModel.destroy({ where: { organization_id: organisationId }, transaction: t });
-
-        console.log("✅ Existing data cleared");
-
-        // ── Restore assistance types ─────────────────────────────
-        if (assData?.assistance_types?.length > 0) {
-            await sequelize.query(
-                `INSERT IGNORE INTO assistance_type (${Object.keys(assData.assistance_types[0]).join(", ")}) VALUES ${
-                    assData.assistance_types.map((r: any) =>
-                        `(${Object.values(r).map((v: any) => v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`).join(", ")})`
-                    ).join(", ")
-                }`,
-                { transaction: t }
-            );
-            console.log(`✅ AssistanceTypes restored: ${assData.assistance_types.length}`);
-        }
-
-        // ── Restore assistances ──────────────────────────────────
-        if (assData?.assistances?.length > 0) {
-            await sequelize.query(
-                `INSERT IGNORE INTO assistance (${Object.keys(assData.assistances[0]).join(", ")}) VALUES ${
-                    assData.assistances.map((r: any) =>
-                        `(${Object.values(r).map((v: any) => v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`).join(", ")})`
-                    ).join(", ")
-                }`,
-                { transaction: t }
-            );
-            console.log(`✅ Assistances restored: ${assData.assistances.length}`);
-        }
-
-        // ── Restore users & memberships ──────────────────────────
-        if (membersData?.memberships?.length > 0) {
-            for (const m of membersData.memberships) {
-                if (m.user) {
-                    await sequelize.query(
-                        `INSERT IGNORE INTO users (id, uid, name, email, phone, password, status, date_of, update_of) 
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        {
-                            replacements: [
-                                m.user.id, m.user.uid, m.user.name, m.user.email,
-                                m.user.phone || null, m.user.password || "temp_password",
-                                m.user.status || "true",
-                                m.user.date_of || new Date(), m.user.update_of || new Date()
-                            ],
-                            transaction: t,
-                        }
-                    );
+                    if (delivIds.length > 0) await DeliveryItemModel.destroy({ where: { delivery_id: { [Op.in]: delivIds } }, transaction: t });
+                    if (benefIds.length > 0) await BeneficiaryMemberModel.destroy({ where: { beneficiary_id: { [Op.in]: benefIds } }, transaction: t });
+                    await DeliveryModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
+                    await BeneficiaryModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
+                    await ProjectAssistanceModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
+                    await ProjectMemberModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
+                    await SyncBatchModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
                 }
+
+                // Get media ids for media links cleanup
+                const mediaIds = await Media.findAll({
+                    where: { organisation_id: organisationId },
+                    attributes: ["id"],
+                    transaction: t,
+                    raw: true,
+                }).then((rows: any[]) => rows.map((r: any) => r.id));
+
+                if (mediaIds.length > 0) {
+                    await MediaLink.destroy({ where: { media_id: { [Op.in]: mediaIds } }, transaction: t });
+                }
+
+                await ProjectModel.destroy({ where: { organisation_id: organisationId }, transaction: t });
+                await AssistanceModel.destroy({ where: { organization_id: organisationId }, transaction: t });
+                await AssistanceTypeModel.destroy({ where: { organization_id: organisationId }, transaction: t });
+                await MembershipModel.destroy({ where: { organization_id: organisationId }, transaction: t });
+                await Media.destroy({ where: { organisation_id: organisationId }, transaction: t });
+                await AuditLogModel.destroy({ where: { organisation_id: organisationId }, transaction: t });
+                await SubscriptionModel.destroy({ where: { organization_id: organisationId }, transaction: t });
+                await OrganisationModel.destroy({ where: { id: organisationId }, transaction: t })
+
+                console.log("✅ Existing data cleared");
+
+                // ── Helper for raw SQL insert ────────────────────────────
+                const insertIgnore = async (table: string, rows: any[]) => {
+                    if (!rows?.length) return;
+                    for (const row of rows) {
+                        const cols = Object.keys(row).join(", ");
+                        const vals = Object.values(row).map((v: any) =>
+                            v === null || v === undefined
+                                ? "NULL"
+                                : `'${String(v).replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`
+                        ).join(", ");
+                        await sequelize.query(
+                            `INSERT IGNORE INTO ${table} (${cols}) VALUES (${vals})`,
+                            { transaction: t }
+                        );
+                    }
+                    console.log(`✅ ${table} restored: ${rows.length}`);
+                };
+
+                // ── Restore in order ─────────────────────────────────────
+                await insertIgnore("assistance_type", assData?.assistance_types);
+                await insertIgnore("assistance", assData?.assistances);
+
+                // Users first (memberships depend on them)
+                if (membersData?.memberships?.length > 0) {
+                    for (const m of membersData.memberships) {
+                        if (m.user) {
+                            await sequelize.query(
+                                `INSERT IGNORE INTO users (id, uid, name, email, phone, password, status, date_of, update_of)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                                {
+                                    replacements: [
+                                        m.user.id, m.user.uid, m.user.name, m.user.email,
+                                        m.user.phone || null,
+                                        m.user.password || "temp_password",
+                                        m.user.status || "true",
+                                        m.user.date_of || new Date(),
+                                        m.user.update_of || new Date(),
+                                    ],
+                                    transaction: t,
+                                }
+                            );
+                        }
+                    }
+
+                    const cleanMemberships = membersData.memberships.map((m: any) => ({
+                        id: m.id,
+                        user_id: m.user_id,
+                        organization_id: m.organization_id,
+                        role: m.role,
+                        status: m.status,
+                        date_of: m.date_of,
+                    }));
+                    await insertIgnore("membership", cleanMemberships);
+                }
+
+                // Subscription
+                await insertIgnore("subscription", subData?.subscriptions);
+
+                // Projects + relations
+                await insertIgnore("projects", projectsData?.projects);
+                await insertIgnore("project_assistance", projectsData?.project_assistances);
+                await insertIgnore("project_members", projectsData?.project_members);
+
+                // Beneficiaries
+                await insertIgnore("beneficiaries", benefData?.beneficiaries);
+                await insertIgnore("beneficiary_members", benefData?.beneficiary_members);
+
+                // Deliveries
+                await insertIgnore("deliveries", delivData?.deliveries);
+                await insertIgnore("delivery_items", delivData?.delivery_items);
+
+                // Media
+                await insertIgnore("media", mediaData?.media);
+                await insertIgnore("media_links", mediaData?.media_links);
+
+                // Sync batches
+                await insertIgnore("sync_batches", syncData?.sync_batches);
+
+                // Audit logs
+                await insertIgnore("audit_logs", auditData?.audit_logs);
+
+                // Organisation
+                await OrganisationRepository.create(orgData, t);
+
+            } finally {
+                await sequelize.query('SET FOREIGN_KEY_CHECKS = 1', { transaction: t });
             }
+        });
 
-            const cleanMemberships = membersData.memberships.map((m: any) => ({
-                id: m.id,
-                user_id: m.user_id,
-                organization_id: m.organization_id,
-                role: m.role,
-                status: m.status,
-                date_of: m.date_of,
-            }));
-
-            await sequelize.query(
-                `INSERT IGNORE INTO membership (id, user_id, organization_id, role, status, date_of) VALUES ${
-                    cleanMemberships.map((m: any) =>
-                        `(${m.id}, ${m.user_id}, ${m.organization_id}, '${m.role}', '${m.status}', '${m.date_of}')`
-                    ).join(", ")
-                }`,
-                { transaction: t }
-            );
-            console.log(`✅ Memberships restored: ${cleanMemberships.length}`);
-        }
-
-        // ── Restore projects ─────────────────────────────────────
-        if (projectsData?.projects?.length > 0) {
-            for (const p of projectsData.projects) {
-                const cols = Object.keys(p).join(", ");
-                const vals = Object.values(p).map((v: any) =>
-                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
-                ).join(", ");
-                await sequelize.query(
-                    `INSERT IGNORE INTO projects (${cols}) VALUES (${vals})`,
-                    { transaction: t }
-                );
-            }
-            console.log(`✅ Projects restored: ${projectsData.projects.length}`);
-        }
-
-        // ── Restore project assistances ──────────────────────────
-        if (projectsData?.project_assistances?.length > 0) {
-            for (const pa of projectsData.project_assistances) {
-                const cols = Object.keys(pa).join(", ");
-                const vals = Object.values(pa).map((v: any) =>
-                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
-                ).join(", ");
-                await sequelize.query(
-                    `INSERT IGNORE INTO project_assistances (${cols}) VALUES (${vals})`,
-                    { transaction: t }
-                );
-            }
-            console.log(`✅ ProjectAssistances restored: ${projectsData.project_assistances.length}`);
-        }
-
-        // ── Restore project members ──────────────────────────────
-        if (projectsData?.project_members?.length > 0) {
-            for (const pm of projectsData.project_members) {
-                const cols = Object.keys(pm).join(", ");
-                const vals = Object.values(pm).map((v: any) =>
-                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
-                ).join(", ");
-                await sequelize.query(
-                    `INSERT IGNORE INTO project_members (${cols}) VALUES (${vals})`,
-                    { transaction: t }
-                );
-            }
-            console.log(`✅ ProjectMembers restored: ${projectsData.project_members.length}`);
-        }
-
-        // ── Restore beneficiaries ────────────────────────────────
-        if (benefData?.beneficiaries?.length > 0) {
-            for (const b of benefData.beneficiaries) {
-                const cols = Object.keys(b).join(", ");
-                const vals = Object.values(b).map((v: any) =>
-                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
-                ).join(", ");
-                await sequelize.query(
-                    `INSERT IGNORE INTO beneficiaries (${cols}) VALUES (${vals})`,
-                    { transaction: t }
-                );
-            }
-            console.log(`✅ Beneficiaries restored: ${benefData.beneficiaries.length}`);
-        }
-
-        // ── Restore beneficiary members ──────────────────────────
-        if (benefData?.beneficiary_members?.length > 0) {
-            for (const bm of benefData.beneficiary_members) {
-                const cols = Object.keys(bm).join(", ");
-                const vals = Object.values(bm).map((v: any) =>
-                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
-                ).join(", ");
-                await sequelize.query(
-                    `INSERT IGNORE INTO beneficiary_members (${cols}) VALUES (${vals})`,
-                    { transaction: t }
-                );
-            }
-            console.log(`✅ BeneficiaryMembers restored: ${benefData.beneficiary_members.length}`);
-        }
-
-        // ── Restore deliveries ───────────────────────────────────
-        if (delivData?.deliveries?.length > 0) {
-            for (const d of delivData.deliveries) {
-                const cols = Object.keys(d).join(", ");
-                const vals = Object.values(d).map((v: any) =>
-                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
-                ).join(", ");
-                await sequelize.query(
-                    `INSERT IGNORE INTO deliveries (${cols}) VALUES (${vals})`,
-                    { transaction: t }
-                );
-            }
-            console.log(`✅ Deliveries restored: ${delivData.deliveries.length}`);
-        }
-
-        // ── Restore delivery items ───────────────────────────────
-        if (delivData?.delivery_items?.length > 0) {
-            for (const di of delivData.delivery_items) {
-                const cols = Object.keys(di).join(", ");
-                const vals = Object.values(di).map((v: any) =>
-                    v === null ? 'NULL' : `'${String(v).replace(/'/g, "\\'")}'`
-                ).join(", ");
-                await sequelize.query(
-                    `INSERT IGNORE INTO delivery_items (${cols}) VALUES (${vals})`,
-                    { transaction: t }
-                );
-            }
-            console.log(`✅ DeliveryItems restored: ${delivData.delivery_items.length}`);
-        }
-
-    } finally {
-        // Always re-enable FK checks
-        await sequelize.query('SET FOREIGN_KEY_CHECKS = 1', { transaction: t });
-    }
-});
-
-            });
 
             console.log(`✅ Restore completed for org ${organisationId}`);
             return { success: true };

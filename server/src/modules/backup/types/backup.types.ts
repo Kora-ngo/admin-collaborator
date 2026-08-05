@@ -42,6 +42,9 @@ export interface BackupManifest {
         deliveries: number;
         assistances: number;
         media: number;
+        sync_batches: number;
+        audit_logs: number;
+        subscriptions: number;
     };
     checksum: string | null;
 }

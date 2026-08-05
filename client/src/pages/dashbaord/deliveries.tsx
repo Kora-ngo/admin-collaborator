@@ -230,11 +230,13 @@ const Deliveries = () => {
                         {isCollaborator && row.review_status === 'pending' && (
                             <>
                                 <ActionIcon
+                                    tooltip="Approve"
                                     name="check"
                                     onClick={() => openReviewPopup(row, 'approve')}
                                     className="text-green-600 hover:text-green-700"
                                 />
                                 <ActionIcon
+                                    tooltip="Reject"
                                     name="close_red"
                                     onClick={() => openReviewPopup(row, 'reject')}
                                     className="text-red-600 hover:text-red-700"

@@ -16,7 +16,7 @@ const EnumeratorController = {
 
     login: async (req: Request, res: Response) => {
         const { email, password } = req.body;
-
+        console.log("Email --> ", email);
         
         try{
             // Validate input
