@@ -3,6 +3,7 @@ import BackupController from "./backup.controller.js";
 import { verifyToken } from "../../middleware/verifyToken.js";
 import { requireRole } from "../../middleware/permission.js";
 import { verifySuperAdminToken } from "../../middleware/verifySuperAdminToken.js";
+import { uploadKora } from "../../middleware/upload.js";
 
 
 const router = Router();
@@ -36,6 +37,6 @@ router.get("/:id/download", verifySuperAdminToken, BackupController.download);
 
 router.delete("/:id", verifySuperAdminToken, BackupController.delete);
 
-router.post("/restore", verifySuperAdminToken, BackupController.restore);
+router.post("/restore", uploadKora.single("file"), verifySuperAdminToken, BackupController.restore);
 
 export default router;

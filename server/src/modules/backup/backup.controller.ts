@@ -366,19 +366,21 @@ const BackupController = {
     // POST /api/backup/restore
     restore: async (req: Request, res: Response) => {
         const { backup_id, organisation_id } = req.body;
+        const uploadedFile = req.file;
 
         try {
-            if (!backup_id || !organisation_id) {
-                return res.status(400).json({
-                    type: "error",
-                    message: "backup_id_and_organisation_id_required",
-                });
+            if (!uploadedFile) {
+                return res.status(400).json({ type: "error", message: "kora_file_required" });
+            }
+            if (!organisation_id) {
+                return res.status(400).json({ type: "error", message: "organisation_id_required" });
             }
 
-            console.log(`🔄 Restore requested — backup: ${backup_id}, org: ${organisation_id}`);
+            console.log(`🔄 Restore requested — backup: ${uploadedFile.path}, org: ${organisation_id}`);
 
             const result = await BackupService.restoreFromBackup(
-                parseInt(backup_id),
+                // parseInt(backup_id),
+                uploadedFile!.path,
                 parseInt(organisation_id)
             );
 

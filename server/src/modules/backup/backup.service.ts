@@ -579,50 +579,53 @@ const BackupService = {
 
 
     restoreFromBackup: async (
-        backupId: number,
+        // backupId: number,
+        uploadedFilePath: string,
         organisationId: number
     ): Promise<{ success: boolean; error?: string }> => {
-        const tempDir = path.join(os.tmpdir(), `kora_restore_${backupId}_${Date.now()}`);
-        const tempFilePath = path.join(os.tmpdir(), `restore_${backupId}.kora`);
+        // const tempDir = path.join(os.tmpdir(), `kora_restore_${backupId}_${Date.now()}`);
+        // const tempFilePath = path.join(os.tmpdir(), `restore_${backupId}.kora`);
+        const tempDir = path.join(os.tmpdir(), `kora_restore_${crypto.randomUUID()}`);
 
         try {
             // 1. Find backup record
-            const backup = await BackupRepository.findCompletedById(backupId);
-            if (!backup) return { success: false, error: "backup_not_found" };
+            // const backup = await BackupRepository.findCompletedById(backupId);
+            // if (!backup) return { success: false, error: "backup_not_found" };
 
-            const backupData = backup.get({ plain: true }) as any;
+            // const backupData = backup.get({ plain: true }) as any;
 
-            // Ensure backup belongs to this org
-            if (backupData.organisation_id !== organisationId) {
-                return { success: false, error: "backup_not_found" };
-            }
+            // // Ensure backup belongs to this org
+            // if (backupData.organisation_id !== organisationId) {
+            //     return { success: false, error: "backup_not_found" };
+            // }
 
-            // 2. Verify checksum
-            console.log("🔐 Verifying backup integrity...");
-            const isValid = await BackupService.verifyChecksum(
-                backupData.storage_path,
-                backupData.checksum
-            );
-            if (!isValid) return { success: false, error: "backup_corrupted" };
+            // // 2. Verify checksum
+            // console.log("🔐 Verifying backup integrity...");
+            // const isValid = await BackupService.verifyChecksum(
+            //     backupData.storage_path,
+            //     backupData.checksum
+            // );
+            // if (!isValid) return { success: false, error: "backup_corrupted" };
 
-            // 3. Download .kora from B2 to temp file
-            console.log("📥 Downloading .kora from B2...");
-            const stream = await BackupStorage.download(backupData.storage_path);
-            await new Promise<void>((resolve, reject) => {
-                const writeStream = fs.createWriteStream(tempFilePath);
-                stream.pipe(writeStream);
-                writeStream.on("finish", resolve);
-                writeStream.on("error", reject);
-            });
+            // // 3. Download .kora from B2 to temp file
+            // console.log("📥 Downloading .kora from B2...");
+            // const stream = await BackupStorage.download(backupData.storage_path);
+            // await new Promise<void>((resolve, reject) => {
+            //     const writeStream = fs.createWriteStream(tempFilePath);
+            //     stream.pipe(writeStream);
+            //     writeStream.on("finish", resolve);
+            //     writeStream.on("error", reject);
+            // });
 
             // 4. Extract ZIP (the .kora is a ZIP)
-            console.log("📦 Extracting .kora archive...");
+            console.log("📦 Extracting .kora archive from:", uploadedFilePath);
             fs.mkdirSync(tempDir, { recursive: true });
 
             const { createRequire } = await import("module");
             const req = createRequire(import.meta.url);
             const AdmZip = req("adm-zip");
-            const zip = new AdmZip(tempFilePath);
+            // const zip = new AdmZip(tempFilePath);
+            const zip = new AdmZip(uploadedFilePath);
             zip.extractAllTo(tempDir, true);
 
             // 5. Read JSON files
@@ -812,7 +815,7 @@ const BackupService = {
 
         } finally {
             // Cleanup temp files
-            if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+            // if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
             if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
             console.log("🧹 Temp files cleaned");
         }
