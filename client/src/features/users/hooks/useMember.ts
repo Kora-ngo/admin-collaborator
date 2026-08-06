@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useToastStore } from "../../../store/toastStore";
-import type { Membership } from "../../../types/membership";
 import { useMembershipStore } from "../store/membershipStore"
 import type { ToastMessage } from "../../../types/toastMessage";
 import { validateMembership } from "../utils/validate";
 import { useAuthStore } from "../../auth/store/authStore";
+import type { Membership } from "../membership";
 
 export const useMembership = () => {
 

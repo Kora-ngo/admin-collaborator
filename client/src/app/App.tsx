@@ -16,6 +16,7 @@ import Deliveries from '../pages/dashbaord/deliveries'
 import AuditLog from '../pages/dashbaord/audit-log'
 import { useSessionGuard } from '../lib/session/useSessionGuard'
 import ForgotPassword from '../pages/auth/forgot-password'
+import DataManagment from '../pages/dashbaord/data-management';
 
 function App() {
   const token = localStorage.getItem('token');
@@ -105,6 +106,7 @@ function App() {
               <Route path="assistance" element={assistanceAllowedRoles.includes(role) ? (<Assistance />) : (<Navigate to="/dashbaord" replace />) } />
               <Route path="families" element={<Families />} />
               <Route path="deliveries" element={<Deliveries />} />
+              <Route path="data" element={<DataManagment />} />
               <Route path="log" element={<AuditLog />} />
             </Route>
             {/* Redirect everything else to admin dashboard */}
