@@ -77,7 +77,31 @@ export const messages: MessageItem[] = [
 
 
     // backup --------------------------->
-    {key: "backup_already_running", message: "A backup operating is currently running"}
+    {key: "backup_already_running", message: "A backup operating is currently running"},
+
+
+    // Beneficiary Import ----------------------------------------------->
+    {key: "invalid_file_type", message: "Only Excel (.xlsx) and CSV files are accepted." },
+    {key: "empty_file", message: "The uploaded file is empty."},
+    {key: "header_error", message: "The file format is incorrect. Some required columns are missing." },
+    {key: "missing_required_column", message: "A required column is missing from the file." },
+    {key: "missing_family_code", message: "Family code is required."},
+    {key: "missing_head_name", message: "Beneficiary head name is required."},
+    {key: "missing_member_name", message: "Member name is required."},
+    {key: "missing_gender", message: "Member gender is required."},
+    {key: "invalid_gender", message: "Gender must be male, female, or other."},
+    {key: "missing_date_of_birth", message: "Member date of birth is required."},
+    {key: "invalid_date_of_birth", message: "The date of birth format is invalid."},
+    {key: "missing_relationship", message: "Member relationship is required."},
+    {key: "project_not_found", message: "The specified project does not exist in this organisation." },
+    {key: "project_not_assigned",message: "No project was assigned to this beneficiary."},
+    {key: "duplicate_family_code", message: "This family code already exists in the uploaded file."},
+    {key: "inconsistent_family_information",message: "The same family code contains different beneficiary information."},
+    {key: "invalid_region", message: "The specified region does not exist."},
+    {key: "invalid_village", message: "The specified village is invalid."},
+    {key: "beneficiary_already_exists", message: "This beneficiary already exists."},
+    {key: "invalid_import_data", message: "Some imported data could not be processed." },
+    {key: "import_validation_successful", message: "The file is valid and ready to be imported." },
 
 
 

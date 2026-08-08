@@ -21,6 +21,7 @@ import adminProjectRouter from '../modules/project/project.route.js';
 import auditLogRouter from '../modules/audit-log/admin/audit-log.route.js';
 import subscriptionRouter from '../modules/subscription/admin/subscription.route.js';
 import backupRouter from "../modules/backup/backup.route.js";
+import dateOperationRouted from "../modules/data-operations/data-opertion.route.js";
 const router = Router();
 // Web-based
 router.use("/auth", authRouter);
@@ -35,7 +36,7 @@ router.use("/audit-logs", autditLogRoute);
 router.use("/export", exportRoute);
 router.use("/subscription", subscriptionRoute);
 router.use("/feedback", feedbackRoute);
-router.use("/backup", backupRouter);
+router.use("/data-operation", dateOperationRouted);
 // Mobile-based
 router.use("/mobile", enumeratorRoute);
 // Stay awake
@@ -47,5 +48,6 @@ router.use('/super-admin/memberships', adminMembershipRouter);
 router.use('/super-admin/projects', adminProjectRouter);
 router.use('/super-admin/audit-logs', auditLogRouter);
 router.use('/super-admin/subscriptions', subscriptionRouter);
+router.use("/backup", backupRouter);
 export default router;
 //# sourceMappingURL=index.js.map

@@ -21,6 +21,7 @@ const VALID_TABLES = [
 	"subscription",
 	"sync_batches",	 	
 	"users",
+  "data_operations",
   "super_admins"
 
 ];
