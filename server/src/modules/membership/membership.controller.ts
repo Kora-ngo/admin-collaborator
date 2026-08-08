@@ -185,33 +185,37 @@ const MembershipController = {
     },
 
     checkMemberEmail: async (req: Request, res: Response) => {
-        try {
-            const { email } = req.query;
-            const result = await MembershipService.checkMemberEmail(email, req.user?.organizationId);
+            try {
+                const { email } = req.query;
+                const result = await MembershipService.checkMemberEmail(
+                email,
+                req.user?.organizationId
+                );
 
-            if (result.validationError) {
-                return res.status(400).json({ type: 'error', message: result.validationError });
-            }
+                if (result.validationError) {
+                return res.status(400).json({
+                    type: "error",
+                    message: result.validationError,
+                });
+                }
 
-            const statusByResult: Record<string, number> = {
-                email_available: 200,
-                email_exists_deleted: 200,
-                email_already_exists: 200,
-            };
-            const typeByResult: Record<string, string> = {
-                email_available: 'success',
-                email_exists_deleted: 'warning',
-                email_already_exists: 'error',
-            };
+                const typeByResult: Record<string, string> = {
+                email_available: "success",
+                email_exists_deleted: "warning",
+                email_already_exists: "error",
+                };
 
-            return res.status(statusByResult[result.result!]!).json({
+                return res.status(200).json({
                 type: typeByResult[result.result!],
                 message: result.result,
-            });
-        } catch (error) {
-            console.error("checkMemberEmail error:", error);
-            return res.status(500).json({ type: 'error', message: 'server_error' });
-        }
+                });
+            } catch (error) {
+                console.error("checkMemberEmail error:", error);
+                return res.status(500).json({
+                type: "error",
+                message: "server_error",
+                });
+            }
     },
 };
 

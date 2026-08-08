@@ -41,7 +41,9 @@ export const useAdminResgister = () => {
 
     const [orgErrors, setOrgErrors] = useState({
         name: false,
-        email: false
+        email: false,
+        country: false,
+        region: false
     });
 
 
@@ -106,8 +108,8 @@ export const useAdminResgister = () => {
             [name]: value
         }));
 
-        if(errors[name as keyof typeof errors]){
-            setOrgForm((prev) => ({
+        if(orgErrors[name as keyof typeof orgErrors]){
+            setOrgErrors((prev) => ({
                 ...prev,
                 [name]: false
             }));
@@ -165,9 +167,19 @@ export const useAdminResgister = () => {
 
         // Validate organisation data
         const { hasErrors, formErrors, trimmedData } = validateOrganisation(orgForm);
-        setOrgErrors(formErrors);
 
-        if (hasErrors) {
+        // Country and Region are required — enforced here regardless of
+        // what validateOrganisation currently checks, so this holds even
+        // if that util hasn't been updated yet.
+        const combinedErrors = {
+            ...formErrors,
+            country: !orgForm.country?.trim(),
+            region: !orgForm.region?.trim(),
+        };
+
+        setOrgErrors(combinedErrors);
+
+        if (hasErrors || combinedErrors.country || combinedErrors.region) {
             return false;
         }
 
@@ -185,13 +197,15 @@ export const useAdminResgister = () => {
 
     const handleUpdateOrganisation = async (): Promise<boolean> => {
 
-        // Simple validation — only required: name and email
+        // Simple validation — required: name, email, country, region
         const newErrors: any = {};
         if (!orgForm.name.trim()) newErrors.name = true;
         if (!orgForm.email.trim()) newErrors.email = true;
         if (orgForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orgForm.email)) {
             newErrors.email = true;
         }
+        if (!orgForm.country.trim()) newErrors.country = true;
+        if (!orgForm.region.trim()) newErrors.region = true;
 
         setOrgErrors(newErrors);
 

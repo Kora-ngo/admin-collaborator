@@ -11,6 +11,8 @@ import { useProjectImage } from "../hooks/useProjectImage";
 // import { getFileIcon } from "../../../utils/fileIcons";
 import { useProjectStore } from "../store/projectStore";
 import Tag from "../../../components/ui/tag";
+import { useCoveredRegions } from "../hooks/useCoveredRegions";
+import CountrySelect from "../../../components/widgets/country-select";
 
 interface ProjectFormProps {
     id: number | any,
@@ -32,7 +34,18 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
         setSelectedEnumerators,
         setSelectedCollaborator
     } = useCollaboratorSelect();
-    
+
+    const {
+        selectedCountry,
+        handleCountryChange,
+        loadingRegions,
+        selectedRegions,
+        availableRegionOptions,
+        handleAddRegion,
+        handleRemoveRegion,
+        handleClearAllRegions,
+    } = useCoveredRegions();
+        
     const {
         selectedAssistance, 
         availableAssisOptions, 
@@ -48,20 +61,14 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
         handleChange, 
         handleSubmit, 
         updateSelectedMembers, 
-        updateSelectedAssitance, 
+        updateSelectedAssitance,
+        updateSelectedRegions, 
         handleView
     } = useProject();
     
     const {
-        // isDragging, 
         uploadedFiles, 
-        setUploadedFiles, 
-        // handleFileChange, 
-        // handleDragOver, 
-        // handleDragLeave, 
-        // handleDrop, 
-        // handleRemoveFile, 
-        // formatFileSize 
+        setUploadedFiles,  
     } = useProjectImage();
     
     const {loading} = useProjectStore();
@@ -171,6 +178,11 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
     useEffect(() => {
         updateSelectedAssitance(selectedAssistance);
     }, [selectedAssistance]);
+
+    useEffect(() => {
+        updateSelectedRegions(selectedCountry, selectedRegions);
+    }, [selectedCountry, selectedRegions]);
+
 
     // Check if an enumerator is locked (created beneficiaries or deliveries)
     const isEnumeratorLocked = (membershipId: number) => {
@@ -422,35 +434,136 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                     )}
                 </div>
 
+                {/* Country of Operation */}
+                <div className="grid gap-2">
+                    <Label required={false}>Country of Operation</Label>
+                    <CountrySelect value={selectedCountry} onChange={handleCountryChange} />
+                </div>
+
+                {/* Covered Regions Selection */}
+                <div className="grid gap-2">
+                    <div className="flex justify-between items-center">
+                        <Label required={false}>Covered Regions</Label>
+
+                        <select
+                            onChange={handleAddRegion}
+                            disabled={!selectedCountry || loadingRegions}
+                            className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                            defaultValue=""
+                        >
+                            <option value="" disabled>
+                                {loadingRegions ? "Loading regions..." : "Add region..."}
+                            </option>
+                            {availableRegionOptions.map(region => (
+                                <option key={region.iso2} value={region.iso2}>
+                                    {region.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="w-full min-h-20 max-h-32 overflow-y-auto p-3 rounded-md border border-gray-200 bg-gray-50">
+                        {selectedRegions.length === 0 ? (
+                            <p className="text-sm text-gray-500">No region selected</p>
+                        ) : (
+                            <div className="flex flex-wrap gap-2">
+                                {selectedRegions.map(region => (
+                                    <Tag
+                                        key={region.iso2}
+                                        label={<span className="flex items-center gap-1">{region.name}</span>}
+                                        onRemove={() => handleRemoveRegion(region.iso2)}
+                                    />
+                                ))}
+
+                                {selectedRegions.length > 1 && (
+                                    <button
+                                        onClick={handleClearAllRegions}
+                                        className="text-xs text-red-600 hover:text-red-800 underline ml-2 self-center"
+                                    >
+                                        Clear all
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 {/* Date Fields - ONLY IN ADD MODE */}
                 {!id && (
+                <div className="grid gap-2">
+                    <div className="grid grid-cols-2 gap-4">
+                    {/* Start Date */}
                     <div className="grid gap-2">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="start_date">Start Date</Label>
-                                <Input
-                                    id="start_date"
-                                    name="start_date"
-                                    type="date"
-                                    value={projectForm.start_date?.toString()}
-                                    onChange={handleChange}
-                                    hasError={errors.start_date}
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="end_date">End Date</Label>
-                                <Input
-                                    id="end_date"
-                                    name="end_date"
-                                    type="date"
-                                    value={projectForm.end_date?.toString()}
-                                    onChange={handleChange}
-                                    hasError={errors.end_date}
-                                />
-                            </div>
-                        </div>
+                        <Label htmlFor="start_date">Start Date</Label>
+                        <Input
+                        id="start_date"
+                        name="start_date"
+                        type="date"
+                        value={projectForm.start_date?.toString() || ""}
+                        onChange={handleChange}
+                        hasError={errors.start_date}
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                            // Force the calendar to open on any click
+                            try {
+                            (e.currentTarget as HTMLInputElement).showPicker?.();
+                            } catch (_) {}
+                        }}
+                        prefixElement={
+                            <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            className="size-4 text-muted-foreground"
+                            >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+                            />
+                            </svg>
+                        }
+                        />
                     </div>
+
+                    {/* End Date */}
+                    <div className="grid gap-2">
+                        <Label htmlFor="end_date">End Date</Label>
+                        <Input
+                        id="end_date"
+                        name="end_date"
+                        type="date"
+                        value={projectForm.end_date?.toString() || ""}
+                        onChange={handleChange}
+                        hasError={errors.end_date}
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                            try {
+                            (e.currentTarget as HTMLInputElement).showPicker?.();
+                            } catch (_) {}
+                        }}
+                        prefixElement={
+                            <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            className="size-4 text-muted-foreground"
+                            >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+                            />
+                            </svg>
+                        }
+                        />
+                    </div>
+                    </div>
+                </div>
                 )}
 
             </div>

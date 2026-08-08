@@ -55,6 +55,13 @@ export const MembershipRepository = {
         });
     },
 
+    findByUserId: async (userId: number) => {
+    return MembershipModel.findOne({
+        where: { user_id: userId },
+        attributes: ["id", "status", "organization_id"],
+    });
+    },
+
     findOneWithUser: async (id: string) => {
         return MembershipModel.findOne({
             where: { id, status: ['true', 'blocked'] },

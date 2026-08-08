@@ -1,3 +1,4 @@
+import { useLocationLabels } from "../../common/locations/hooks/uselocationLabels";
 import { useAuthStore } from "../store/authStore";
 
 interface OrganisationViewProps {
@@ -13,6 +14,7 @@ const Field = ({ label, value }: { label: string; value: string | undefined }) =
 
 const OrganisationView: React.FC<OrganisationViewProps> = ({ onToggle }) => {
     const { organisation, user } = useAuthStore();
+    const { countryName, regionName } = useLocationLabels(organisation?.country, organisation?.region);
 
     if (!organisation) {
         return <div className="text-gray-500">No organisation data available</div>;
@@ -47,7 +49,7 @@ const OrganisationView: React.FC<OrganisationViewProps> = ({ onToggle }) => {
                     </p>
                     {organisation.country && (
                         <span className="inline-block mt-1 text-xs font-semibold px-2 py-0.5 bg-primary/10 text-primary rounded-full">
-                            {organisation.country}
+                             {countryName}
                         </span>
                     )}
                 </div>
@@ -83,7 +85,7 @@ const OrganisationView: React.FC<OrganisationViewProps> = ({ onToggle }) => {
                     { label: "Name", value: organisation.name },
                     // { label: "Email Address", value: organisation.email },
                     { label: "Phone Number", value: organisation.phone },
-                    { label: "Country - Region", value: `${organisation.country} - ${organisation.region}` },
+                    { label: "Country - Region", value: `${countryName}${regionName ? ` - ${regionName}` : ""}` },
                     // { label: "Region", value: organisation.region },
                 ].map((item, i) => (
                     <div key={i} className="bg-white px-4 py-3">

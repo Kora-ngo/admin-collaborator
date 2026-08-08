@@ -4,6 +4,7 @@ import {
     AssistanceModel, UserModel, MediaLink, Media, BeneficiaryModel,
     AssistanceTypeModel, DeliveryItemModel, DeliveryModel, BeneficiaryMemberModel,
 } from '../index.js';
+import ProjectRegionModel from '../project-region/project-region.model.js';
 
 // ============================================================
 // Shared include builders
@@ -85,6 +86,10 @@ const approvedDeliveriesInclude = {
     ],
 };
 
+const regionsInclude = {
+    model: ProjectRegionModel,
+    as: 'regions',
+};
 
 // ============================================================
 // Project
@@ -106,6 +111,7 @@ export const ProjectRepository = {
                 membersInclude(collaboratorScope),
                 assistancesInclude,
                 mediaLinksInclude,
+                regionsInclude,
                 approvedBeneficiariesInclude(),
                 approvedDeliveriesInclude,
             ],
@@ -120,7 +126,7 @@ export const ProjectRepository = {
         return ProjectModel.findAndCountAll({
             where,
             order: [['created_at', 'DESC']],
-            include: [membersInclude(collaboratorScope), assistancesInclude, mediaLinksInclude],
+            include: [membersInclude(collaboratorScope), assistancesInclude, mediaLinksInclude, regionsInclude],
             limit,
             offset,
             distinct: true,
@@ -137,6 +143,7 @@ export const ProjectRepository = {
                 mediaLinksInclude,
                 approvedBeneficiariesInclude(true),
                 approvedDeliveriesInclude,
+                regionsInclude,
             ],
         });
     },
@@ -205,6 +212,25 @@ export const ProjectAssistanceRepository = {
     },
 };
 
+
+// ============================================================
+// Project Region
+// ============================================================
+
+export const ProjectRegionRepository = {
+
+    findAllForProject: async (projectId: string | number) => {
+        return ProjectRegionModel.findAll({ where: { project_id: projectId } });
+    },
+
+    bulkCreate: async (data: any[], transaction: Transaction) => {
+        return ProjectRegionModel.bulkCreate(data, { transaction });
+    },
+
+    destroyAllForProject: async (projectId: string | number, transaction: Transaction) => {
+        return ProjectRegionModel.destroy({ where: { project_id: projectId }, transaction });
+    },
+};
 
 // ============================================================
 // Deletion eligibility (beneficiary / delivery counts)

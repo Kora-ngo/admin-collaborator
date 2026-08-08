@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from "react"
 import type { Project, ProjectAssistance, ProjectMember } from "../project"
-import type { Membership } from "../../../types/membership";
 import type { Assistance } from "../../assistance/assistance";
 import { validateProject } from "../utils/validate";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useToastStore } from "../../../store/toastStore";
 import { useProjectStore } from "../store/projectStore";
+import type { Membership } from "../../users/membership";
 
 export type ProjectFormData = Partial<Project> & {
     selectedMembers: ProjectMember[];
     selectedAssistances: ProjectAssistance[];
+    country?: string; 
+    coveredRegions: string[];
 };
 
 export const useProject = () => {
@@ -28,6 +30,8 @@ export const useProject = () => {
         end_date: "",
         selectedMembers: [],
         selectedAssistances: [],
+        country: "",
+        coveredRegions: [], 
     });
 
     const [editMetadata, setEditMetadata] = useState<{
@@ -157,8 +161,19 @@ export const useProject = () => {
             end_date: undefined,
             selectedMembers: [],
             selectedAssistances: [],
+            country: "", 
+            coveredRegions: [],
         });
         setEditMetadata(null);
+    };
+
+
+    const updateSelectedRegions = (country: string, regions: { iso2: string }[]) => {
+        setProjectForm(prev => ({
+            ...prev,
+            country,
+            coveredRegions: regions.map(r => r.iso2),
+        }));
     };
 
     const refreshCurrentPage = (page: number) => {
@@ -185,8 +200,12 @@ export const useProject = () => {
                 status: projectForm.status,
                 selectedMembers: projectForm.selectedMembers,
                 selectedAssistances: projectForm.selectedAssistances,
+                country: projectForm.country,
+                covered_regions: projectForm.coveredRegions,
                 filesToDelete: filesToDelete || []
             };
+
+            console.log("Sumit Data --> ", submitData);
 
 
             if (id) {
@@ -236,6 +255,8 @@ export const useProject = () => {
 
     const handleView = async (id: number): Promise<any> => {
         const response = await fetchOneData(id) as any;
+
+        console.log("Response --> ",response)
         
         // Set edit metadata
         if (response.editMetadata) {
@@ -251,6 +272,8 @@ export const useProject = () => {
             end_date: response.end_date,
             selectedMembers: response.members,
             selectedAssistances: response.assistances,
+            country: response.country, 
+            coveredRegions: response.covered_regions || [],
         });
         
         return response;
@@ -306,6 +329,7 @@ export const useProject = () => {
         // handleCheckCanDelete,
 
         updateSelectedMembers,
-        updateSelectedAssitance
+        updateSelectedAssitance,
+        updateSelectedRegions
     }
 }

@@ -22,7 +22,7 @@ const TypeForm = ({
 
     return ( 
         <div>
-            <p className="text-md font-semibold text-gray-500">Enter the Assistnant Type and it's Unit</p>
+            <p className="text-sm font-semibold text-gray-500">Define the types of assistance your organization provides. These can be used when recording assistance delivered to beneficiaries.</p>
             <div className="flex flex-col gap-2 max-w-4xl mt-6">
  
                     {types.map((type, index) => (

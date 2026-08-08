@@ -330,16 +330,52 @@ export const MembershipService = {
     // Check member email
     // ============================================================
 
-    checkMemberEmail: async (email: any, requestingOrgId: any) => {
-        if (!email || typeof email !== 'string') return { validationError: 'email_required' };
-        if (!EMAIL_REGEX.test(email)) return { validationError: 'invalid_email_format' };
+    checkMemberEmail: async (email: any, requestingOrgId: number | undefined) => {
+        // 1. Validation
+        if (!email || typeof email !== "string") {
+            return { validationError: "email_required" };
+        }
 
+        const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!EMAIL_REGEX.test(email)) {
+            return { validationError: "invalid_email_format" };
+        }
+
+        // 2. Find user
         const user = await UserRepository.findByEmailBasic(email);
-        if (!user) return { result: 'email_available' as const };
+        if (!user) {
+            return { result: "email_available" as const };
+        }
 
-        const membership = await MembershipRepository.findOneWithUser as any; // not used; see below
-        const membershipRecord = await (await import('./membership.repository.js')).MembershipRepository;
+        // 3. Find membership for this user
+        const membership = await MembershipRepository.findByUserId(user.dataValues.id);
 
-        return { result: 'email_already_exists' as const }; // placeholder replaced below
-    },
+        // No membership at all → available
+        if (!membership) {
+            return { result: "email_available" as const };
+        }
+
+        // Active membership → already exists
+        if (membership.dataValues.status === "true") {
+            return { result: "email_already_exists" as const };
+        }
+
+        // Inactive / deleted membership
+        if (
+            membership.dataValues.status === "false" ||
+            membership.dataValues.status === "deleted"
+        ) {
+            const sameOrg = membership.dataValues.organization_id === requestingOrgId;
+
+            if (sameOrg) {
+            return { result: "email_exists_deleted" as const }; // warning
+            }
+
+            // Belongs to another org → hide the fact
+            return { result: "email_already_exists" as const };
+        }
+
+        // Fallback
+        return { result: "email_already_exists" as const };
+        },
 };

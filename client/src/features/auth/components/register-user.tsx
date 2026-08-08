@@ -24,7 +24,7 @@ const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
           <div className="max-w-2xl w-full mx-auto">
             <h3 className="text-3xl font-bold mb-4">Personal Details</h3>
             <p className="text-gray-400 mb-8">
-             <b>Tell us about yourself.</b> As the admin of your organization on Kora, your details will be used to manage the platform and receive important notifications.
+             <b>Tell us about yourself.</b> As the administrator of your organization, you'll use these details to manage your Kora account and receive important notifications.
             </p>
 
             <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -36,11 +36,12 @@ const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
                   maxLength={30}
                   name="fname"
                   type="text"
-                  placeholder="E.g Frank"
+                  placeholder="Enter your first name"
                   value={userForm.fname}
                   hasError={errors.fname}
                   onChange={handleChange}
                 />
+                {errors.fname && <p className="text-destructive text-sm font-bold">This field is required</p>}
               </div>
 
               <div className="grid gap-2">
@@ -50,11 +51,12 @@ const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
                   maxLength={30}
                   name="lname"
                   type="text"
-                  placeholder="E.g Junior"
+                  placeholder="Enter your last name"
                   value={userForm.lname}
                   hasError={errors.lname}
                   onChange={handleChange}
                 />
+                {errors.lname && <p className="text-destructive text-sm font-bold">This field is required</p>}
               </div>
 
               {/* Email */}
@@ -65,11 +67,13 @@ const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
                   maxLength={50}
                   name="email"
                   type="email"
-                  placeholder="example@gmail.com"
+                  placeholder="amina.njoya@gmail.com"
                   value={userForm.email}
                   hasError={errors.email}
                   onChange={handleChange}
                 />
+                  {errors.email && <p className="text-destructive text-sm font-bold">This field is required</p>}
+
                   {/* Info notice */}
                   <div className="flex items-start gap-2 mt-1 p-3 bg-primary/5 border border-primary/20 rounded-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4 text-primary flex-shrink-0 mt-0.5">
@@ -84,7 +88,7 @@ const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
 
               {/* Contact Details - Phone */}
               <div className="grid gap-2">
-                <Label htmlFor="phone">Contact Details</Label>
+                <Label htmlFor="phone" required={false}>Contact Details</Label>
                 <PhoneInput
                   value={userForm.phone}
                   hasError={!!errors.phone}
@@ -98,6 +102,7 @@ const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
                 {errors.phone && (
                   <p className="text-xs text-red-500">{errors.phone}</p>
                 )}
+                {errors.phone && <p className="text-destructive text-sm font-bold">This field is required</p>}
               </div>
               {/* <div></div> */}
 
@@ -115,6 +120,7 @@ const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
                   onChange={handleChange}
 
                 />
+                {errors.password && <p className="text-destructive text-sm font-bold">This field is required</p>}
               </div>
 
               {/* Confirm Password */}
@@ -130,6 +136,8 @@ const ResgiterUser: React.FC<RegisterUserProps> = ({ userForm,
                   hasError={errors.confirmPassword}
                   onChange={handleChange}
                 />
+              {errors.confirmPassword && <p className="text-destructive text-sm font-bold">This field is required or desosn't match the password</p>}
+
               </div>
             </form>
           </div>

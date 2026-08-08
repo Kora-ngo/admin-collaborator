@@ -12,7 +12,7 @@ interface ProjectState {
     pagination: Pagination | null;
     createData: (projectData: any, files?: File[]) => Promise<any>;
     getData: (page?: number, searchTerm?: string) => Promise<any>;
-    fetchOneData: (id: number) => Promise<Project | ToastMessage>;
+    fetchOneData: (id: number) => Promise<any>;
     filterData: (page: number, filters: any) => Promise<any>;
     updateData: (id: number, data: any, files?: File[]) => Promise<any>;
     toggleData: (id: number, status: string) => Promise<any>;

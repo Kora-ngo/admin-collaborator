@@ -493,7 +493,7 @@ const Projects = () => {
             </div>
 
             <Modal
-                className="lg:w-[630px]"
+                className={projectModalMode == "view" ? "lg:w-[830px]" : "lg:w-[530px]"}
                 mobileHeight="large" 
                 isOpen={projectModalMode !== null}
                 onClose={closeProjectModal}

@@ -8,9 +8,10 @@ export interface ProjectAttributes {
     start_date?: Date;
     end_date?: Date;
     target_families?: number;
+    country?: string;
+    settings?: string;
     created_at: Date;
     updated_at: Date;
-
 }
 
 export type ProjectCreationAttributes = Omit<ProjectAttributes, 'id' | 'created_at' | 'updated_at'>;
@@ -36,3 +37,12 @@ export interface ProjectAssistanceAttributes {
 }
 
 export type ProjectAssistanceCreationAttributes = Omit<ProjectAssistanceAttributes, 'id'>;
+
+
+export interface ProjectRegionAttributes {
+    id: number;
+    project_id: number;
+    region: string;
+}
+
+export type ProjectRegionCreationAttributes = Omit<ProjectRegionAttributes, 'id'>;

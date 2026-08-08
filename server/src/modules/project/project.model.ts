@@ -13,6 +13,8 @@ class Project extends Model<ProjectAttributes, ProjectCreationAttributes>
     public start_date?: Date;
     public end_date?: Date;
     public target_families?: number;
+    public country?: string;
+    public settings?: string;
     public created_at!: Date;
     public updated_at!: Date;
 }
@@ -50,6 +52,12 @@ const ProjectModel = Project.init({
     },
     target_families: {
         type: DataTypes.INTEGER,
+    },
+        country: {
+        type: DataTypes.STRING(2),
+    },
+    settings: {
+        type: DataTypes.TEXT('long'),
     },
     created_at: {
         type: DataTypes.DATE,

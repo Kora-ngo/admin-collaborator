@@ -4,7 +4,7 @@ import { base64ToBuffer } from '../../shared/utils/base64ToBuffer.js';
 import MediaController from '../media/media.controller.js';
 import { bulkUpdateProjectStatuses, updateProjectStatusInDB } from '../../shared/helpers/projectStatus.js';
 import { getProjectEditMetadata } from '../../shared/helpers/getProjectEditMetadata.js';
-import { ProjectRepository, ProjectMemberRepository, ProjectAssistanceRepository, ProjectDeletionRepository } from './project.repository.js';
+import { ProjectRepository, ProjectMemberRepository, ProjectAssistanceRepository, ProjectDeletionRepository, ProjectRegionRepository } from './project.repository.js';
 
 const buildPagination = (count: number, page: number, limit: number) => {
     const totalPages = Math.ceil(count / limit);
@@ -57,6 +57,7 @@ export const ProjectService = {
 
         const selectedMembers = typeof body.selectedMembers === 'string' ? JSON.parse(body.selectedMembers) : body.selectedMembers;
         const selectedAssistances = typeof body.selectedAssistances === 'string' ? JSON.parse(body.selectedAssistances) : body.selectedAssistances;
+        const coveredRegions = typeof body.covered_regions === 'string' ? JSON.parse(body.covered_regions) : body.covered_regions;
 
         if (!selectedMembers?.length) {
             return { validationError: 'members_required' };
@@ -79,6 +80,8 @@ export const ProjectService = {
                 start_date: body.start_date,
                 end_date: body.end_date,
                 target_families: body.target_families,
+                country: body.country || null,
+                settings: body.settings ?? null,
             }, transaction);
 
             if (selectedMembers?.length > 0) {
@@ -96,6 +99,14 @@ export const ProjectService = {
                     assistance_id: a.assistance_id,
                 }));
                 await ProjectAssistanceRepository.bulkCreate(assistancesData, transaction);
+            }
+
+            if (coveredRegions?.length > 0) {
+                const regionsData = coveredRegions.map((region: string) => ({
+                    project_id: newProject.id,
+                    region,
+                }));
+                await ProjectRegionRepository.bulkCreate(regionsData, transaction);
             }
 
             let uploadedFiles: any[] = [];
@@ -144,6 +155,7 @@ export const ProjectService = {
                 beneficiaries: data.beneficiaries?.map((b: any) => b.dataValues || b) || [],
                 deliveries: data.deliveries?.map((d: any) => d.dataValues || d) || [],
                 mediaLinks: data.mediaLinks?.map((ml: any) => ml.dataValues || ml) || [],
+                regions: data.regions?.map((r: any) => r.dataValues || r) || [],
             };
         });
 
@@ -191,6 +203,8 @@ export const ProjectService = {
                 name: updates.name,
                 description: updates.description,
                 status: updates.status,
+                country: updates.country,
+                settings: updates.settings,
             }, transaction);
 
             if (updates.selectedMembers !== undefined) {
@@ -227,6 +241,23 @@ export const ProjectService = {
                     await ProjectAssistanceRepository.bulkCreate(assistancesData, transaction);
                 }
             }
+
+            if (updates.covered_regions !== undefined) {
+                const coveredRegions = typeof updates.covered_regions === 'string'
+                    ? JSON.parse(updates.covered_regions)
+                    : updates.covered_regions;
+
+                await ProjectRegionRepository.destroyAllForProject(id!, transaction);
+
+                if (coveredRegions?.length > 0) {
+                    const regionsData = coveredRegions.map((region: string) => ({
+                        project_id: id,
+                        region,
+                    }));
+                    await ProjectRegionRepository.bulkCreate(regionsData, transaction);
+                }
+            }
+
 
             if (updates.filesToDelete && updates.filesToDelete.length > 0) {
                 for (const mediaId of updates.filesToDelete) {

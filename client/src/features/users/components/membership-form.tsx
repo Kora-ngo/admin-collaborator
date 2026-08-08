@@ -46,6 +46,9 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
     return ( 
         
       <div className="flex flex-col justify-between w-full h-full">
+            <div>
+                <p className="text-sm text-gray-500 font-medium">Add a team member to your organization and choose the role that matches their responsibilities.</p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {!isEdit && (
                     <>
@@ -60,9 +63,13 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                                 autoSave="off"
                                 autoCorrect="off"
                                 value={form.email || ""}
-                                onChange={(e) => handleEmailChange(e.target.value)}
+                                onChange={(e) => {
+                                    handleEmailChange(e.target.value)
+                                    errors.email = false;
+                                }}
                                 hasError={errors.email || emailStatus?.type === "error"}
                             />
+                            {errors.email && <p className="text-destructive text-sm font-bold">This field is required or has an invalide format</p>}
 
                             {/* Checking spinner */}
                             {emailChecking && (
@@ -115,9 +122,10 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                                 placeholder="John Doe"
                                 autoComplete="new-password"
                                 value={form.name || ""}
-                                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                onChange={(e) => {setForm({ ...form, name: e.target.value }); errors.name = false}}
                                 hasError={errors.name}
                             />
+                            {errors.name && <p className="text-destructive text-sm font-bold">This field is required</p>}
                         </div>
 
                         {/* Phone - updated to PhoneInput */}
@@ -141,9 +149,13 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                                 autoComplete="new-password"
                                 placeholder=""
                                 value={form.password || ""}
-                                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                onChange={(e) => {
+                                    setForm({ ...form, password: e.target.value })
+                                    errors.password = false
+                                }}
                                 hasError={errors.password}
                             />
+                            {errors.password && <p className="text-destructive text-sm font-bold">This field is required</p>}
                         </div>
                     </>
                 )}
@@ -159,10 +171,35 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                         ]}
                         value={form.role}
                         hasError={errors.role}
-                        onChange={(e) => setForm({ ...form, role: e.target.value as "" | "admin" | "collaborator" | "enumerator" })}
+                        onChange={(e) => {
+                            setForm({ ...form, role: e.target.value as "" | "admin" | "collaborator" | "enumerator" })
+                            errors.role = false
+                        }}
                     />
+                    {errors.role && <p className="text-destructive text-sm font-bold">This field is required</p>}
                 </div>
             </div>
+
+            {(form.role === "collaborator" || form.role === "enumerator") && (
+                <div className="mt-6 rounded-lg border text-primary/20 bg-primary-50/60 px-4 py-2 my-3">
+                    <div className="flex gap-3">
+                        <div className="text-sm text-primary/80 leading-relaxed">
+                            {form.role === "collaborator" && (
+                                <p>
+                                    <span className="font-bold text-primary">Collaborator</span> - 
+                                    Supervises projects and reviews beneficiary and delivery records from the Kora web platform.
+                                </p>
+                            )}
+                            {form.role === "enumerator" && (
+                                <p>
+                                    <span className="font-bold text-primary">Enumerator</span> - 
+                                    Collects beneficiary and delivery information in the field using <a className="font-semibold underline" target="_blank" rel="noopener noreferrer" href="https://appdistribution.firebase.google.com/i/bb32de04fc79f8fd">Kora-Field</a> mobile app.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="border-t-1 border-gray-200">
                 <div className="my-4 flex gap-4 justify-end">

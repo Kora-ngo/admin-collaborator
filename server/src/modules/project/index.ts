@@ -7,6 +7,7 @@ import MediaLink from "../media-link/media-link.model.js";
 import BeneficiaryModel from "../beneficiary/beneficiary.model.js";
 import DeliveryModel from "../delivery/delivery.model.js";
 import SyncBatchModel from "../sync-batch/sync-batch.model.js";
+import ProjectRegionModel from "../project-region/project-region.model.js";
 
 // Associations for ProjectModel — extracted from the former models/index.ts
 
@@ -58,6 +59,18 @@ ProjectModel.hasMany(DeliveryModel, {
 ProjectModel.hasMany(SyncBatchModel, {
     foreignKey: 'project_id',
     as: 'syncBatches'
+});
+
+
+// Project -> ProjectRegions
+ProjectModel.hasMany(ProjectRegionModel, {
+    foreignKey: 'project_id',
+    as: 'regions',
+});
+
+ProjectRegionModel.belongsTo(ProjectModel, {
+    foreignKey: 'project_id',
+    as: 'project',
 });
 
 export default ProjectModel;
