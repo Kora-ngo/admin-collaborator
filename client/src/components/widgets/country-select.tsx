@@ -3,10 +3,11 @@ import { locationApi, type CountryOption } from "../../features/common/locations
 
 
 interface CountrySelectProps {
-  value: string; // country iso2 code, e.g. "CM"
+  value: string;
   onChange: (countryCode: string) => void;
   hasError?: boolean;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const CountrySelect: React.FC<CountrySelectProps> = ({
@@ -14,6 +15,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
   onChange,
   hasError = false,
   placeholder = "Select a country",
+  disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -71,7 +73,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
     <div className="relative" ref={dropdownRef}>
       <button
         type="button"
-        disabled={loading}
+        disabled={loading || disabled}
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 border rounded-md bg-white text-sm transition-colors ${
           loading ? "opacity-60 cursor-not-allowed" : ""

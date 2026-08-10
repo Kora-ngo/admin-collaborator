@@ -13,6 +13,7 @@ export const validateProject = (form: ProjectFormData) => {
         end_date: false,
         selectedMembers: false,
         selectedCollaborator: false,
+        target_families: false,
     };
 
     // Required: Project name
@@ -33,6 +34,10 @@ export const validateProject = (form: ProjectFormData) => {
     // Required: End date
     if (!form.end_date) {
         errors.end_date = true;
+    }
+
+    if (!form.target_families) {
+        errors.target_families = true;
     }
 
     // Required: At least one enumerator

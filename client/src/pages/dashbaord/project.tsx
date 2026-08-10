@@ -158,49 +158,98 @@ const Projects = () => {
     }, [getData]);
 
     const projectColumns: TableColumn[] = [
-        { 
-            key: "id", 
-            label: "ID", 
-            visibleOn: "lg", 
-            render: (row) => `#PRJ-${row.id}` 
-        },
-        { 
-            key: "name", 
-            label: "Project Title", 
-            visibleOn: "always" 
-        },
-        {
-            key: "assistances",
-            label: "Assistances",
-            visibleOn: "md",
-            render: (row) => `${ row.assistances?.length || 0} Assistances`
-        },
-        {
-            key: "members",
-            label: "Members",
-            visibleOn: "lg",
-            render: (row) => {
-                const enumerators = row.members?.filter((m: any) => 
-                    m.role_in_project === 'enumerator'
-                ).length || 0;
-                const collaborators = row.members?.filter((m: any) => 
-                    m.role_in_project === 'collaborator'
-                ).length || 0;
-                return `${enumerators}Enums, ${collaborators}Colls`;
+    {
+        key: "id",
+        label: "ID",
+        visibleOn: "lg",
+        render: (row) => `#PRJ-${row.id}`
+    },
+    {
+        key: "project",
+        label: "Project",
+        visibleOn: "always",
+        render: (row) => {
+            const assistanceCount = row.assistances?.length || 0;
+            const enumerators = row.members?.filter((m: any) => m.role_in_project === 'enumerator').length || 0;
+            const collaborators = row.members?.filter((m: any) => m.role_in_project === 'collaborator').length || 0;
+            const regionCount = row.regions?.length || 0;
+
+            return (
+                <div>
+                    <p className="font-semibold text-gray-900">{row.name}</p>
+                    <p className="text-ms text-gray-500 mt-0.5">
+                        {assistanceCount} Assistance{assistanceCount !== 1 ? "s" : ""} - {enumerators} Enums, {collaborators} Colls - {regionCount} Region{regionCount !== 1 ? "s" : ""}
+                    </p>
+                </div>
+            );
+        }
+    },
+    {
+        key: "period",
+        label: "Period",
+        visibleOn: "md",
+        render: (row) => {
+            const end = row.end_date ? new Date(row.end_date) : null;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let daysLeft: number | null = null;
+            if (end) {
+                end.setHours(0, 0, 0, 0);
+                daysLeft = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             }
-        },
-        {
-            key: "start_date",
-            label: "Start",
-            visibleOn: "md",
-            render: (row) => formatDate(row.start_date, false)
-        },
-        {
-            key: "end_date",
-            label: "End",
-            visibleOn: "md",
-            render: (row) => formatDate(row.end_date, false)
-        },
+
+            const isDone = row.status === "done";
+
+            return (
+                <div>
+                    <p className="text-gray-700 whitespace-nowrap">
+                        From <b>{formatDate(row.start_date, false, false)}</b> to <b>{formatDate(row.end_date, false, false)}</b>
+                    </p>
+                    {isDone ? (
+                        <p className="text-xs font-semibold text-gray-400 mt-0.5">Completed</p>
+                    ) : daysLeft !== null && (
+                        <p className={`text-xs font-semibold mt-0.5 ${
+                            daysLeft < 0 ? "text-red-600" :
+                            daysLeft <= 7 ? "text-amber-600" :
+                            "text-gray-500"
+                        }`}>
+                            {daysLeft < 0
+                                ? `Overdue by ${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? "s" : ""}`
+                                : daysLeft === 0
+                                ? "Ends today"
+                                : `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`}
+                        </p>
+                    )}
+                </div>
+            );
+        }
+    },
+    {
+        key: "progress",
+        label: "Progress",
+        visibleOn: "always",
+        render: (row) => {
+            if (!row.target_families) {
+                return <span className="text-xs text-gray-400">No target set</span>;
+            }
+
+            const actual = row.beneficiaries?.length || 0;
+            const percent = Math.min(100, Math.round((actual / row.target_families) * 100));
+
+            return (
+                <div className="w-32">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-gray-700">{actual}/{row.target_families}</span>
+                        <span className="text-xs text-gray-400">{percent}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary/70 rounded-full" style={{ width: `${percent}%` }} />
+                    </div>
+                </div>
+            );
+        }
+    },
         {
             key: "status",
             label: "Status",

@@ -12,6 +12,7 @@ export type ProjectFormData = Partial<Project> & {
     selectedAssistances: ProjectAssistance[];
     country?: string; 
     coveredRegions: string[];
+    target_families?: number;
 };
 
 export const useProject = () => {
@@ -32,6 +33,7 @@ export const useProject = () => {
         selectedAssistances: [],
         country: "",
         coveredRegions: [], 
+        target_families: undefined,
     });
 
     const [editMetadata, setEditMetadata] = useState<{
@@ -46,6 +48,7 @@ export const useProject = () => {
         end_date: false,
         selectedMembers: false,
         selectedCollaborator: false,
+        target_families: false, 
     });
 
     // Search state
@@ -113,7 +116,9 @@ export const useProject = () => {
                 ...prev,
                 [name]: value || undefined
             }));
-        } else {
+        }else if (name === 'target_families') {                                    // ← add this branch
+        setProjectForm(prev => ({ ...prev, target_families: value ? Number(value) : undefined }));
+    }else {
             setProjectForm(prev => ({
                 ...prev,
                 [name]: value || undefined
@@ -202,6 +207,7 @@ export const useProject = () => {
                 selectedAssistances: projectForm.selectedAssistances,
                 country: projectForm.country,
                 covered_regions: projectForm.coveredRegions,
+                target_families: projectForm.target_families,
                 filesToDelete: filesToDelete || []
             };
 
@@ -273,7 +279,8 @@ export const useProject = () => {
             selectedMembers: response.members,
             selectedAssistances: response.assistances,
             country: response.country, 
-            coveredRegions: response.covered_regions || [],
+            coveredRegions: (response.regions || []).map((r: any) => r.region),
+            target_families: response.target_families,
         });
         
         return response;

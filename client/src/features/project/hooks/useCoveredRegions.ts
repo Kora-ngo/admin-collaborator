@@ -14,6 +14,27 @@ export const useCoveredRegions = () => {
     // Selected covered regions (tags)
     const [selectedRegions, setSelectedRegions] = useState<RegionOption[]>([]);
 
+    // Add this function, near handleCountryChange:
+    const hydrateFromCodes = async (countryCode: string, regionCodes: string[]) => {
+        setSelectedCountry(countryCode);
+
+        if (!countryCode || regionCodes.length === 0) {
+            setSelectedRegions([]);
+            return;
+        }
+
+        try {
+            setLoadingRegions(true);
+            const data = await locationApi.getStates(countryCode);
+            setRegionsData(data);
+            setSelectedRegions(data.filter((r) => regionCodes.includes(r.iso2)));
+        } catch (err) {
+            console.error("Failed to hydrate covered regions:", err);
+        } finally {
+            setLoadingRegions(false);
+        }
+    };
+    
     useEffect(() => {
         if (organisation?.country && !selectedCountry) {
             setSelectedCountry(organisation.country);
@@ -86,5 +107,6 @@ export const useCoveredRegions = () => {
         handleAddRegion,
         handleRemoveRegion,
         handleClearAllRegions,
+        hydrateFromCodes
     };
 };

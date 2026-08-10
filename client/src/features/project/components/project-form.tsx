@@ -44,6 +44,7 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
         handleAddRegion,
         handleRemoveRegion,
         handleClearAllRegions,
+        hydrateFromCodes, 
     } = useCoveredRegions();
         
     const {
@@ -92,10 +93,16 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                 setSelectedEnumerators([]);
                 setSelectedCollaborator(0);
                 setSelectedAssistance([]);
+                handleCountryChange("");
                 return;
             }
 
             const projectData = await handleView(id);
+
+            if (projectData.country) {
+                console.log("Hello --> ",  projectData.regions)
+                hydrateFromCodes(projectData.country, (projectData.regions || []).map((r: any) => r.region));
+            }
 
             // Set existing media files
             // if (projectData.mediaLinks) {
@@ -237,6 +244,27 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                         onChange={handleChange}
                     />
                 </div>
+
+
+                <div className="grid gap-2">
+                    <Label htmlFor="target_families">Target Families</Label>
+                    <Input
+                        id="target_families"
+                        name="target_families"
+                        type="number"
+                        min={0}
+                        placeholder="e.g. 150"
+                        value={projectForm.target_families?.toString() || ""}
+                        onChange={handleChange}
+                        hasError={errors.target_families}
+                        disabled={!!id}
+                    />
+                    <p className="text-xs text-gray-500">
+                        The number of families this project aims to reach. This can't be changed once the project is created.
+                    </p>
+                </div>
+
+
 
                 {/* Single Collaborator Selection - ONLY SHOW IN ADD MODE */}
                 {!id && (
@@ -437,7 +465,9 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                 {/* Country of Operation */}
                 <div className="grid gap-2">
                     <Label required={false}>Country of Operation</Label>
-                    <CountrySelect value={selectedCountry} onChange={handleCountryChange} />
+                    <CountrySelect 
+                    disabled={!!id}
+                    value={selectedCountry} onChange={handleCountryChange} />
                 </div>
 
                 {/* Covered Regions Selection */}
@@ -445,21 +475,21 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                     <div className="flex justify-between items-center">
                         <Label required={false}>Covered Regions</Label>
 
-                        <select
-                            onChange={handleAddRegion}
-                            disabled={!selectedCountry || loadingRegions}
-                            className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                            defaultValue=""
-                        >
-                            <option value="" disabled>
-                                {loadingRegions ? "Loading regions..." : "Add region..."}
-                            </option>
-                            {availableRegionOptions.map(region => (
-                                <option key={region.iso2} value={region.iso2}>
-                                    {region.name}
+                        {!id && (
+                            <select
+                                onChange={handleAddRegion}
+                                disabled={!selectedCountry || loadingRegions}
+                                className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                defaultValue=""
+                            >
+                                <option value="" disabled>
+                                    {loadingRegions ? "Loading regions..." : "Add region..."}
                                 </option>
-                            ))}
-                        </select>
+                                {availableRegionOptions.map(region => (
+                                    <option key={region.iso2} value={region.iso2}>{region.name}</option>
+                                ))}
+                            </select>
+                        )}
                     </div>
 
                     <div className="w-full min-h-20 max-h-32 overflow-y-auto p-3 rounded-md border border-gray-200 bg-gray-50">
@@ -470,22 +500,32 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
                                 {selectedRegions.map(region => (
                                     <Tag
                                         key={region.iso2}
+                                        locked={!!id}
                                         label={<span className="flex items-center gap-1">{region.name}</span>}
-                                        onRemove={() => handleRemoveRegion(region.iso2)}
+                                        onRemove={id ? () => {} : () => handleRemoveRegion(region.iso2)}
+                                        className={id ? "bg-amber-100 border-amber-300 cursor-not-allowed" : ""}
                                     />
                                 ))}
 
-                                {selectedRegions.length > 1 && (
-                                    <button
-                                        onClick={handleClearAllRegions}
-                                        className="text-xs text-red-600 hover:text-red-800 underline ml-2 self-center"
-                                    >
+                                {!id && selectedRegions.length > 1 && (
+                                    <button onClick={handleClearAllRegions} className="text-xs text-red-600 hover:text-red-800 underline ml-2 self-center">
                                         Clear all
                                     </button>
                                 )}
                             </div>
                         )}
                     </div>
+
+                    {id && selectedRegions.length > 0 && (
+                        <div className="flex items-center space-x-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-gray-600">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                            </svg>
+                            <p className="text-xs font-semibold text-gray-600 flex items-center gap-1">
+                                Covered regions cannot be changed after the project is created
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Date Fields - ONLY IN ADD MODE */}

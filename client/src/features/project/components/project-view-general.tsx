@@ -48,6 +48,7 @@ const { countryName, regionName } = useLocationLabels(
   const fields = [
     { label: "Project Name", value: data.name },
     { label: "Description", value: data.description || "-" },
+    { label: "Target Beneficaries", value: data.target_families || "-" },
     { label: "Start Date", value: formatDate(data.start_date!.toString(), false) },
     { label: "End Date", value: formatDate(data.end_date!.toString(), false) },
     { label: "Created On", value: formatDate(data.created_at!.toString(), false) },

@@ -13,6 +13,8 @@ import subscriptionRoute from '../modules/subscription/subscription.routes.js';
 import healthRoute from '../modules/health/health.route.js';
 import feedbackRoute from '../modules/feedback/feedback.routes.js';
 import projectRoute from "../modules/project/project.route.js";
+import analyticsRoute from "../modules/analytics/analytics.route.js";
+
 
 // Super -admin
 import superAdminRouter from '../modules/super-admin/superAdmin.route.js';
@@ -43,7 +45,8 @@ router.use("/audit-logs", autditLogRoute);
 router.use("/export", exportRoute);
 router.use("/subscription", subscriptionRoute);
 router.use("/feedback", feedbackRoute);
-router.use("/data-operation", dateOperationRouted);
+router.use("/analytics", analyticsRoute);
+
 
 
 // Mobile-based
@@ -60,6 +63,8 @@ router.use('/super-admin/projects', adminProjectRouter);
 router.use('/super-admin/audit-logs', auditLogRouter);
 router.use('/super-admin/subscriptions', subscriptionRouter);
 router.use("/backup", backupRouter);
+router.use("/data-operation", dateOperationRouted);
+
 
 
 

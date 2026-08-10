@@ -25,6 +25,7 @@ const Navbar: React.FC<NavbarProps> = ({toggleSidebar}) => {
         "/dashbaord/assistance": "Assistance",
         "/dashbaord/deliveries": "Deliveries",
         "/dashbaord/data": "Data Managment",
+        "/dashbaord/analytics": "Analytics",
         "/dashbaord/log": "Audit Log",
         
     };

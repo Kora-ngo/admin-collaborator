@@ -24,6 +24,7 @@ const ProjectView = ({ id, isOpen }: ProjectViewProps) => {
   const [generalData, setGeneralData] = useState({
     name: "",
     description: "",
+    target_families: undefined,
     country: "",
     start_date: "",
     end_date: "",
@@ -44,6 +45,7 @@ const ProjectView = ({ id, isOpen }: ProjectViewProps) => {
         setGeneralData({
           name: fetchedData.name,
           description: fetchedData!.description!,
+          target_families: fetchedData!.target_families!,
           country: fetchedData!.country,
           start_date: fetchedData.start_date!.toString(),
           end_date: fetchedData.end_date!.toString(),
