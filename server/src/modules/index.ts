@@ -22,6 +22,7 @@ import SyncBatchModel from "./sync-batch/index.js";
 import UserModel from "./user/index.js";
 import BackupModel from "./backup/backup.model.js";
 import DataOperationModel from "./data-operations/data-operations.model.js";
+import ReportModel from "./reports/index.js";
 // super-admin has no associations defined in the original file — nothing to extract
 
 
@@ -48,9 +49,10 @@ export {
     DeliveryItemModel,
     SyncBatchModel,
     SubscriptionModel,
+    ReportModel,
 
     AuditLogModel,
     BackupModel,
-    DataOperationModel
+    DataOperationModel,
 
 };

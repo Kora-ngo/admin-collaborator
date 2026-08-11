@@ -45,9 +45,7 @@ const Home = () => {
             <Navbar toggleSidebar={toggleSidebar} />
           </div>
           <div className="p-4 content">
-            <NetworkGate>
               <Outlet />
-            </NetworkGate>
 
           </div>
         </div>

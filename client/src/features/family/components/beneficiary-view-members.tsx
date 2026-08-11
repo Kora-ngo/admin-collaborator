@@ -8,11 +8,16 @@ interface BeneficiaryViewMembersProps {
     members: BeneficiaryMember[];
 }
 
+const avatarStyles: Record<string, string> = {
+    male: "bg-blue-50 text-blue-600",
+    female: "bg-pink-50 text-pink-600",
+};
+
 const BeneficiaryViewMembers = ({ members }: BeneficiaryViewMembersProps) => {
     if (!members || members.length === 0) {
         return (
-            <EmptyState 
-                title="No Family Members" 
+            <EmptyState
+                title="No Family Members"
                 description="No family members have been registered for this beneficiary."
             />
         );
@@ -23,91 +28,54 @@ const BeneficiaryViewMembers = ({ members }: BeneficiaryViewMembersProps) => {
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
-        
+
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             age--;
         }
-        
+
         return age;
     };
 
-    const getGenderIcon = (gender: string) => {
-        if (gender === 'male') {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-blue-600">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                </svg>
-            );
-        } else if (gender === 'female') {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-pink-600">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                </svg>
-            );
-        }
-        return (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-600">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-            </svg>
-        );
-    };
-
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                    Family Members ({members.length})
-                </h3>
-            </div>
+        <div className="space-y-3">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                Family Members ({members.length})
+            </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {members.map((member, index) => (
-                    <div 
-                        key={member.id} 
-                        className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
-                    >
-                        <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                                {getGenderIcon(member.gender)}
-                                <div>
-                                    <p className="font-semibold text-gray-900">
-                                        {index + 1}. {member.full_name}
-                                    </p>
-                                    <p className="text-sm text-gray-500 capitalize">
-                                        {member.relationship}
-                                    </p>
-                                </div>
+            <div className="border border-gray-100 rounded-xl divide-y divide-gray-100 overflow-hidden">
+                {members.map((member) => {
+                    const age = member.date_of_birth ? calculateAge(member.date_of_birth) : null;
+                    const avatarStyle = avatarStyles[member.gender] || "bg-gray-100 text-gray-600";
+
+                    return (
+                        <div
+                            key={member.id}
+                            className="flex items-center gap-4 px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+                        >
+                            <div className={`size-10 rounded-full flex items-center justify-center flex-shrink-0 font-semibold text-sm ${avatarStyle}`}>
+                                {member.full_name.charAt(0).toUpperCase()}
                             </div>
-                        </div>
 
-                        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <p className="text-gray-500">Gender</p>
-                                <p className="font-medium text-gray-900 capitalize">
-                                    {member.gender}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 truncate">
+                                    {member.full_name}
+                                </p>
+                                <p className="text-xs text-gray-400 capitalize">
+                                    {member.relationship} · {member.gender}
                                 </p>
                             </div>
-                            {
-                                member.date_of_birth &&
-                                <div>
-                                    <p className="text-gray-500">Age</p>
-                                    <p className="font-medium text-gray-900">
-                                        {calculateAge(member.date_of_birth)} years
+
+                            {member.date_of_birth && (
+                                <div className="text-right flex-shrink-0">
+                                    <p className="text-sm font-medium text-gray-700">{age} yrs</p>
+                                    <p className="text-xs text-gray-400">
+                                        {formatDate(member.date_of_birth.toString(), false, false)}
                                     </p>
                                 </div>
-                            }
-                            {
-                                member.date_of_birth &&
-                                <div className="col-span-2">
-                                    <p className="text-gray-500">Date of Birth</p>
-                                    <p className="font-medium text-gray-900">
-                                        {formatDate(member.date_of_birth.toString(), false)}
-                                    </p>
-                                </div>
-                            }
+                            )}
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

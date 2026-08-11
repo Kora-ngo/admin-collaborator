@@ -14,6 +14,7 @@ import healthRoute from '../modules/health/health.route.js';
 import feedbackRoute from '../modules/feedback/feedback.routes.js';
 import projectRoute from "../modules/project/project.route.js";
 import analyticsRoute from "../modules/analytics/analytics.route.js";
+import reportsRoute from "../modules/reports/report.route.js";
 // Super -admin
 import superAdminRouter from '../modules/super-admin/superAdmin.route.js';
 import adminOrganisationRouter from '../modules/organisation/admin/organisation.route.js';
@@ -38,6 +39,7 @@ router.use("/export", exportRoute);
 router.use("/subscription", subscriptionRoute);
 router.use("/feedback", feedbackRoute);
 router.use("/analytics", analyticsRoute);
+router.use("/reports", reportsRoute);
 // Mobile-based
 router.use("/mobile", enumeratorRoute);
 // Stay awake

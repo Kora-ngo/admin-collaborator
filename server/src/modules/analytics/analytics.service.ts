@@ -247,4 +247,11 @@ export const AnalyticsService = {
             },
         };
     },
+
+
+    // Exposed so other modules (e.g. Report's Analytics PDF export) reuse
+    // the exact same per-project calculations instead of duplicating them.
+    getProjectMetrics: async (project: any, start: Date, end: Date) => {
+        return buildProjectMetrics(project, start, end);
+    },
 };
