@@ -8,6 +8,7 @@ import SettingModal from "../widgets/setting-modal";
 import Settings from "../../features/settings/components/settings";
 import { Button } from "../ui/button";
 import notification from "../../assets/icons/google_alerts.png";
+import NetworkGate from "../../features/common/network/NetworkGate";
 
 const Home = () => {
 
@@ -44,7 +45,10 @@ const Home = () => {
             <Navbar toggleSidebar={toggleSidebar} />
           </div>
           <div className="p-4 content">
-            <Outlet />
+            <NetworkGate>
+              <Outlet />
+            </NetworkGate>
+
           </div>
         </div>
 

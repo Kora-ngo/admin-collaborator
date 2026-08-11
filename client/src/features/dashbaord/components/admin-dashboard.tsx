@@ -8,6 +8,7 @@ import alertImg from "../../../assets/icons/urgent_message.png";
 import type { BadgeColor } from "../../../types/badgeColor";
 import type { TableColumn } from "../../../components/widgets/table";
 import Table from "../../../components/widgets/table";
+import ConnectionError from "../../common/network/connectionError";
 
 const statusColors: Record<string, { text: string; color: string }> = {
     pending: { text: "Pending", color: "gray" },
@@ -158,7 +159,7 @@ const AttentionCard = ({ item }: { item: AttentionItem }) => {
 };
 
 const AdminDashbaord = () => {
-    const { adminOverview, loading, getAdminOverview } = useDashboardStore();
+    const { adminOverview, loading, error, getAdminOverview } = useDashboardStore();
 
     useEffect(() => {
         getAdminOverview();
@@ -173,6 +174,15 @@ const AdminDashbaord = () => {
     }
 
     if (!adminOverview) {
+        if (error) {
+            return (
+                <ConnectionError
+                    title={error.type === "no_network" ? undefined : "Something Went Wrong"}
+                    message={error.type === "no_network" ? undefined : (error.message || "An unexpected error occurred.")}
+                    onRetry={getAdminOverview}
+                />
+            );
+        }
         return null;
     }
 

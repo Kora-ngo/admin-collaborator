@@ -35,7 +35,7 @@ export const AuditLogService = {
             ];
         }
 
-        const { count, rows } = await AuditLogRepository.findAndCountAll(whereClause, limit, offset);
+        const { count, rows } = await AuditLogRepository.findTodayActivity(whereClause, limit, offset);
 
         const totalPages = Math.ceil(count / limit);
 

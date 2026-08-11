@@ -2,11 +2,13 @@ import { create } from "zustand";
 import { handleApiError } from "../../../utils/handleApiError";
 import { dashboardApi } from "../dashbaordApi";
 import type { AdminDashboardData } from "../dashbaord";
+import type { ToastMessage } from "../../../types/toastMessage";
 
 
 interface DashboardState {
     // Admin data — one payload now instead of three
     adminOverview: AdminDashboardData | null;
+    error: ToastMessage | null;
 
     // Collaborator data — unchanged
     collaboratorMetrics: any;
@@ -30,6 +32,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     enumeratorActivity: [],
     validationQueue: null,
     loading: false,
+    error: null,
 
     getAdminOverview: async () => {
         try {
@@ -37,6 +40,10 @@ export const useDashboardStore = create<DashboardState>((set) => ({
             const result = await dashboardApi.getAdminOverview();
             if (result.type === "success" && result.data) {
                 set({ adminOverview: result.data });
+            }else {
+                // Server responded, but with a non-success ToastMessage
+                // (e.g. a validation/permission error body).
+                set({ error: {type: "no_network", data: result, message: "yeah"} });
             }
             return result;
         } catch (error: any) {

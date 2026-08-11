@@ -27,7 +27,7 @@ export const DashboardService = {
             DashboardAdminRepository.countPendingDeliveries(organisationId),
             DashboardAdminRepository.findProjectsNearDeadline(organisationId, today, sevenDaysFromNow),
             DashboardAdminRepository.findOngoingProjectsWithMembers(organisationId),
-            DashboardAdminRepository.findRecentActivity(organisationId, 10),
+            DashboardAdminRepository.findRecentActivity(organisationId, 5),
         ]);
 
         // ---- Executive snapshot ----
