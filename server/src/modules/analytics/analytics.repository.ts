@@ -167,30 +167,28 @@ export const AnalyticsRepository = {
     },
 
     // Gender is derived from the family's "Head" member — see module-level assumption note.
-    beneficiariesByHeadGender: async (scope: AnalyticsScope, start: Date, end: Date) => {
-            const projectIds = scope.projectIds ?? (await ProjectModel.findAll({
-                where: projectWhere(scope), attributes: ['id'], raw: true,
-            })).map((p: any) => p.id);
+    beneficiariesByGender: async (scope: AnalyticsScope, start: Date, end: Date) => {
+        const projectIds = scope.projectIds ?? (await ProjectModel.findAll({
+            where: projectWhere(scope), attributes: ['id'], raw: true,
+        })).map((p: any) => p.id);
 
-            return BeneficiaryMemberModel.findAll({
-                where: { relationship: { [Op.like]: 'head' } },
-                include: [{
-                    model: BeneficiaryModel,
-                    as: 'beneficiary',
-                    attributes: [],
-                    where: {
-                        project_id: { [Op.in]: projectIds },
-                        review_status: { [Op.ne]: 'rejected' },
-                        created_at: { [Op.gte]: start, [Op.lte]: end },
-                    },
-                    required: true,
-                }],
-                attributes: ['gender', [fn('COUNT', col('BeneficiaryMember.id')), 'value']],
-                group: ['gender'],
-                raw: true,
-            });
-        },
-
+        return BeneficiaryMemberModel.findAll({
+            include: [{
+                model: BeneficiaryModel,
+                as: 'beneficiary',
+                attributes: [],
+                where: {
+                    project_id: { [Op.in]: projectIds },
+                    review_status: { [Op.ne]: 'rejected' },
+                    created_at: { [Op.gte]: start, [Op.lte]: end },
+                },
+                required: true,
+            }],
+            attributes: ['gender', [fn('COUNT', col('BeneficiaryMember.id')), 'value']],
+            group: ['gender'],
+            raw: true,
+        });
+    },
     // ============================================================
     // Assistance breakdown
     // ============================================================
@@ -235,25 +233,33 @@ export const AnalyticsRepository = {
     // Project performance table + operational coverage
     // ============================================================
 
+    // projectPerformance: async (scope: AnalyticsScope) => {
+    //     const projects = await ProjectModel.findAll({
+    //         where: { ...projectWhere(scope), status: { [Op.ne]: 'false' } },
+    //         attributes: ['id', 'name', 'status', 'start_date', 'end_date'],
+    //         order: [['created_at', 'DESC']],
+    //     });
+
+    //     const results = await Promise.all(projects.map(async (p: any) => {
+    //         const data = p.dataValues;
+    //         const beneficiaries = await BeneficiaryModel.count({
+    //             where: { project_id: data.id, review_status: { [Op.ne]: 'rejected' } },
+    //         });
+    //         const deliveries = await DeliveryModel.count({
+    //             where: { project_id: data.id, review_status: { [Op.ne]: 'rejected' } },
+    //         });
+    //         return { ...data, beneficiaries, deliveries };
+    //     }));
+
+    //     return results;
+    // },
+
     projectPerformance: async (scope: AnalyticsScope) => {
-        const projects = await ProjectModel.findAll({
+        return ProjectModel.findAll({
             where: { ...projectWhere(scope), status: { [Op.ne]: 'false' } },
-            attributes: ['id', 'name', 'status', 'start_date', 'end_date'],
+            attributes: ['id', 'name', 'status', 'country', 'start_date', 'end_date', 'target_families'],
             order: [['created_at', 'DESC']],
         });
-
-        const results = await Promise.all(projects.map(async (p: any) => {
-            const data = p.dataValues;
-            const beneficiaries = await BeneficiaryModel.count({
-                where: { project_id: data.id, review_status: { [Op.ne]: 'rejected' } },
-            });
-            const deliveries = await DeliveryModel.count({
-                where: { project_id: data.id, review_status: { [Op.ne]: 'rejected' } },
-            });
-            return { ...data, beneficiaries, deliveries };
-        }));
-
-        return results;
     },
 
     operationalCoverageByRegion: async (scope: AnalyticsScope) => {
@@ -299,5 +305,80 @@ export const AnalyticsRepository = {
             pending: beneficiariesPending + deliveriesPending,
             rejected: beneficiariesRejected + deliveriesRejected,
         };
+    },
+
+    // ============================================================
+    // Per-project detailed metrics (target achievement, geo coverage,
+    // assistance gap, validation progress, activity over time)
+    // ============================================================
+
+    projectRegionsPlanned: async (projectId: number) => {
+        return ProjectRegionModel.findAll({
+            where: { project_id: projectId },
+            attributes: ['region'],
+            raw: true,
+        });
+    },
+
+
+        // Regions actually reached: the region of any beneficiary who has at
+    // least one approved delivery. NOTE: compares against free-text
+    // beneficiaries.region — see module-level flag on vocabulary mismatch
+    // with project_regions.region (codes vs names).
+    projectRegionsCovered: async (projectId: number) => {
+
+        const regionCoverWhere = {
+                project_id: projectId,
+                review_status: { [Op.ne]: 'false' },
+                region: { [Op.ne]: null },
+        }
+
+        return BeneficiaryModel.findAll({
+            where: regionCoverWhere,
+            include: [{
+                model: DeliveryModel,
+                as: 'deliveries',
+                attributes: [],
+                where: { review_status: 'approved' },
+                required: true,
+            }],
+            attributes: [[fn('DISTINCT', col('Beneficiary.region')), 'region']],
+            raw: true,
+        });
+    },
+
+    beneficiaryStatusCounts: async (projectId: number) => {
+        return BeneficiaryModel.findAll({
+            where: { project_id: projectId, review_status: { [Op.ne]: 'false' } },
+            attributes: ['review_status', [fn('COUNT', col('id')), 'value']],
+            group: ['review_status'],
+            raw: true,
+        });
+    },
+
+    // Distinct families that received at least one approved delivery
+    assistedFamiliesCount: async (projectId: number) => {
+        return DeliveryModel.count({
+            where: { project_id: projectId, review_status: 'approved' },
+            distinct: true,
+            col: 'beneficiary_id',
+        });
+    },
+
+    deliveriesOverTimeForProject: async (projectId: number, start: Date, end: Date) => {
+        return DeliveryModel.findAll({
+            where: {
+                project_id: projectId,
+                review_status: { [Op.ne]: 'rejected' },
+                delivery_date: { [Op.gte]: start, [Op.lte]: end },
+            },
+            attributes: [
+                [fn('DATE_FORMAT', col('delivery_date'), '%Y-%m-%d'), 'bucket'],
+                [fn('COUNT', col('id')), 'value'],
+            ],
+            group: ['bucket'],
+            order: [[literal('bucket'), 'ASC']],
+            raw: true,
+        });
     },
 };

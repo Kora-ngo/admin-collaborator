@@ -40,7 +40,7 @@ const SettingSubscription = () => {
   const Field = ({ label, value }: { label: string; value: string | undefined }) => (
     <div className="flex flex-col gap-0.5">
         <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
-        <p className="text-sm font-medium text-gray-800">{value || "—"}</p>
+        <p className="text-sm font-medium text-gray-800">{value || "-"}</p>
     </div>
 );
 

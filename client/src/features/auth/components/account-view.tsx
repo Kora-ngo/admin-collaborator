@@ -51,9 +51,9 @@ const AccountView: React.FC<AccountViewProps> = ({ onToggle }) => {
             <div className="grid grid-cols-1 sm:grid-cols-1 gap-px bg-gray-100 rounded-xl overflow-hidden border border-gray-100">
                 {[
                     { label: "First Name", value: firstName },
-                    { label: "Last Name", value: lastName || "—" },
+                    { label: "Last Name", value: lastName || "-" },
                     // { label: "Email Address", value: user!.email },
-                    { label: "Phone Number", value: user!.phone || "—" },
+                    { label: "Phone Number", value: user!.phone || "-" },
                 ].map((item, i) => (
                     <div key={i} className="bg-white px-4 py-3">
                         <Field label={item.label} value={item.value} />

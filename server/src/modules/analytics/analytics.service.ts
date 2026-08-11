@@ -6,6 +6,9 @@ const trendPercent = (current: number, previous: number): number => {
     return Math.round(((current - previous) / previous) * 100);
 };
 
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+
 const fillTimeSeries = (rows: { bucket: string; value: string | number }[]) =>
     rows.map((r) => ({ label: formatMonthLabel(r.bucket), value: Number(r.value) }));
 
@@ -26,7 +29,99 @@ const buildScope = async (
     return scope;
 };
 
+
+const buildProjectMetrics = async (project: any, start: Date, end: Date) => {
+        const [
+            plannedRegionsRows,
+            coveredRegionsRows,
+            statusRows, 
+            assistedFamilies, 
+            activityRows,
+        ] = await Promise.all([
+            AnalyticsRepository.projectRegionsPlanned(project.id),
+            AnalyticsRepository.projectRegionsCovered(project.id),
+            AnalyticsRepository.beneficiaryStatusCounts(project.id),
+            AnalyticsRepository.assistedFamiliesCount(project.id),
+            AnalyticsRepository.deliveriesOverTimeForProject(project.id, start, end),
+        ]);
+
+        // ---- Validation Progress ----
+        const statusMap: Record<string, number> = {};
+        statusRows.forEach((r: any) => { statusMap[r.review_status] = Number(r.value); });
+
+
+
+        const submitted = Object.values(statusMap).reduce((sum, v) => sum + v, 0);
+        const validated = statusMap['approved'] || 0;
+        const pending = statusMap['pending'] || 0;
+        const rejected = statusMap['rejected'] || 0;
+
+        // ---- Beneficiary Target Achievement ----
+        const target = project.target_families || 0;
+        const targetAchievementPercent = target > 0 ? round1((validated / target) * 100) : 0;
+
+        // ---- Geographic Coverage ----
+        const plannedRegions = plannedRegionsRows.map((r: any) => r.region);
+        const coveredRegionsRaw = coveredRegionsRows.map((r: any) => r.region).filter(Boolean);
+        const regionsBreakdown = plannedRegions.map((region: string) => ({
+            region,
+            covered: coveredRegionsRaw.some((c: string) => c.toLowerCase() === region.toLowerCase()),
+        }));
+        const coveredCount = regionsBreakdown.filter((r) => r.covered).length;
+        const geoCoveragePercent = plannedRegions.length > 0
+            ? Math.round((coveredCount / plannedRegions.length) * 100)
+            : 0;
+
+        // ---- Beneficiary -> Assistance Gap ----
+        const assistanceCoveragePercent = validated > 0 ? round1((assistedFamilies / validated) * 100) : 0;
+        const awaitingAssistance = Math.max(validated - assistedFamilies, 0);
+
+        return {
+            id: project.id,
+            name: project.name,
+            status: project.status,
+            country: project.country,
+
+            target_achievement: {
+                target,
+                validated,
+                percent: targetAchievementPercent,
+            },
+
+            geographic_coverage: {
+                planned_count: plannedRegions.length,
+                covered_count: coveredCount,
+                percent: geoCoveragePercent,
+                regions: regionsBreakdown, // [{ region: 'CE', covered: true }, ...]
+            },
+
+            assistance_gap: {
+                validated_families: validated,
+                assisted_families: assistedFamilies,
+                awaiting_assistance: awaitingAssistance,
+                percent: assistanceCoveragePercent,
+            },
+
+            validation_progress: {
+                submitted,
+                validated,
+                pending,
+                rejected,
+                percent: round1(submitted > 0 ? (validated / submitted) * 100 : 0),
+            },
+
+            activity_over_time: activityRows.map((r: any) => ({
+                date: r.bucket, // 'YYYY-MM-DD' — frontend formats for the axis
+                deliveries: Number(r.value),
+            })),
+        };
+    };
+
+
 export const AnalyticsService = {
+
+
+
 
     // ============================================================
     // Filters (dropdown population)
@@ -58,13 +153,19 @@ export const AnalyticsService = {
         // (see module-level assumption note). Flagging as a follow-up once that's resolved.
 
         const [
-            activeProjects, attentionNeeded,
-            beneficiariesCurrent, beneficiariesPrevious,
-            deliveriesCurrent, deliveriesPrevious,
-            beneficiariesSeries, deliveriesSeries,
-            beneficiariesByRegionRows, beneficiariesByGenderRows,
+            activeProjects, 
+            attentionNeeded,
+            beneficiariesCurrent, 
+            beneficiariesPrevious,
+            deliveriesCurrent, 
+            deliveriesPrevious,
+            beneficiariesSeries, 
+            deliveriesSeries,
+            beneficiariesByRegionRows, 
+            beneficiariesByGenderRows,
             assistanceByTypeRows,
-            projectPerformanceRows, operationalCoverageRows,
+            projectPerformanceRows, 
+            operationalCoverageRows,
             dataQuality,
         ] = await Promise.all([
             AnalyticsRepository.countActiveProjects(scope),
@@ -76,7 +177,7 @@ export const AnalyticsService = {
             AnalyticsRepository.beneficiariesOverTime(scope, start, end),
             AnalyticsRepository.deliveriesOverTime(scope, start, end),
             AnalyticsRepository.beneficiariesByRegion(scope, start, end),
-            AnalyticsRepository.beneficiariesByHeadGender(scope, start, end),
+            AnalyticsRepository.beneficiariesByGender(scope, start, end),
             AnalyticsRepository.assistanceByType(scope, start, end),
             AnalyticsRepository.projectPerformance(scope),
             AnalyticsRepository.operationalCoverageByRegion(scope),
@@ -85,6 +186,10 @@ export const AnalyticsService = {
 
         const totalGenderCount = beneficiariesByGenderRows.reduce((sum: number, r: any) => sum + Number(r.value), 0);
         const validationRateCurrent = dataQuality.total > 0 ? (dataQuality.validated / dataQuality.total) * 100 : 0;
+
+        const projectMetrics = await Promise.all(
+            projectPerformanceRows.map((p: any) => buildProjectMetrics(p.dataValues, start, end))
+        );
 
         return {
             filters: {
@@ -123,14 +228,16 @@ export const AnalyticsService = {
 
             assistance_by_type: assistanceByTypeRows.map((r: any) => ({ label: r.label, value: Number(r.value) })),
 
-            project_performance: projectPerformanceRows.map((p: any) => ({
-                id: p.id,
-                name: p.name,
-                beneficiaries: p.beneficiaries,
-                deliveries: p.deliveries,
-                progress: computeTimeProgress(p.start_date, p.end_date),
-                status: p.status,
-            })),
+            // project_performance: projectPerformanceRows.map((p: any) => ({
+            //     id: p.id,
+            //     name: p.name,
+            //     beneficiaries: p.beneficiaries,
+            //     deliveries: p.deliveries,
+            //     progress: computeTimeProgress(p.start_date, p.end_date),
+            //     status: p.status,
+            // })),
+
+            project_performance: projectMetrics,
 
             operational_coverage: operationalCoverageRows.map((r: any) => ({ label: r.region, value: Number(r.value) })),
 

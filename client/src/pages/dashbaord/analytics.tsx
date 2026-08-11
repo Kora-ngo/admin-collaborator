@@ -3,17 +3,20 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { SelectInput } from "../../components/ui/select-input";
-import { Button } from "../../components/ui/button";
 import StatusBadge from "../../components/ui/status-badge";
 import Loading from "../../components/ui/loading";
 import EmptyState from "../../components/ui/empty";
+import { formatDate } from "../../utils/formatDate";
 import { useThemeColor } from "../../features/analytics/hooks/useThemecolor";
-import { useAnalytics } from "../../features/analytics/hooks/useanAlytics";
 import type { BadgeColor } from "../../types/badgeColor";
 import { useState } from "react";
+import type { ProjectAnalytics, ValidationProgress } from "../../features/analytics/types/analytics";
+import { useAnalytics } from "../../features/analytics/hooks/useanAlytics";
+import { useLocationLabels } from "../../features/common/locations/hooks/uselocationLabels";
+import { useRegionNameLookup } from "../../utils/getRegionNameMap";
 
 // Only used for the second slice of the gender donut, where a single hue
-// can't visually distinguish two categories — everything else is primary.
+// can't visually distinguish two categories — everything else is primary/gray.
 const MUTED = "#9ca3af"; // gray-400
 
 const statusColors: Record<string, { text: string; color: string }> = {
@@ -139,59 +142,138 @@ const GenderDonut = ({
     </div>
 );
 
+// ── Per-project visual card ─────────────────────────────────────────
+
+const MetricBar = ({
+    label, valueLabel, percent,
+}: { label: string; valueLabel: string; percent: number }) => (
+    <div>
+        <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-medium text-gray-600">{label}</span>
+            <span className="text-xs font-semibold text-gray-800">{percent}%</span>
+        </div>
+        <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full bg-primary/60 rounded-full" style={{ width: `${Math.min(100, percent)}%` }} />
+        </div>
+        <p className="text-[11px] text-gray-400 mt-1">{valueLabel}</p>
+    </div>
+);
+
+const RegionChip = ({ code, covered }: { code: string; covered: boolean }) => (
+
+    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+        covered ? "bg-primary/10 text-primary border-primary/20" : "bg-gray-50 text-gray-400 border-gray-200"
+    }`}>
+        {code}
+    </span>
+);
+
+// Three categories (validated / pending / rejected) distinguished by
+// primary intensity + neutral gray, not by red/amber alert colors.
+const ValidationStack = ({ vp }: { vp: ValidationProgress }) => {
+    const total = vp.submitted || 1;
+    const validatedPct = (vp.validated / total) * 100;
+    const pendingPct = (vp.pending / total) * 100;
+    const rejectedPct = (vp.rejected / total) * 100;
+
+    return (
+        <div>
+            <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-gray-600">Benficairies Validation Progress</span>
+                <span className="text-xs font-semibold text-gray-800">{vp.percent}%</span>
+            </div>
+            <div className="h-1.5 w-full rounded-full overflow-hidden flex bg-gray-100">
+                <div className="h-full bg-primary" style={{ width: `${validatedPct}%` }} />
+                <div className="h-full bg-primary/35" style={{ width: `${pendingPct}%` }} />
+                <div className="h-full bg-gray-300" style={{ width: `${rejectedPct}%` }} />
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-primary" /> {vp.validated} validated
+                </span>
+                <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-primary/35" /> {vp.pending} pending
+                </span>
+                <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-gray-300" /> {vp.rejected} rejected
+                </span>
+            </div>
+        </div>
+    );
+};
+
+const ProjectCard = ({ project, color }: { project: ProjectAnalytics; color: string }) => {
+    const { target_achievement: ta, geographic_coverage: gc, assistance_gap: ag, validation_progress: vp, activity_over_time } = project;
+
+    const getName = useRegionNameLookup(project.country);
+
+    const activityData = activity_over_time.map((a) => ({
+        label: formatDate(a.date, false, false),
+        value: a.deliveries,
+    }));
+
+    return (
+        <Card>
+            <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-semibold text-gray-800">{project.name}</p>
+                <StatusBadge
+                    text={statusColors[project.status]?.text || project.status}
+                    color={(statusColors[project.status]?.color || "gray") as BadgeColor}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <MetricBar
+                    label="Target Achievement"
+                    valueLabel={`${ta.validated.toLocaleString()} of ${ta.target.toLocaleString()} beneficaries`}
+                    percent={ta.percent}
+                />
+                <MetricBar
+                    label="Assistance Distribution Gap"
+                    valueLabel={`${ag.assisted_families.toLocaleString()} assisted · ${ag.awaiting_assistance.toLocaleString()} awaiting`}
+                    percent={ag.percent}
+                />
+            </div>
+
+            <div className="mb-4">
+                <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-gray-600">Aids Distribution Geographic Coverage</span>
+                    <span className="text-xs font-semibold text-gray-800">
+                        {gc.covered_count} of {gc.planned_count} regions ({gc.percent}%)
+                    </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                    {gc.regions.map((r) => (
+                        <RegionChip key={r.region} code={getName(r.region)} covered={r.covered} />
+                    ))}
+                </div>
+            </div>
+
+            <div className="mb-4">
+                <ValidationStack vp={vp} />
+            </div>
+
+            <div>
+                <p className="text-xs font-medium text-gray-600 mb-2">Delivery Activity</p>
+                <TrendChart data={activityData} height={100} color={color} />
+            </div>
+        </Card>
+    );
+};
+
 // ── Page ─────────────────────────────────────────────────────────
 
-type Tab = "overview" | "projects" | "beneficiaries" | "assistance" | "data-quality";
+type Tab = "projects" | "beneficiaries" | "assistance" | "data-quality";
 
 const tabs: { key: Tab; label: string }[] = [
-    { key: "overview", label: "Overview" },
     { key: "projects", label: "Projects" },
     { key: "beneficiaries", label: "Beneficiaries" },
     { key: "assistance", label: "Assistance" },
     { key: "data-quality", label: "Data Quality" },
 ];
 
-const ProjectTable = ({ rows }: { rows: { id: number; name: string; beneficiaries: number; deliveries: number; progress: number; status: string }[] }) => (
-    <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-            <thead>
-                <tr className="border-b border-gray-100 text-left">
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Project</th>
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Beneficiaries</th>
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Deliveries</th>
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Progress</th>
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-                {rows.map((p) => (
-                    <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-5 py-3 font-medium text-gray-800">{p.name}</td>
-                        <td className="px-5 py-3 text-gray-600">{p.beneficiaries.toLocaleString()}</td>
-                        <td className="px-5 py-3 text-gray-600">{p.deliveries.toLocaleString()}</td>
-                        <td className="px-5 py-3">
-                            <div className="flex items-center gap-2 w-32">
-                                <div className="h-1.5 flex-1 bg-gray-100 rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary/60 rounded-full" style={{ width: `${p.progress}%` }} />
-                                </div>
-                                <span className="text-xs font-semibold text-gray-500 w-8 text-right">{p.progress}%</span>
-                            </div>
-                        </td>
-                        <td className="px-5 py-3">
-                            <StatusBadge
-                                text={statusColors[p.status]?.text || p.status}
-                                color={(statusColors[p.status]?.color || "gray") as BadgeColor}
-                            />
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
-);
-
 const Analytics = () => {
-    const [activeTab, setActiveTab] = useState<Tab>("overview");
+    const [activeTab, setActiveTab] = useState<Tab>("projects");
 
     const {
         data, loading,
@@ -200,6 +282,9 @@ const Analytics = () => {
         period, setPeriod,
         region, setRegion,
     } = useAnalytics();
+
+
+
 
     // Resolved once from the DOM (see useThemeColor) so every chart below
     // stays on-theme without hardcoding a hex value.
@@ -253,7 +338,7 @@ const Analytics = () => {
         <div className="space-y-6 pb-12">
             {/* ── Filters ── */}
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                <div className="w-full sm:w-56">
+                <div className="w-full sm:w-100">
                     <SelectInput
                         options={[
                             { label: "All Projects", value: "all" },
@@ -277,7 +362,7 @@ const Analytics = () => {
                         onChange={(e) => setPeriod(e.target.value)}
                     />
                 </div>
-                <div className="w-full sm:w-48">
+                {/* <div className="w-full sm:w-48">
                     <SelectInput
                         options={[
                             { label: "All Regions", value: "all" },
@@ -287,7 +372,7 @@ const Analytics = () => {
                         disabled={loadingFilters}
                         onChange={(e) => setRegion(e.target.value)}
                     />
-                </div>
+                </div> */}
                 {loading && (
                     <span className="text-xs text-gray-400">Updating…</span>
                 )}
@@ -327,52 +412,21 @@ const Analytics = () => {
                         ))}
                     </div>
 
-                    {/* ── Overview ── */}
-                    {activeTab === "overview" && (
-                        <div className="space-y-6">
-                            <Card>
-                                <p className="text-sm font-semibold text-gray-700 mb-4">Beneficiaries Over Time</p>
-                                <TrendChart data={data.beneficiaries_over_time} height={180} color={primary} />
-                            </Card>
-
-                            <div>
-                                <SectionHeader title="Project Performance" />
-                                <Card className="p-0 overflow-hidden">
-                                    <ProjectTable rows={data.project_performance.slice(0, 3)} />
-                                    <div className="flex justify-end border-t border-gray-100 py-3">
-                                        <Button variant="link" onClick={() => setActiveTab("projects")}>
-                                            View all projects
-                                        </Button>
-                                    </div>
-                                </Card>
-                            </div>
-
-                            <div>
-                                <SectionHeader title="Operational Overview" />
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <Card>
-                                        <p className="text-sm font-semibold text-gray-700 mb-4">Active Projects by Region</p>
-                                        <HorizontalBarChart data={data.operational_coverage} color={primary} />
-                                    </Card>
-                                    <Card className="bg-primary/5 border-primary/10 flex flex-col justify-center items-center text-center">
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data Quality</p>
-                                        <p className="text-4xl font-bold text-primary mt-2">{data.data_quality.validation_rate}%</p>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            {data.data_quality.validated.toLocaleString()} of {data.data_quality.total.toLocaleString()} records validated
-                                        </p>
-                                    </Card>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {/* ── Projects ── */}
                     {activeTab === "projects" && (
                         <div>
                             <SectionHeader title="Project Performance" />
-                            <Card className="p-0 overflow-hidden">
-                                <ProjectTable rows={data.project_performance} />
-                            </Card>
+                            {data.project_performance.length === 0 ? (
+                                <div className="bg-gray-50 rounded-xl">
+                                    <EmptyState title="No projects match this selection" />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    {data.project_performance.map((p) => (
+                                        <ProjectCard key={p.id} project={p} color={primary} />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -396,7 +450,7 @@ const Analytics = () => {
                             </div>
 
                             <Card>
-                                <p className="text-sm font-semibold text-gray-700 mb-4">Geographic Coverage — Active Projects by Region</p>
+                                <p className="text-sm font-semibold text-gray-700 mb-4">Geographic Coverage - Active Projects by Region</p>
                                 <HorizontalBarChart data={data.operational_coverage} color={primary} />
                             </Card>
                         </div>

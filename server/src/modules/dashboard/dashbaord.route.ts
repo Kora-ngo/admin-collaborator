@@ -6,9 +6,7 @@ import { requireRole } from "../../middleware/permission.js";
 const router = Router();
 
 // Admin routes
-router.get('/admin/key-metrics', verifyToken, requireRole("admin"), DashboardController.adminKeyMetrics);
-router.get('/admin/project-progress', verifyToken, requireRole("admin"), DashboardController.adminProjectProgress);
-router.get('/admin/alerts', verifyToken, requireRole("admin"), DashboardController.adminAlerts);
+router.get('/admin', verifyToken, requireRole("admin"), DashboardController.adminDashboard);
 
 
 // Collaborator routes

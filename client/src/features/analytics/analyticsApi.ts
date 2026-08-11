@@ -6,6 +6,7 @@ import type { AnalyticsData, AnalyticsQueryParams, AvailableFilters } from "./ty
 export const analyticsApi = {
     getAnalytics: async (params: AnalyticsQueryParams): Promise<ToastMessage<AnalyticsData>> => {
         const { data } = await axiosInstance.get("/analytics", { params });
+        console.log("Data --> ", data)
         return data as ToastMessage<AnalyticsData>;
     },
 

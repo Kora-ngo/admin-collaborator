@@ -450,7 +450,7 @@ const collaboratorSlides: Slide[] = [
       </svg>
     ),
     title: "Audit Log & Need Help?",
-    description: "Your Audit Log shows every action within your assigned projects. If you ever get stuck, reach out — or reopen this guide from the ⓘ button anytime.",
+    description: "Your Audit Log shows every action within your assigned projects. If you ever get stuck, reach out or reopen this guide from the ⓘ button anytime.",
     visual: (
       <div className="mt-4 space-y-2">
         <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">

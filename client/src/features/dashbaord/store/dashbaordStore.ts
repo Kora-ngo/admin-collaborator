@@ -1,25 +1,23 @@
 import { create } from "zustand";
 import { handleApiError } from "../../../utils/handleApiError";
 import { dashboardApi } from "../dashbaordApi";
+import type { AdminDashboardData } from "../dashbaord";
+
 
 interface DashboardState {
-    // Admin data
-    keyMetrics: any;
-    projectProgress: any[];
-    projectAlert: any;
-    
-    // Collaborator data
+    // Admin data — one payload now instead of three
+    adminOverview: AdminDashboardData | null;
+
+    // Collaborator data — unchanged
     collaboratorMetrics: any;
     enumeratorActivity: any[];
     validationQueue: any;
-    
+
     loading: boolean;
-    
-    // Admin methods
-    getKeyMetrics: () => Promise<any>;
-    getProjectProgress: () => Promise<any>;
-    getProjectAlert: () => Promise<any>;
-    
+
+    // Admin method
+    getAdminOverview: () => Promise<any>;
+
     // Collaborator methods
     getCollaboratorMetrics: () => Promise<any>;
     getEnumeratorActivity: () => Promise<any>;
@@ -27,21 +25,20 @@ interface DashboardState {
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
-    keyMetrics: null,
-    projectProgress: [],
-    projectAlert: null,
+    adminOverview: null,
     collaboratorMetrics: null,
     enumeratorActivity: [],
     validationQueue: null,
     loading: false,
 
-    // Admin methods
-    getKeyMetrics: async () => {
+    getAdminOverview: async () => {
         try {
             set({ loading: true });
-            const data = await dashboardApi.getKeyMetrics();
-            set({ keyMetrics: data.data });
-            return data;
+            const result = await dashboardApi.getAdminOverview();
+            if (result.type === "success" && result.data) {
+                set({ adminOverview: result.data });
+            }
+            return result;
         } catch (error: any) {
             return handleApiError(error);
         } finally {
@@ -49,33 +46,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         }
     },
 
-    getProjectProgress: async () => {
-        try {
-            set({ loading: true });
-            const data = await dashboardApi.getProjectProgress();
-            set({ projectProgress: data.data });
-            return data;
-        } catch (error: any) {
-            return handleApiError(error);
-        } finally {
-            set({ loading: false });
-        }
-    },
-
-    getProjectAlert: async () => {
-        try {
-            set({ loading: true });
-            const data = await dashboardApi.getProjectAlert();
-            set({ projectAlert: data });
-            return data;
-        } catch (error: any) {
-            return handleApiError(error);
-        } finally {
-            set({ loading: false });
-        }
-    },
-
-    // Collaborator methods
+    // Collaborator methods — unchanged
     getCollaboratorMetrics: async () => {
         try {
             set({ loading: true });
