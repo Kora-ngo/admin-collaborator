@@ -17,36 +17,44 @@ const variantStyles: Record<ToastVariant, {
   iconColor: string;
   progressColor: string;
   iconPath: string;
+  iconType: 'fill' | 'stroke';
 }> = {
   success: {
-    iconBg: 'bg-green-500/15',
-    iconColor: 'text-green-400',
+    iconBg: 'bg-green-100',
+    iconColor: 'text-green-600',
     progressColor: 'bg-green-500',
     iconPath: 'M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z',
+    iconType: 'fill',
   },
   error: {
-    iconBg: 'bg-red-500/15',
-    iconColor: 'text-red-400',
+    iconBg: 'bg-red-100',
+    iconColor: 'text-red-600',
     progressColor: 'bg-red-500',
     iconPath: 'M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 13.5a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 1 1.5 0v4.5a.75.75 0 0 1-.75.75Zm0-7.5a.75.75 0 1 1 1.5 0v1.5a.75.75 0 0 1-1.5 0V8.25Z',
+    iconType: 'fill',
   },
   warning: {
-    iconBg: 'bg-yellow-500/15',
-    iconColor: 'text-yellow-400',
-    progressColor: 'bg-yellow-500',
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-600',
+    progressColor: 'bg-amber-500',
     iconPath: 'M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 13.5a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 1 1.5 0v4.5a.75.75 0 0 1-.75.75Zm0-7.5a.75.75 0 1 1 1.5 0v1.5a.75.75 0 0 1-1.5 0V8.25Z',
+    iconType: 'fill',
   },
   info: {
-    iconBg: 'bg-blue-500/15',
-    iconColor: 'text-blue-400',
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
     progressColor: 'bg-blue-500',
     iconPath: 'M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 13.5a.75.75 0 0 1-.75-.75v-3a.75.75 0 0 1 1.5 0v3a.75.75 0 0 1-.75.75Zm0-6.75a.75.75 0 1 1 1.5 0V9a.75.75 0 0 1-1.5 0V8.25Z',
+    iconType: 'fill',
   },
   no_network: {
-    iconBg: 'bg-gray-500/15',
-    iconColor: 'text-gray-400',
+    iconBg: 'bg-gray-100',
+    iconColor: 'text-gray-500',
     progressColor: 'bg-gray-400',
-    iconPath: 'm3 3 8.735 8.735m0 0a.374.374 0 1 1 .53.53m-.53-.53.53.53m0 0L21 21M14.652 9.348a3.75 3.75 0 0 1 0 5.304m2.121-7.425a6.75 6.75 0 0 1 0 9.546m2.121-11.667c3.808 3.807 3.808 9.98 0 13.788m-9.546-4.242a3.733 3.733 0 0 1-1.06-2.122m-1.061 4.243a6.75 6.75 0 0 1-1.625-6.929m-.496 9.05c-3.068-3.067-3.664-7.67-1.79-11.334M12 12h.008v.008H12V12Z',
+    // This is an outline-style path (arcs + a slash) — must be stroked,
+    // not filled, or it renders as near-invisible slivers.
+    iconPath: "m3 3 8.735 8.735m0 0a.374.374 0 1 1 .53.53m-.53-.53.53.53m0 0L21 21M14.652 9.348a3.75 3.75 0 0 1 0 5.304m2.121-7.425a6.75 6.75 0 0 1 0 9.546m2.121-11.667c3.808 3.807 3.808 9.98 0 13.788m-9.546-4.242a3.733 3.733 0 0 1-1.06-2.122m-1.061 4.243a6.75 6.75 0 0 1-1.625-6.929m-.496 9.05c-3.068-3.067-3.664-7.67-1.79-11.334M12 12h.008v.008H12V12Z",
+    iconType: 'stroke',
   },
 };
 
@@ -100,18 +108,31 @@ const Toast: React.FC<ToastProps> = ({
         ${className}
       `}
     >
-      <div className="relative overflow-hidden flex items-start gap-3 rounded-2xl shadow-lg shadow-black/30 border border-gray-50 bg-gray-50 px-4 py-3.5">
+      <div className="relative overflow-hidden flex items-start gap-3 rounded-2xl shadow-lg shadow-black/10 border border-gray-100 bg-gray-50 px-4 py-3.5">
 
         {/* Icon badge */}
         <div className={`flex-shrink-0 flex items-center justify-center size-9 rounded-full ${styles.iconBg}`}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className={`size-5 ${styles.iconColor}`}
-          >
-            <path fillRule="evenodd" d={styles.iconPath} clipRule="evenodd" />
-          </svg>
+          {styles.iconType === 'stroke' ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              className={`size-5 ${styles.iconColor}`}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d={styles.iconPath} />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className={`size-5 ${styles.iconColor}`}
+            >
+              <path fillRule="evenodd" d={styles.iconPath} clipRule="evenodd" />
+            </svg>
+          )}
         </div>
 
         {/* Content */}
@@ -126,7 +147,7 @@ const Toast: React.FC<ToastProps> = ({
             setVisible(false);
             setTimeout(onClose, 300);
           }}
-          className="flex-shrink-0 text-gray-500 hover:text-gray-300 hover:bg-gray-800 rounded-full p-1 transition-colors -mt-1 -mr-1"
+          className="flex-shrink-0 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full p-1 transition-colors -mt-1 -mr-1"
           aria-label="Close"
         >
           <svg
@@ -145,7 +166,7 @@ const Toast: React.FC<ToastProps> = ({
 
         {/* Progress bar */}
         {autoClose > 0 && (
-          <div className="absolute bottom-0 left-0 h-1 w-full bg-gray-800">
+          <div className="absolute bottom-0 left-0 h-1 w-full bg-gray-100">
             <div
               key={progressKey}
               className={`h-full ${styles.progressColor}`}

@@ -149,7 +149,8 @@ const Families = () => {
 
 
     const beneficiaryColumns: (TableColumn | null)[] = [
-        { key: "project",  label: "Project",  visibleOn: "lg", render: (row) => row.project?.name || "-" },
+        { key: "project",  label: "Project",  visibleOn: "lg", 
+            render: (row) => row.project?.name || "-" },
         { key: "family_code", label: "Family Code", visibleOn: "always" },
         // { key: "head_name", label: "Head of Family", visibleOn: "always" },
         { key: "members_count", label: "Members", visibleOn: "sm", render: (row) => `${row.members?.length || 0} members`},

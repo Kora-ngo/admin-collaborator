@@ -8,6 +8,7 @@ import type { ToastMessage } from "../../../types/toastMessage"
 interface MembershipState {
     data: Membership[],
     loading: boolean,
+    connection: boolean,
     pagination: Pagination | null,
     createData: (data: Membership) => Promise<any>,
     getData: (page?: number, searchTerm?: string, status?: string) => Promise<any>,
@@ -22,20 +23,24 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     data: [],
     loading: false,
     pagination: null,
+    connection: true,
 
     getData: async (page, searchTerm = "", status) => {
         try{
-            set({loading: true, data: []});
+            set({loading: true, data: [], connection: true});
 
             const result = await membershipApi.list(page, searchTerm, status);
 
             set({
+                connection: true,
                 data: result.data,
                 pagination: result.pagination
             });
 
         }catch(error: any){
+
             const errorToast = handleApiError(error);
+            set({connection: false})
             return errorToast;
         }finally{
             set({loading: false})
@@ -45,9 +50,17 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     createData: async (data) => {
         try{
             set({loading: true});
-            return await membershipApi.create(data);
+             await membershipApi.create(data);
         }catch(error: any){
             const errorToast = handleApiError(error);
+            if(errorToast.type == "no_network"){
+                return {
+                    type: "no_network",
+                    title: "No Internet Connection",
+                    message: "no_network"
+                }
+            }
+
             return errorToast;
         }finally{
             set({loading: false})
@@ -59,6 +72,14 @@ export const useMembershipStore = create<MembershipState>((set) => ({
             return await membershipApi.fetchOne(id);
         }catch(error: any){
             const errorToast = handleApiError(error);
+            if(errorToast.type == "no_network"){
+                return {
+                    type: "no_network",
+                    title: "No Internet Connection",
+                    message: "no_network",
+                    show: true
+                }
+            }
             return errorToast;
         }
     },
@@ -69,6 +90,15 @@ export const useMembershipStore = create<MembershipState>((set) => ({
             return await membershipApi.update(id, data);
         }catch(error: any){
             const errorToast = handleApiError(error);
+
+            if(errorToast.type == "no_network"){
+                return {
+                    type: "no_network",
+                    title: "No Internet Connection",
+                    message: "no_network"
+                }
+            }
+
             return errorToast;
         }finally{
             set({loading: false})
@@ -80,6 +110,15 @@ export const useMembershipStore = create<MembershipState>((set) => ({
             return await membershipApi.toggle(id, status);
         }catch(error: any){
             const errorToast = handleApiError(error);
+
+            if(errorToast.type == "no_network"){
+                return {
+                    type: "no_network",
+                    title: "No Internet Connection",
+                    message: "no_network"
+                }
+            }
+
             return errorToast;
         }
     },
@@ -93,7 +132,7 @@ export const useMembershipStore = create<MembershipState>((set) => ({
         }
     ) => {
     try {
-        set({ loading: true, data: [] });
+        set({ loading: true, data: [], connection: true });
 
         const result = await membershipApi.filter(page, filters);
 
@@ -103,6 +142,7 @@ export const useMembershipStore = create<MembershipState>((set) => ({
         });
     }catch(error: any){
             const errorToast = handleApiError(error);
+            set({connection: false})
             return errorToast;
     }finally {
         set({ loading: false });

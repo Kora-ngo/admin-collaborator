@@ -13,7 +13,7 @@ interface OptionMeta {
 export const optionMeta: Record<keyof ReportOptions, OptionMeta> = {
     projectDocumentation: {
         label: "Project Documentation",
-        description: "Project overview, objectives, and metadata.",
+        description: "Project overview, objectives, and progress.",
         type: "PROJECT_DOCUMENTATION",
         format: "PDF",
     },
@@ -30,8 +30,8 @@ export const optionMeta: Record<keyof ReportOptions, OptionMeta> = {
         format: "XLSX",
     },
     charts: {
-        label: "Charts",
-        description: "Visual summaries and trend charts.",
+        label: "Illustrations",
+        description: "Visual summaries.",
         type: "ANALYTICS",
         format: "PDF",
     },

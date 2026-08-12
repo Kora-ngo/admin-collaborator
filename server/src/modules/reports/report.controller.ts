@@ -62,6 +62,40 @@ const ReportController = {
                 res.status(500).json({ type: 'error', message: 'server_error' });
             }
         },
+
+    remove: async (req: Request, res: Response) => {
+        try {
+            const result = await ReportService.remove(req.params.id!, req.user!.organizationId!);
+            if (result.notFound) return res.status(404).json({ type: 'error', message: 'record_not_found' });
+            res.status(200).json({ type: 'success', message: 'done' });
+        } catch (error) {
+            console.error('Report: Remove error:', error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
+
+
+    filter: async (req: Request, res: Response) => {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+
+            const filters: any = {
+                type: req.query.type as string | undefined,
+                format: req.query.format as string | undefined,
+                status: req.query.status as string | undefined,
+                projectId: req.query.project_id ? Number(req.query.project_id) : undefined,
+                from: req.query.from as string | undefined,
+                to: req.query.to as string | undefined,
+            };
+
+            const result = await ReportService.filter(req.user!.organizationId!, filters, page, limit);
+            res.status(200).json({ type: 'success', data: result.rows, pagination: result.pagination });
+        } catch (error) {
+            console.error('Report: Filter error:', error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
 };
 
 export default ReportController;

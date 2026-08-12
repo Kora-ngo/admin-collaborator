@@ -20,7 +20,8 @@ type IconProps = {
     | "assign"
     | "unassign"
     | "close_red"
-    | "spinner";
+    | "spinner"
+    | "download";
   className?: string;
   onClick?: () => void;
   /** Override the default tooltip text */
@@ -158,7 +159,16 @@ const icons = {
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
       />
     </svg>
+  ),
+
+
+  download: 
+  (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+  </svg>
   )
+
 
 
 };
@@ -183,6 +193,7 @@ const defaultTooltips: Record<IconProps["name"], string> = {
   assign: "Assign",
   unassign: "Unassign",
   close_red: "Close",
+  download: "Download file",
   spinner: "Loading…",
 };
 

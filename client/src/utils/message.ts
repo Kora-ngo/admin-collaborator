@@ -57,6 +57,7 @@ export const messages: MessageItem[] = [
     { key: "uid_already_exists", message: "Identifier conflict detected. Please try again." },
     { key: "record_already_exists", message: "This record already exists." },
     { key: "done", message: "Operation completed successfully." },
+    { key: "no_network", message: "Check your connection and try again." },
     { key: "foreign_key_constraint", message: "This item is currently in use and cannot be deleted." },
     { key: "search_query_required", message: "Please enter a search term." },
 

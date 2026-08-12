@@ -177,7 +177,7 @@ export const useMembership = () => {
             } else {
                 result = await createData(data);
             }
-
+            
             showToast(result);
 
             if (result.type === "success") {
@@ -196,6 +196,11 @@ export const useMembership = () => {
 
     const handleView = async (id: number): Promise<any> => {
         const response: Membership | any = await fetchOneData(id);
+
+        // console.log("Response --> ", response);
+        if(response.type == "no_network"){
+            return showToast(response);
+        }
 
         setForm({
             user_id: response.user_id,

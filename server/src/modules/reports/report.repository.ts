@@ -19,6 +19,20 @@ const projectInclude = {
 
 export const ReportRepository = {
 
+    findAll: async (where: any, limit: number, offset: number) => {
+        return ReportModel.findAndCountAll({
+            where,
+            order: [['created_at', 'DESC']],
+            include: [generatorInclude, projectInclude],
+            limit,
+            offset,
+        });
+    },
+
+    destroy: async (instance: any) => {
+        return instance.destroy();
+    },
+
     findAndCountAll: async (where: any, limit: number, offset: number) => {
         return ReportModel.findAndCountAll({
             where,

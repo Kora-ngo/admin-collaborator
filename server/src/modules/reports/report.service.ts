@@ -10,6 +10,7 @@ import { buildDataPackageExport } from './builders/data-package.builder.js';
 import { buildDonorReportExport } from './builders/donor-report-export.builder.js';
 import OrganisationModel from '../organisation/organisation.model.js';
 import { buildDocumentationExport } from './builders/documentation-export.builder.js';
+import { Op } from 'sequelize';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -26,6 +27,70 @@ export const ReportService = {
     // ============================================================
     // List reports for a project (table view)
     // ============================================================
+
+    // ============================================================
+    // Delete a report
+    // ============================================================
+    remove: async (id: string, organisationId: number) => {
+        const report = await ReportRepository.findByPk(id);
+        if (!report || report.dataValues.organization_id !== organisationId) {
+            return { notFound: true };
+        }
+
+        // Best-effort file cleanup — a failed storage delete should not
+        // block removing the DB record, but is logged so orphaned files
+        // can be found later if this ever happens.
+        // NOTE: currently a no-op path while B2 upload is commented out
+        // for local testing (file_path holds a local tmp-reports/ path,
+        // not a B2 key) — safe to leave as-is until upload is restored.
+        try {
+            // if (report.dataValues.file_path) {
+            //     await deleteReportFile(report.dataValues.file_path);
+            // }
+        } catch (err) {
+            console.warn(`Report ${id}: file cleanup failed (non-critical)`, err);
+        }
+
+        await ReportRepository.destroy(report);
+        return { notFound: false };
+    },
+
+
+    // ============================================================
+    // Filter — type / format / status / project / date range
+    // ============================================================
+    filter: async (
+        organisationId: number,
+        filters: { type?: string; format?: string; status?: string; projectId?: number; from?: string; to?: string },
+        page: number,
+        limit: number
+    ) => {
+        const offset = (page - 1) * limit;
+        const where: any = { organization_id: organisationId };
+
+        if (filters.type) where.type = filters.type;
+        if (filters.format) where.format = filters.format;
+        if (filters.status) where.status = filters.status;
+        if (filters.projectId) where.project_id = filters.projectId;
+
+        if (filters.from && filters.to) {
+            where.created_at = { [Op.gte]: new Date(filters.from), [Op.lte]: new Date(`${filters.to}T23:59:59`) };
+        }
+
+        const { count, rows } = await ReportRepository.findAndCountAll(where, limit, offset);
+
+        return {
+            rows: rows.map((r: any) => r.toJSON()),
+            pagination: {
+                total: count, page, limit,
+                totalPages: Math.ceil(count / limit),
+                hasNext: page * limit < count,
+                hasPrev: page > 1,
+            },
+        };
+    },
+
+
     fetchAll: async (organisationId: number, projectId: number | undefined, page: number, limit: number) => {
         const offset = (page - 1) * limit;
         const where: any = { organization_id: organisationId };

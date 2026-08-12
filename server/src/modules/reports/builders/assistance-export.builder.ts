@@ -15,7 +15,9 @@ export const buildAssistanceExport = async (
     from?: string,
     to?: string
 ): Promise<{ buffer: Buffer; fileName: string }> => {
-    const items = await AssistanceExportRepository.findForExport(projectId, from, to);
+    const rows = await AssistanceExportRepository.findForExport(projectId, from, to);
+
+    console.log('[assistance-export] building sheet for', rows.length, 'rows');
 
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Assistance');
@@ -34,18 +36,11 @@ export const buildAssistanceExport = async (
     ];
     sheet.getRow(1).font = { bold: true };
 
-    items.forEach((row: any, i: number) => {
-        const item = row.dataValues;
-        const delivery = item.delivery?.dataValues || item.delivery;
-        const beneficiary = delivery?.beneficiary?.dataValues || delivery?.beneficiary;
-        const assistance = item.assistance?.dataValues || item.assistance;
-        const assistanceType = assistance?.assistanceType?.dataValues || assistance?.assistanceType;
+    rows.forEach((row, i) => {
+        const { item, delivery, beneficiary, assistance, assistanceType } = row;
 
         sheet.addRow({
             index: i + 1,
-            // "Beneficiary" here identifies the family (family_code is the
-            // internal key; head_name is the human-readable label) —
-            // matches how the Beneficiaries export labels the family too.
             beneficiary: beneficiary?.head_name || '',
             date: formatDate(delivery?.delivery_date),
             assistance_type: assistanceType?.name || '',

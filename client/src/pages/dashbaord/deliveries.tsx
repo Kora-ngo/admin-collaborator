@@ -160,9 +160,12 @@ const Deliveries = () => {
             key: "beneficiary",
             label: "Beneficiary",
             visibleOn: "always",
-            render: (row) => row.beneficiary
-                ? `${row.beneficiary.family_code} - ${row.beneficiary.head_name}`
-                : "-"
+            render: (row) => (
+                <div>
+                    <p className="font-semibold text-gray-900">{row.beneficiary.family_code} - {row.beneficiary.head_name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{row.project?.name || "-"}</p>
+                </div>
+            ),
         },
         {
             key: "items_count",
@@ -280,7 +283,7 @@ const Deliveries = () => {
                         <ActionButton className="h-10" onClick={() => refreshCurrentPage(pagination?.page || 1)} />
 
                         {/* Export Button - Admin Only */}
-                        {isAdmin && data.length != 0 && (
+                        {/* {isAdmin && data.length != 0 && (
                             <Button
                                 variant="ghost"
                                 onClick={() => setExportModal(true)}
@@ -291,7 +294,7 @@ const Deliveries = () => {
                                 </svg>
                                 Export Excel
                             </Button>
-                        )}
+                        )} */}
                     </div>
                 </div>
 

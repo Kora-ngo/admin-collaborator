@@ -19,11 +19,12 @@ import MembershipForm from "../../features/users/components/membership-form";
 import MembershipView from "../../features/users/components/membership-view";
 import Popup from "../../components/widgets/popup";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import ConnectionError from "../../features/common/network/connectionError";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const User = () => {
-    const {data, getData, pagination, loading} = useMembershipStore();
+    const {data, getData, pagination, loading, connection} = useMembershipStore();
     const userData = useAuthStore((state) => state.user);
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {role} = useAuthStore();
@@ -208,6 +209,12 @@ const User = () => {
           )
     } },
     ];
+
+
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page!)} />
+    }
+
 
     
 
