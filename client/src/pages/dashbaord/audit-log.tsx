@@ -229,7 +229,7 @@ const AuditLogs = () => {
                                             <div className="w-full bg-gray-50 rounded-md">
                                                 <EmptyState
                                                     title="No Audit Logs Found"
-                                                    description="No activity has been logged yet."
+                                                    description="No activity has been logged today."
                                                 />
                                             </div>
                                         ) : (

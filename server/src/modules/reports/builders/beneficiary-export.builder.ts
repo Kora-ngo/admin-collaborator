@@ -44,8 +44,6 @@ export const buildBeneficiariesExport = async (
     sheet.columns = [
         { header: '#', key: 'index', width: 6 },
         { header: 'Beneficiary', key: 'beneficiary', width: 22 },
-        { header: 'Gender', key: 'gender', width: 10 },
-        { header: 'Age', key: 'age', width: 8 },
         { header: 'Region', key: 'region', width: 16 },
         { header: 'Phone', key: 'phone', width: 16 },
         { header: 'Village', key: 'village', width: 16 },
@@ -61,8 +59,8 @@ export const buildBeneficiariesExport = async (
     let rowIndex = 1;
 
     beneficiaries.forEach((b: any) => {
-        const data = b.dataValues;
-        const members = (data.members || []).map((m: any) => m.dataValues || m);
+        const data = b; // raw: true means b IS the plain object already
+        const members = data.members || []; // members are already plain objects too
         const headMember = findHeadMember(members);
 
         // Family-level Gender/Age now sourced from the member explicitly
@@ -70,8 +68,6 @@ export const buildBeneficiariesExport = async (
         // guessed) if no such member exists for this family.
         const baseRow = {
             beneficiary: data.head_name,
-            gender: headMember ? capitalize(headMember.gender) : '',
-            age: headMember ? calculateAge(headMember.date_of_birth) : '',
             region: data.region || '',
             phone: data.phone || '',
             village: data.village || '',

@@ -1,3 +1,4 @@
+import { createRequire } from 'module';
 import {  OrganisationModel } from '../../index.js';
 import { buildDocumentationExport } from './documentation-export.builder.js';
 import { buildBeneficiariesExport } from './beneficiary-export.builder.js';
@@ -6,6 +7,9 @@ import { buildAnalyticsExport } from './analytics-export.builder.js';
 import type { ReportPackageOptions } from '../types/report.js';
 import ProjectRegionModel from '../../project-region/project-region.model.js';
 
+const require = createRequire(import.meta.url);
+const archiver = require('archiver');
+
 export const buildDataPackageExport = async (
     project: any,
     options: ReportPackageOptions,
@@ -13,7 +17,6 @@ export const buildDataPackageExport = async (
     to?: string
 ): Promise<{ buffer: Buffer; fileName: string }> => {
 
-    const { ZipArchive } = require("archiver");
 
     const components: { name: string; buffer: Buffer }[] = [];
 
@@ -54,7 +57,8 @@ export const buildDataPackageExport = async (
     }
 
     const buffer = await new Promise<Buffer>((resolve, reject) => {
-        const archive = ZipArchive('zip', { zlib: { level: 9 } });
+
+        const archive = archiver({ zlib: { level: 9 } });
         const chunks: Buffer[] = [];
 
         archive.on('data', (chunk: any) => chunks.push(chunk));

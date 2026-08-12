@@ -10,6 +10,8 @@ import { buildDataPackageExport } from './builders/data-package.builder.js';
 import { buildDonorReportExport } from './builders/donor-report-export.builder.js';
 import OrganisationModel from '../organisation/organisation.model.js';
 import { buildDocumentationExport } from './builders/documentation-export.builder.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 const REPORT_FORMAT_BY_TYPE: Record<string, 'ZIP' | 'XLSX' | 'PDF'> = {
     DATA_PACKAGE: 'ZIP',
@@ -95,6 +97,20 @@ export const ReportService = {
 
             const generated = await ReportService.buildReportFile(payload, project.dataValues);
 
+            // ============================================================
+            // TEMP — B2 upload disabled for local testing.
+            // Writes the generated file to disk so it can be opened and
+            // checked directly. Swap this block back for the commented
+            // uploadReportFile call once the documents look correct.
+            // ============================================================
+            const tempDir = path.join(process.cwd(), 'tmp-reports');
+            await fs.mkdir(tempDir, { recursive: true });
+            const tempFilePath = path.join(tempDir, generated.fileName);
+            await fs.writeFile(tempFilePath, generated.buffer);
+            console.log(`[report] Saved locally for inspection: ${tempFilePath}`);
+
+            const uploadResult = { filePath: tempFilePath, fileSize: generated.buffer.length };
+
             // const uploadResult = await uploadReportFile(
             //     generated.buffer,
             //     generated.fileName,
@@ -102,12 +118,12 @@ export const ReportService = {
             //     project.dataValues.id
             // );
 
-            // await ReportRepository.update(report, {
-            //     status: 'COMPLETED',
-            //     generated_at: new Date(),
-            //     file_path: uploadResult.filePath,
-            //     file_size: uploadResult.fileSize,
-            // });
+            await ReportRepository.update(report, {
+                status: 'COMPLETED',
+                generated_at: new Date(),
+                file_path: uploadResult.filePath,
+                file_size: uploadResult.fileSize,
+            });
 
             return { error: null, data: (await ReportRepository.findByPk(report!.dataValues!.id))?.toJSON() };
         } catch (err) {
