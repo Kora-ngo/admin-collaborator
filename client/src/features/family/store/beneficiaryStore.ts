@@ -3,13 +3,15 @@ import type { Beneficiary } from "../beneficiary";
 import type { Pagination } from "../../../types/pagination";
 import { handleApiError } from "../../../utils/handleApiError";
 import { beneficiaryApi } from "../beneficiaryApi";
+import type { ToastMessage } from "../../../types/toastMessage";
 
 interface BeneficiaryState {
     data: Beneficiary[];
     loading: boolean;
+    connection: boolean;
     pagination: Pagination | null;
     getData: (page?: number, searchTerm?: string) => Promise<any>;
-    fetchOneData: (id: number) => Promise<Beneficiary>;
+    fetchOneData: (id: number) => Promise<Beneficiary | ToastMessage>;
     filterData: (page: number, filters: any) => Promise<any>;
     reviewBeneficiary: (id: number, action: 'approve' | 'reject', note?: string) => Promise<any>;
     deleteData: (id: number, status: string) => Promise<any>
@@ -18,11 +20,12 @@ interface BeneficiaryState {
 export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({ 
     data: [],
     loading: false,
+    connection: true,
     pagination: null,
 
     getData: async (page = 1, searchTerm = "") => {
         try {
-            set({ loading: true, data: [] });
+            set({ loading: true, data: [], connection: true });
 
             const result = await beneficiaryApi.list(page, searchTerm);
 
@@ -34,6 +37,7 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
             return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
+            set({connection: false})
             return errorToast;
         } finally {
             set({ loading: false });
@@ -45,13 +49,13 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
             return await beneficiaryApi.fetchOne(id);
         } catch (error: any) {
             const errorToast = handleApiError(error);
-            throw errorToast;
+            return errorToast;
         }
     },
 
     filterData: async (page = 1, filters) => {
         try {
-            set({ loading: true, data: [] });
+            set({ loading: true, data: [], connection: true });
 
             const result = await beneficiaryApi.filter(page, filters);
 
@@ -63,6 +67,7 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
             return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
+            set({ connection: false });
             return errorToast;
         } finally {
             set({ loading: false });

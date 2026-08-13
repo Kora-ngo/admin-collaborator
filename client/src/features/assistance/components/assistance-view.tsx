@@ -1,28 +1,27 @@
 import { useEffect, useState } from "react";
-import { useAssistanceStore } from "../store/assistanceStore";
 import Loading from "../../../components/ui/loading";
 import type { Assistance } from "../assistance";
 import DetailView from "../../../components/widgets/detail-view";
+import { useAssis } from "../hooks/useAssis";
 
 interface AssistanceProps {
   id: number;
   isOpen: boolean;
 }
 
-
 const AssistanceView = ({ id, isOpen }: AssistanceProps) => {
-  const { fetchOneData } = useAssistanceStore();
+  const { handleView } = useAssis();
   const [data, setData] = useState<Assistance | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const handleFetch = async () => {
+    const fetch = async () => {
       if (!isOpen || !id) return;
 
       try {
         setLoading(true);
-        const fetchedData = await fetchOneData(id);
-        setData(fetchedData as Assistance);
+        const result = await handleView(id);
+        setData(result);
       } catch (err) {
         console.error("Failed to fetch assistance:", err);
       } finally {
@@ -30,8 +29,8 @@ const AssistanceView = ({ id, isOpen }: AssistanceProps) => {
       }
     };
 
-    handleFetch();
-  }, [id, isOpen, fetchOneData]);
+    fetch();
+  }, [id, isOpen]);
 
   if (loading) {
     return (
@@ -57,8 +56,8 @@ const AssistanceView = ({ id, isOpen }: AssistanceProps) => {
     { label: "Type", value: data.assistanceType!.name },
     { label: "Unit", value: data.assistanceType!.unit },
     { label: "Status", value: data.status === "true" ? "Active" : "Inactive" },
-    { 
-      label: "Created On", 
+    {
+      label: "Created On",
       value: new Date(data.date_of!).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -67,8 +66,8 @@ const AssistanceView = ({ id, isOpen }: AssistanceProps) => {
         minute: '2-digit'
       })
     },
-    { 
-      label: "Last Updated", 
+    {
+      label: "Last Updated",
       value: new Date(data.update_of!).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',

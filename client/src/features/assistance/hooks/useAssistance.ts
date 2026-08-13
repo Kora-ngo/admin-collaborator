@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { AssistanceType } from "../assistance"
+import type { Assistance, AssistanceType } from "../assistance"
 import { validateAssistanceType } from "../utils/validate";
 import type { ToastMessage } from "../../../types/toastMessage";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
@@ -91,7 +91,7 @@ export const useAssistance = () => {
         removeType,
         handleTypeChange,
         handleTypeSubmit,
-        handleDelete
+        handleDelete,
     }
 
 

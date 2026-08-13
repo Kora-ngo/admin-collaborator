@@ -113,5 +113,15 @@ export const handleApiError = (err: any): ToastMessage => {
         fullError: err,
     });
 
+
+    if(toast.type == "no_network"){
+        return {
+            type: "no_network",
+            title: "No Internet Connection",
+            message: "no_network",
+            show: true
+        }
+    }
+
     return toast;
 };

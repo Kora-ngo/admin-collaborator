@@ -4,9 +4,10 @@ import EmptyState from "../../../components/ui/empty";
 import Loading from "../../../components/ui/loading";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 import { useAssistance } from "../hooks/useAssistance";
+import ConnectionError from "../../common/network/connectionError";
 
 const TypeView = () => {
-    const { data, loading, fetchData } = useAssistanceTypeStore();
+    const { data, loading, connection, fetchData } = useAssistanceTypeStore();
     const { handleDelete } = useAssistance();
 
     const [confirmId, setConfirmId] = useState<number | null>(null);
@@ -26,6 +27,10 @@ const TypeView = () => {
                 <Loading text="Loading assistance types..." />
             </div>
         );
+    }
+
+    if(!connection){
+        return <ConnectionError fullScreen={true} onRetry={() => fetchData()} />
     }
 
     return (

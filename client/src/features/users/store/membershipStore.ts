@@ -53,14 +53,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
              await membershipApi.create(data);
         }catch(error: any){
             const errorToast = handleApiError(error);
-            if(errorToast.type == "no_network"){
-                return {
-                    type: "no_network",
-                    title: "No Internet Connection",
-                    message: "no_network"
-                }
-            }
-
             return errorToast;
         }finally{
             set({loading: false})
@@ -72,14 +64,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
             return await membershipApi.fetchOne(id);
         }catch(error: any){
             const errorToast = handleApiError(error);
-            if(errorToast.type == "no_network"){
-                return {
-                    type: "no_network",
-                    title: "No Internet Connection",
-                    message: "no_network",
-                    show: true
-                }
-            }
             return errorToast;
         }
     },
@@ -90,15 +74,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
             return await membershipApi.update(id, data);
         }catch(error: any){
             const errorToast = handleApiError(error);
-
-            if(errorToast.type == "no_network"){
-                return {
-                    type: "no_network",
-                    title: "No Internet Connection",
-                    message: "no_network"
-                }
-            }
-
             return errorToast;
         }finally{
             set({loading: false})
@@ -110,15 +85,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
             return await membershipApi.toggle(id, status);
         }catch(error: any){
             const errorToast = handleApiError(error);
-
-            if(errorToast.type == "no_network"){
-                return {
-                    type: "no_network",
-                    title: "No Internet Connection",
-                    message: "no_network"
-                }
-            }
-
             return errorToast;
         }
     },

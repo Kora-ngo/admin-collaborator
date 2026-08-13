@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useBeneficiaryStore } from "../store/beneficiaryStore";
 import { useToastStore } from "../../../store/toastStore";
+import type { Beneficiary } from "../beneficiary";
 
 export const useBeneficiary = () => {
     const { getData, filterData, fetchOneData, reviewBeneficiary, deleteData } = useBeneficiaryStore();
@@ -63,8 +64,14 @@ export const useBeneficiary = () => {
         filterMode ? filterData(page, filters) : getData(page, searchTerm);
     };
 
-    const handleView = async (id: number) => {
-        return await fetchOneData(id);
+    const handleView = async (id: number): Promise<any> => {
+        const response: Beneficiary | any = await fetchOneData(id);
+
+        if(response.type == "no_network"){
+            return showToast(response);
+        }
+
+        return response;
     };
 
     const handleReview = async (id: number, action: 'approve' | 'reject', note?: string): Promise<boolean> => {

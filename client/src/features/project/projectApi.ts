@@ -26,7 +26,7 @@ export const projectApi = {
   },
 
   create: async (payload: any) => {
-    const response = await axiosInstance.post(endpoint, payload);
+    const response = await axiosInstance.post(`${endpoint}`, payload);
     return response.data;
   },
 

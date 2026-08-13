@@ -12,8 +12,10 @@ import type { BadgeColor } from "../../types/badgeColor";
 import { useState } from "react";
 import type { ProjectAnalytics, ValidationProgress } from "../../features/analytics/types/analytics";
 import { useAnalytics } from "../../features/analytics/hooks/useanAlytics";
-import { useLocationLabels } from "../../features/common/locations/hooks/uselocationLabels";
 import { useRegionNameLookup } from "../../utils/getRegionNameMap";
+import { useAnalyticsStore } from "../../features/analytics/store/analyticsStore";
+import ConnectionError from "../../features/common/network/connectionError";
+import AnalyticsEmptyState from "../../features/analytics/components/analytics-empty-state";
 
 // Only used for the second slice of the gender donut, where a single hue
 // can't visually distinguish two categories — everything else is primary/gray.
@@ -280,10 +282,8 @@ const Analytics = () => {
         filterOptions, loadingFilters,
         project, setProject,
         period, setPeriod,
-        region, setRegion,
     } = useAnalytics();
-
-
+    const {connection, fetchAnalytics} = useAnalyticsStore();
 
 
     // Resolved once from the DOM (see useThemeColor) so every chart below
@@ -299,8 +299,14 @@ const Analytics = () => {
         );
     }
 
+    
+    if(!connection){
+        return <ConnectionError  onRetry={() => {fetchAnalytics}}  />
+    }
+
+
     if (!data) {
-        return null;
+        return <AnalyticsEmptyState />;
     }
 
     const isEmpty =
@@ -334,10 +340,13 @@ const Analytics = () => {
         },
     ];
 
+
+
+
     return (
         <div className="space-y-6 pb-12">
             {/* ── Filters ── */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex flex-col w-full sm:flex-row gap-4 items-start sm:items-center">
                 <div className="w-full sm:w-100">
                     <SelectInput
                         options={[
@@ -362,16 +371,8 @@ const Analytics = () => {
                         onChange={(e) => setPeriod(e.target.value)}
                     />
                 </div>
-                {/* <div className="w-full sm:w-48">
-                    <SelectInput
-                        options={[
-                            { label: "All Regions", value: "all" },
-                            ...(filterOptions?.regions || []),
-                        ]}
-                        value={region}
-                        disabled={loadingFilters}
-                        onChange={(e) => setRegion(e.target.value)}
-                    />
+                {/* <div className="mx-auto">
+                    <ActionButton className="py-2" />
                 </div> */}
                 {loading && (
                     <span className="text-xs text-gray-400">Updating…</span>

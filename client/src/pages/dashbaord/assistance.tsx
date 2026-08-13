@@ -20,12 +20,13 @@ import Popup from "../../components/widgets/popup";
 import { useAssis } from "../../features/assistance/hooks/useAssis";
 import { SelectInput } from "../../components/ui/select-input";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import ConnectionError from "../../features/common/network/connectionError";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Assistance = () => {
 
-    const {data, getData, pagination, loading} = useAssistanceStore();
+    const {data, getData, pagination, loading, connection} = useAssistanceStore();
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {role} = useAuthStore();
     const {
@@ -188,6 +189,10 @@ const Assistance = () => {
     } },
     ];
 
+
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page!)} />
+    }
 
     return ( 
         <div className="grid grid-cols-1 gap-4 mt-2">
@@ -432,7 +437,7 @@ const Assistance = () => {
             loading ={loading}
             open={deletePopup}
             onClose={() => setDeletePopUp(false)}
-            title={selectedRecord?.status === "true" ? "Deactivate Record" : "Activate Record"}
+            title={selectedRecord?.status === "true" ? "Deactivate Record" : "Restore Record"}
             description={
                 selectedRecord ? (
                 <>

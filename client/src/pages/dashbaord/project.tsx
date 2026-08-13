@@ -21,11 +21,12 @@ import ProjectView from "../../features/project/components/project-view";
 import ProjectActionPopup from "../../features/project/components/ProjectActionPopup";
 import ProjectViewMedia from "../../features/project/components/project-view-media";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import ConnectionError from "../../features/common/network/connectionError";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Projects = () => {
-    const { data, getData, pagination, loading } = useProjectStore();
+    const { data, getData, pagination, loading, connection } = useProjectStore();
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {membership} = useAuthStore();
 
@@ -355,6 +356,12 @@ const Projects = () => {
             }
         },
     ];
+
+
+
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page!)} />
+    }
 
     return (
         <div className="grid grid-cols-1 gap-4 mt-2">

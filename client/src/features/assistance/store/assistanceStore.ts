@@ -9,6 +9,7 @@ import type { ToastMessage } from "../../../types/toastMessage";
 interface AssistanceState {
     data: Assistance[],
     loading: boolean,
+    connection: boolean,
     pagination: Pagination | null,
     createData: (data: Assistance) => Promise<any>,
     getData: (page?: number, searchTerm?: string, status?: string) => Promise<any>,
@@ -21,11 +22,12 @@ interface AssistanceState {
 export const useAssistanceStore = create<AssistanceState>((set) => ({
     data: [],
     loading: false,
+    connection: true,
     pagination: null,
 
     getData: async (page, searchTerm = "", status) => {
         try{
-            set({loading: true, data: []});
+            set({loading: true, data: [], connection: true});
 
             const result = await assistanceApi.list(page, searchTerm, status);
 
@@ -36,6 +38,7 @@ export const useAssistanceStore = create<AssistanceState>((set) => ({
 
         }catch(error: any){
             const errorToast = handleApiError(error);
+            set({connection: false});
             return errorToast;
         }finally{
             set({loading: false})
@@ -86,7 +89,7 @@ export const useAssistanceStore = create<AssistanceState>((set) => ({
 
     filterData: async (page = 1, filters) => {
         try {
-            set({ loading: true, data: [] });
+            set({ loading: true, data: [], connection: true });
 
             const result = await assistanceApi.filter(page, filters);
 
@@ -96,6 +99,7 @@ export const useAssistanceStore = create<AssistanceState>((set) => ({
             });
         }catch(error: any){
             const errorToast = handleApiError(error);
+            set({connection: false });
             return errorToast;
         }finally {
             set({ loading: false });

@@ -7,6 +7,7 @@ import type { ToastMessage } from "../../../types/toastMessage";
 interface AnalyticsState {
     data: AnalyticsData | null;
     loading: boolean;
+    connection: boolean;
 
     filterOptions: AvailableFilters | null;
     loadingFilters: boolean;
@@ -18,13 +19,14 @@ interface AnalyticsState {
 export const useAnalyticsStore = create<AnalyticsState>((set) => ({
     data: null,
     loading: false,
+    connection: true,
 
     filterOptions: null,
     loadingFilters: false,
 
     fetchAnalytics: async (params) => {
         try {
-            set({ loading: true });
+            set({ loading: true, connection: true });
 
             const result = await analyticsApi.getAnalytics(params);
 
@@ -35,6 +37,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
             return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
+            set({ connection: false });
             return errorToast;
         } finally {
             set({ loading: false });
@@ -43,7 +46,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
 
     fetchFilterOptions: async () => {
         try {
-            set({ loadingFilters: true });
+            set({ loadingFilters: true, connection: true });
 
             const result = await analyticsApi.getFilters();
 
@@ -54,6 +57,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
             return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
+            set({ connection: false });
             return errorToast;
         } finally {
             set({ loadingFilters: false });

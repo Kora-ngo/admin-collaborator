@@ -16,6 +16,7 @@ interface DashboardState {
     validationQueue: any;
 
     loading: boolean;
+    connection: boolean;
 
     // Admin method
     getAdminOverview: () => Promise<any>;
@@ -32,11 +33,12 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     enumeratorActivity: [],
     validationQueue: null,
     loading: false,
+    connection: true,
     error: null,
 
     getAdminOverview: async () => {
         try {
-            set({ loading: true });
+            set({ loading: true, connection: true });
             const result = await dashboardApi.getAdminOverview();
             if (result.type === "success" && result.data) {
                 set({ adminOverview: result.data });
@@ -47,6 +49,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
             }
             return result;
         } catch (error: any) {
+            set({connection: false})
             return handleApiError(error);
         } finally {
             set({ loading: false });

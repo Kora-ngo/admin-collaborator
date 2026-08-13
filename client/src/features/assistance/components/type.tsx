@@ -17,7 +17,7 @@ const Type = () => {
     handleTypeSubmit,
   } = useAssistance();
 
-  const {fetchData, loading} = useAssistanceTypeStore();
+  const {fetchData, loading, connection} = useAssistanceTypeStore();
 
   useEffect(() => {
     if (toggle === 'view') {
@@ -63,7 +63,9 @@ const Type = () => {
                         </Button>
                     }
 
-                    <Button onClick={handleSubmit} loading={loading}>
+                    <Button
+                    disabled={!connection}
+                    onClick={handleSubmit} loading={loading}>
                         {toggle === "view" ? "New" : "Save"}
                     </Button>
 

@@ -4,11 +4,11 @@ import type { Project } from "../project";
 import { projectApi } from "../../project/projectApi";
 import { handleApiError } from "../../../utils/handleApiError";
 import { fileToBase64 } from "../../../utils/fileToBase64";
-import type { ToastMessage } from "../../../types/toastMessage";
 
 interface ProjectState {
     data: Project[];
     loading: boolean;
+    connection: boolean;
     pagination: Pagination | null;
     createData: (projectData: any, files?: File[]) => Promise<any>;
     getData: (page?: number, searchTerm?: string) => Promise<any>;
@@ -22,11 +22,12 @@ interface ProjectState {
 export const useProjectStore = create<ProjectState>((set) => ({
     data: [],
     loading: false,
+    connection: true,
     pagination: null,
 
     getData: async (page = 1, searchTerm = "") => {
         try {
-            set({ loading: true, data: [] });
+            set({ loading: true, data: [], connection: true });
             
             const result = await projectApi.list(page, searchTerm);
 
@@ -37,6 +38,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
         } catch (error: any) {
             const errorToast = handleApiError(error);
+            set({connection: false})
             return errorToast;
         } finally {
             set({ loading: false });
@@ -106,6 +108,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
                     );
                 }
             }catch(err){
+
             }
 
             const payload = {
@@ -119,18 +122,15 @@ export const useProjectStore = create<ProjectState>((set) => ({
             return response;
         } catch (error: any) {
             console.error('Failed to update project:', error);
+            const errorToast = handleApiError(error);
+            return errorToast;
+        }finally{
             set({ loading: false });
-            return {
-                type: 'error',
-                message: error.response?.data?.message || 'server_error'
-            };
         }
     },
 
     toggleData: async (id, status) => {
         try {
-            console.log("Project ID ---> ", id);
-            console.log("Status ---> ", status);
             return await projectApi.toggle(id, status);
         } catch (error: any) {
             const errorToast = handleApiError(error);
@@ -143,7 +143,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
         datePreset?: string;
     }) => {
         try {
-            set({ loading: true, data: [] });
+            set({ loading: true, data: [], connection: true });
 
             const result = await projectApi.filter(page, filters);
 
@@ -153,36 +153,12 @@ export const useProjectStore = create<ProjectState>((set) => ({
             });
         } catch (error: any) {
             const errorToast = handleApiError(error);
+            set({ connection: false });
             return errorToast;
         } finally {
             set({ loading: false });
         }
     },
-
-    // checkCanDelete: async (id: number) => {
-    //     try {
-    //         const response = await axiosInstance.get(`${endpoint}/${id}/can-delete`);
-            
-    //         if (response.data.type === 'success') {
-    //             return response.data.data;
-    //         }
-            
-    //         return {
-    //             canDelete: false,
-    //             beneficiaryCount: 0,
-    //             deliveryCount: 0,
-    //             message: 'Failed to check delete status'
-    //         };
-    //     } catch (error: any) {
-    //         console.error('Failed to check if project can be deleted:', error);
-    //         return {
-    //             canDelete: false,
-    //             beneficiaryCount: 0,
-    //             deliveryCount: 0,
-    //             message: error.response?.data?.message || 'server_error'
-    //         };
-    //     }
-    // }
 
 
 }))

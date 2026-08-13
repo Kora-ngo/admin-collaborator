@@ -21,11 +21,12 @@ import { useToastStore } from "../../store/toastStore";
 import { Button } from "../../components/ui/button";
 import ExportPopup from "../../components/widgets/export-modal";
 import { exportBeneficiariesToExcel } from "../../utils/exportUtil";
+import ConnectionError from "../../features/common/network/connectionError";
 
 type ModalMode = 'view' | 'review' | null;
 
 const Families = () => {
-    const { data, getData, pagination, loading } = useBeneficiaryStore();
+    const { data, getData, pagination, loading, connection } = useBeneficiaryStore();
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const { membership } = useAuthStore();
     const {
@@ -234,6 +235,11 @@ const Families = () => {
             }
         }
     ];
+
+
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page || 1)} />
+    }
 
     return (
         <div className="grid grid-cols-1 gap-4 mt-2">

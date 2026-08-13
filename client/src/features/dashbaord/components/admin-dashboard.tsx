@@ -159,7 +159,7 @@ const AttentionCard = ({ item }: { item: AttentionItem }) => {
 };
 
 const AdminDashbaord = () => {
-    const { adminOverview, loading, error, getAdminOverview } = useDashboardStore();
+    const { adminOverview, loading, connection, getAdminOverview } = useDashboardStore();
 
     useEffect(() => {
         getAdminOverview();
@@ -174,12 +174,9 @@ const AdminDashbaord = () => {
     }
 
     if (!adminOverview) {
-        if (error) {
+        if (!connection) {
             return (
-                <ConnectionError
-                    title={error.type === "no_network" ? undefined : "Something Went Wrong"}
-                    message={error.type === "no_network" ? undefined : (error.message || "An unexpected error occurred.")}
-                    onRetry={getAdminOverview}
+                <ConnectionError onRetry={getAdminOverview}
                 />
             );
         }

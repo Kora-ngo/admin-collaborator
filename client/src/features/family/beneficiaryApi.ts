@@ -22,7 +22,7 @@ export const beneficiaryApi = {
 
   fetchOne: async (id: number) => {
     const response = await axiosInstance.get(`${endpoint}/${id}`);
-    return response.data.data as Beneficiary;
+    return response.data.data as any;
   },
 
   filter: async (page = 1, filters: {

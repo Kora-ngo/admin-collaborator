@@ -16,7 +16,7 @@ export interface AssistanceListResult {
 }
 
 export interface AssistanceFilters {
-  status?: "true" | "false";
+  status: "true" | "false";
   typeId?: number;
   datePreset?: string;
 }

@@ -263,6 +263,10 @@ export const useProject = () => {
         const response = await fetchOneData(id) as any;
 
         console.log("Response --> ",response)
+
+        if(response.type == "no_network"){
+            return showToast(response);
+        }
         
         // Set edit metadata
         if (response.editMetadata) {
