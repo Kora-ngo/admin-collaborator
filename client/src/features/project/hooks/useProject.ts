@@ -11,7 +11,7 @@ export type ProjectFormData = Partial<Project> & {
     selectedMembers: ProjectMember[];
     selectedAssistances: ProjectAssistance[];
     country?: string; 
-    coveredRegions: string[];
+    coveredRegions: { code: string; region: string }[];
     target_families?: number;
 };
 
@@ -173,11 +173,11 @@ export const useProject = () => {
     };
 
 
-    const updateSelectedRegions = (country: string, regions: { iso2: string }[]) => {
+    const updateSelectedRegions = (country: string, regions: { iso2: string; name: string }[]) => {
         setProjectForm(prev => ({
             ...prev,
             country,
-            coveredRegions: regions.map(r => r.iso2),
+            coveredRegions: regions.map(r => ({ code: r.iso2, region: r.name.toLowerCase() })),
         }));
     };
 
@@ -283,7 +283,7 @@ export const useProject = () => {
             selectedMembers: response.members,
             selectedAssistances: response.assistances,
             country: response.country, 
-            coveredRegions: (response.regions || []).map((r: any) => r.region),
+            coveredRegions: (response.regions || []).map((r: any) => ({ code: r.region, region: r.region })),
             target_families: response.target_families,
         });
         

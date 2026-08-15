@@ -26,7 +26,7 @@ type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Assistance = () => {
 
-    const {data, getData, pagination, loading, connection} = useAssistanceStore();
+    const {data, getData, pagination, loading, connection, popUpLoading} = useAssistanceStore();
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {role} = useAuthStore();
     const {
@@ -434,7 +434,7 @@ const Assistance = () => {
             />
 
         <Popup
-            loading ={loading}
+            loading ={popUpLoading}
             open={deletePopup}
             onClose={() => setDeletePopUp(false)}
             title={selectedRecord?.status === "true" ? "Deactivate Record" : "Restore Record"}

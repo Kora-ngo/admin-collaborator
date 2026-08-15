@@ -63,9 +63,10 @@ const buildProjectMetrics = async (project: any, start: Date, end: Date) => {
         // ---- Geographic Coverage ----
         const plannedRegions = plannedRegionsRows.map((r: any) => r.region);
         const coveredRegionsRaw = coveredRegionsRows.map((r: any) => r.region).filter(Boolean);
-        const regionsBreakdown = plannedRegions.map((region: string) => ({
-            region,
-            covered: coveredRegionsRaw.some((c: string) => c.toLowerCase() === region.toLowerCase()),
+        const regionsBreakdown = plannedRegionsRows.map((r: any) => ({
+            code: r.code,
+            region: r.region,
+            covered: coveredRegionsRaw.some((c: string) => c.toLowerCase().trim() === (r.region || '').toLowerCase().trim()),
         }));
         const coveredCount = regionsBreakdown.filter((r) => r.covered).length;
         const geoCoveragePercent = plannedRegions.length > 0

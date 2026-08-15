@@ -1,5 +1,8 @@
 import { createRequire } from 'module';
-import {  OrganisationModel } from '../../index.js';
+const require = createRequire(import.meta.url);
+const { ZipArchive } = require('archiver');
+
+import { OrganisationModel } from '../../index.js';
 import { buildDocumentationExport } from './documentation-export.builder.js';
 import { buildBeneficiariesExport } from './beneficiary-export.builder.js';
 import { buildAssistanceExport } from './assistance-export.builder.js';
@@ -7,23 +10,19 @@ import { buildAnalyticsExport } from './analytics-export.builder.js';
 import type { ReportPackageOptions } from '../types/report.js';
 import ProjectRegionModel from '../../project-region/project-region.model.js';
 
-const require = createRequire(import.meta.url);
-const archiver = require('archiver');
-
 export const buildDataPackageExport = async (
     project: any,
     options: ReportPackageOptions,
     from?: string,
     to?: string
-): Promise<{ buffer: Buffer; fileName: string }> => {
-
+): Promise<{ buffer: Buffer; fileName: string; components: string[] }> => {
 
     const components: { name: string; buffer: Buffer }[] = [];
 
     if (options.projectDocumentation) {
         const [organisation, regions] = await Promise.all([
             OrganisationModel.findByPk(project.organisation_id),
-            ProjectRegionModel.findAll({ where: { project_id: project.id }, attributes: ['region'], raw: true }),
+            ProjectRegionModel.findAll({ where: { project_id: project.id }, attributes: ['code', 'region'], raw: true }),
         ]);
 
         const { buffer } = await buildDocumentationExport(
@@ -50,20 +49,26 @@ export const buildDataPackageExport = async (
         components.push({ name: 'Project_Charts.pdf', buffer });
     }
 
-    // Guarded upstream in report.service.ts (generate() validation), but
-    // defensive here too — an empty ZIP is a confusing silent failure.
     if (components.length === 0) {
         throw new Error('buildDataPackageExport: no components enabled');
     }
 
+    // Matches the working pattern from the backup system's buildArchive:
+    // new ZipArchive(...), not archiver('zip', ...).
     const buffer = await new Promise<Buffer>((resolve, reject) => {
-
-        const archive = archiver({ zlib: { level: 9 } });
+        const archive = new ZipArchive({ zlib: { level: 9 } });
         const chunks: Buffer[] = [];
 
-        archive.on('data', (chunk: any) => chunks.push(chunk));
+        archive.on('data', (chunk: Buffer) => chunks.push(chunk));
         archive.on('end', () => resolve(Buffer.concat(chunks)));
-        archive.on('error', (err: any) => reject(err));
+        archive.on('warning', (err: any) => {
+            if (err.code === 'ENOENT') {
+                console.warn('Archiver warning:', err);
+            } else {
+                reject(err);
+            }
+        });
+        archive.on('error', (err: Error) => reject(err));
 
         components.forEach((c) => archive.append(c.buffer, { name: c.name }));
         archive.finalize();
@@ -73,5 +78,5 @@ export const buildDataPackageExport = async (
     const periodSuffix = from && to ? `_${from}_to_${to}` : '';
     const fileName = `Kora_Project_Package_${safeProjectName}${periodSuffix}.zip`;
 
-    return { buffer, fileName };
+    return { buffer, fileName, components: components.map((c) => c.name) };
 };

@@ -73,6 +73,7 @@ export const useCoveredRegions = () => {
         const value = e.target.value;
         if (!value) return;
 
+
         const region = regionsData.find((r) => r.iso2 === value);
         if (region && !selectedRegions.some((s) => s.iso2 === region.iso2)) {
             setSelectedRegions([...selectedRegions, region]);

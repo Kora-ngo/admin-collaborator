@@ -10,6 +10,8 @@ interface ReportState {
     data: Report[];
     pagination: Pagination | null;
     loading: boolean;
+    popUpLoading: boolean;
+    connection: boolean;
     error: ToastMessage | null;
 
     downloadingId: number | null;
@@ -27,13 +29,15 @@ export const useReportStore = create<ReportState>((set) => ({
     data: [],
     pagination: null,
     loading: false,
+    connection: true,
     error: null,
     downloadingId: null,
     generating: false,
+    popUpLoading: false,
 
     getData: async (page = 1) => {
         try {
-            set({ loading: true, error: null });
+            set({ loading: true, data: [], connection: true, error: null });
             const result = await reportApi.list(page, 10);
 
             if (result.type === "success") {
@@ -45,7 +49,7 @@ export const useReportStore = create<ReportState>((set) => ({
             return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
-            set({ error: errorToast });
+            set({  connection: false });
             return errorToast;
         } finally {
             set({ loading: false });
@@ -54,7 +58,7 @@ export const useReportStore = create<ReportState>((set) => ({
 
     filterData: async (page = 1, filters) => {
         try {
-            set({ loading: true, error: null });
+            set({ loading: true, data: [], connection: true, error: null });
             const result = await reportApi.filter(page, filters);
 
             if (result.type === "success") {
@@ -66,7 +70,7 @@ export const useReportStore = create<ReportState>((set) => ({
             return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
-            set({ error: errorToast });
+            set({ connection: false, });
             return errorToast;
         } finally {
             set({ loading: false });
@@ -82,10 +86,13 @@ export const useReportStore = create<ReportState>((set) => ({
     },
 
     removeData: async (id) => {
+        set({popUpLoading: true});
         try {
             return await reportApi.remove(id);
         } catch (error: any) {
             return handleApiError(error);
+        }finally {
+        set({popUpLoading: false});
         }
     },
 

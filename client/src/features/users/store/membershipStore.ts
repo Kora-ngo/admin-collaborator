@@ -8,6 +8,7 @@ import type { ToastMessage } from "../../../types/toastMessage"
 interface MembershipState {
     data: Membership[],
     loading: boolean,
+    popUpLoading: boolean,
     connection: boolean,
     pagination: Pagination | null,
     createData: (data: Membership) => Promise<any>,
@@ -22,6 +23,7 @@ interface MembershipState {
 export const useMembershipStore = create<MembershipState>((set) => ({
     data: [],
     loading: false,
+    popUpLoading: false,
     pagination: null,
     connection: true,
 
@@ -32,7 +34,6 @@ export const useMembershipStore = create<MembershipState>((set) => ({
             const result = await membershipApi.list(page, searchTerm, status);
 
             set({
-                connection: true,
                 data: result.data,
                 pagination: result.pagination
             });
@@ -82,10 +83,13 @@ export const useMembershipStore = create<MembershipState>((set) => ({
 
     toggleData: async (id, status) => {
         try{
+            set({popUpLoading: true})
             return await membershipApi.toggle(id, status);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
+        }finally {
+            set({popUpLoading: false})
         }
     },
 

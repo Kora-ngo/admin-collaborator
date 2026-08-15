@@ -4,7 +4,7 @@ import { useToastStore } from "../../../store/toastStore";
 import type { Report } from "../types/report";
 
 export const useReport = () => {
-    const { getData, filterData, removeData, downloadReport, downloadingId } = useReportStore();
+    const { getData, filterData, fetchOneData, removeData, downloadReport, downloadingId } = useReportStore();
     const showToast = useToastStore((state) => state.showToast);
 
     const [filterMode, setFilterMode] = useState(false);
@@ -58,6 +58,20 @@ export const useReport = () => {
         downloadReport(report);
     };
 
+    // Fetch a single report for the view modal. fetchOneData resolves to a
+    // ToastMessage<Report> either way — success carries `data`, failure
+    // (network, not found, etc.) doesn't, so that's the discriminator.
+    const handleView = async (id: number): Promise<Report | null> => {
+        const result = await fetchOneData(id);
+
+        if (result.type !== "success") {
+            showToast(result);
+            return null;
+        }
+
+        return result.data!;
+    };
+
     return {
         filterMode,
         toggleFilter,
@@ -69,5 +83,6 @@ export const useReport = () => {
         handleDelete,
         handleDownload,
         downloadingId,
+        handleView,
     };
 };

@@ -59,11 +59,12 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     // Collaborator methods — unchanged
     getCollaboratorMetrics: async () => {
         try {
-            set({ loading: true });
+            set({ loading: true, connection: true  });
             const data = await dashboardApi.getCollaboratorMetrics();
             set({ collaboratorMetrics: data.data });
             return data;
         } catch (error: any) {
+            set({connection: false})
             return handleApiError(error);
         } finally {
             set({ loading: false });
@@ -72,11 +73,12 @@ export const useDashboardStore = create<DashboardState>((set) => ({
 
     getEnumeratorActivity: async () => {
         try {
-            set({ loading: true });
+            set({ loading: true, connection: true  });
             const data = await dashboardApi.getEnumeratorActivity();
             set({ enumeratorActivity: data.data });
             return data;
         } catch (error: any) {
+            set({connection: false})
             return handleApiError(error);
         } finally {
             set({ loading: false });
@@ -85,11 +87,12 @@ export const useDashboardStore = create<DashboardState>((set) => ({
 
     getValidationQueue: async () => {
         try {
-            set({ loading: true });
+            set({ loading: true, connection: true });
             const data = await dashboardApi.getValidationQueue();
             set({ validationQueue: data.data });
             return data;
         } catch (error: any) {
+            set({connection: false})
             return handleApiError(error);
         } finally {
             set({ loading: false });

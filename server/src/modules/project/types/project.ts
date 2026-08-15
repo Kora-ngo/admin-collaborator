@@ -42,7 +42,9 @@ export type ProjectAssistanceCreationAttributes = Omit<ProjectAssistanceAttribut
 export interface ProjectRegionAttributes {
     id: number;
     project_id: number;
-    region: string;
+    code: string;
+    region?: string;
 }
+
 
 export type ProjectRegionCreationAttributes = Omit<ProjectRegionAttributes, 'id'>;

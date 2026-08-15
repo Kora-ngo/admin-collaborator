@@ -100,8 +100,10 @@ const ProjectForm = ({onSuccess, isOpen, id}: ProjectFormProps) => {
             const projectData = await handleView(id);
 
             if (projectData.country) {
-                console.log("Hello --> ",  projectData.regions)
-                hydrateFromCodes(projectData.country, (projectData.regions || []).map((r: any) => r.region));
+                hydrateFromCodes(
+                    projectData.country,
+                    (projectData.regions || []).map((r: any) => r.code) 
+                );
             }
 
             // Set existing media files

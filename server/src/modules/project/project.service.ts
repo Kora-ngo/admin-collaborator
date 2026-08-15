@@ -57,7 +57,7 @@ export const ProjectService = {
 
         const selectedMembers = typeof body.selectedMembers === 'string' ? JSON.parse(body.selectedMembers) : body.selectedMembers;
         const selectedAssistances = typeof body.selectedAssistances === 'string' ? JSON.parse(body.selectedAssistances) : body.selectedAssistances;
-        const coveredRegions = typeof body.covered_regions === 'string' ? JSON.parse(body.covered_regions) : body.covered_regions;
+         const coveredRegions = typeof body.covered_regions === 'string' ? JSON.parse(body.covered_regions) : body.covered_regions;
 
         if (!selectedMembers?.length) {
             return { validationError: 'members_required' };
@@ -102,9 +102,10 @@ export const ProjectService = {
             }
 
             if (coveredRegions?.length > 0) {
-                const regionsData = coveredRegions.map((region: string) => ({
+                const regionsData = coveredRegions.map((r: { code: string; region: string }) => ({
                     project_id: newProject.id,
-                    region,
+                    code: r.code,
+                    region: r.region,
                 }));
                 await ProjectRegionRepository.bulkCreate(regionsData, transaction);
             }
@@ -250,14 +251,14 @@ export const ProjectService = {
                 await ProjectRegionRepository.destroyAllForProject(id!, transaction);
 
                 if (coveredRegions?.length > 0) {
-                    const regionsData = coveredRegions.map((region: string) => ({
+                    const regionsData = coveredRegions.map((r: { code: string; region: string }) => ({
                         project_id: id,
-                        region,
+                        code: r.code,
+                        region: r.region,
                     }));
                     await ProjectRegionRepository.bulkCreate(regionsData, transaction);
                 }
             }
-
 
             if (updates.filesToDelete && updates.filesToDelete.length > 0) {
                 for (const mediaId of updates.filesToDelete) {

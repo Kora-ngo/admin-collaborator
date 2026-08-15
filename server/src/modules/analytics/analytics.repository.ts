@@ -315,7 +315,7 @@ export const AnalyticsRepository = {
     projectRegionsPlanned: async (projectId: number) => {
         return ProjectRegionModel.findAll({
             where: { project_id: projectId },
-            attributes: ['region'],
+            attributes: ['code', 'region'],
             raw: true,
         });
     },

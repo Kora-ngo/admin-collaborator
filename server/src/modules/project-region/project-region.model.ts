@@ -6,7 +6,8 @@ class ProjectRegion extends Model<ProjectRegionAttributes, ProjectRegionCreation
     implements ProjectRegionAttributes {
     public id!: number;
     public project_id!: number;
-    public region!: string;
+    public code!: string;
+    public region?: string;
 }
 
 const ProjectRegionModel = ProjectRegion.init({
@@ -19,9 +20,12 @@ const ProjectRegionModel = ProjectRegion.init({
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    region: {
+    code: {
         type: DataTypes.STRING(255),
         allowNull: false,
+    },
+    region: {
+        type: DataTypes.STRING(255),
     },
 }, {
     sequelize,

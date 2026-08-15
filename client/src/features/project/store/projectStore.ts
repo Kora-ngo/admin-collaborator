@@ -33,7 +33,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
             set({
                 data: result.data,
-                pagination: result.pagination
+                pagination: result.pagination,
+
+                // data: [],
+                // pagination: null
             });
 
         } catch (error: any) {

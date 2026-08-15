@@ -444,7 +444,19 @@ const Projects = () => {
                     <>
                         {data.length === 0 ? (
                             <div className="w-full bg-gray-50 rounded-md">
-                                <EmptyState title="No Record Found" />
+                                <EmptyState title="No Record Found"/>
+                                {/* <EmptyState 
+                                variant={ pagination?.total! > 0 ? "empty": "project"}
+                                title={ pagination?.total! > 0 ? "No Record Found" : "No assigned project"}
+                                description=
+                                {
+                                    pagination?.total! > 0 ?  "" : 
+                                    (<div className="mt-4">
+                                        <p className="font-semibold">This space can only to fully funcational if:</p>
+                                        <p>You have members conisting of at least one <b>Collaborator</b> and <b>Enumerator</b> in the "Member" space</p>
+                                        <p>You have define your <b>Assitance type</b> in the "Assistance" space needed for delivery </p>
+                                    </div>)
+                                } /> */}
                             </div>
                         ) : (
                             <>

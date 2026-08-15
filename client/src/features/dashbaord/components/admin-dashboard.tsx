@@ -9,6 +9,7 @@ import type { BadgeColor } from "../../../types/badgeColor";
 import type { TableColumn } from "../../../components/widgets/table";
 import Table from "../../../components/widgets/table";
 import ConnectionError from "../../common/network/connectionError";
+import { formatDate } from "../../../utils/formatDate";
 
 const statusColors: Record<string, { text: string; color: string }> = {
     pending: { text: "Pending", color: "gray" },
@@ -136,7 +137,7 @@ const AttentionCard = ({ item }: { item: AttentionItem }) => {
                         <div className="mt-2 space-y-1">
                             {item.projects.map((p: any) => (
                                 <p key={p.id} className="text-xs text-gray-500">
-                                    {p.name} <span className="text-gray-400">— ends {p.end_date}</span>
+                                    {p.name} <span className="text-gray-400">- ends {formatDate(p.end_date)}</span>
                                 </p>
                             ))}
                         </div>

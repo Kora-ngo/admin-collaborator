@@ -9,6 +9,7 @@ import type { ToastMessage } from "../../../types/toastMessage";
 interface AssistanceState {
     data: Assistance[],
     loading: boolean,
+    popUpLoading: boolean,
     connection: boolean,
     pagination: Pagination | null,
     createData: (data: Assistance) => Promise<any>,
@@ -22,6 +23,7 @@ interface AssistanceState {
 export const useAssistanceStore = create<AssistanceState>((set) => ({
     data: [],
     loading: false,
+    popUpLoading: false,
     connection: true,
     pagination: null,
 
@@ -79,11 +81,14 @@ export const useAssistanceStore = create<AssistanceState>((set) => ({
     },
 
     toggleData: async (id, status) => {
+        set({popUpLoading: true})
         try{
             return await assistanceApi.toggle(id, status);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
+        }finally{
+            set({popUpLoading: false})
         }
     },
 

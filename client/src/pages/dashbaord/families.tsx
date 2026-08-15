@@ -26,7 +26,7 @@ import ConnectionError from "../../features/common/network/connectionError";
 type ModalMode = 'view' | 'review' | null;
 
 const Families = () => {
-    const { data, getData, pagination, loading, connection } = useBeneficiaryStore();
+    const { data, getData, pagination, loading, popUpLoading, connection } = useBeneficiaryStore();
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const { membership } = useAuthStore();
     const {
@@ -440,6 +440,7 @@ const Families = () => {
 
             <Popup
                 open={deletePopup}
+                loading={popUpLoading}
                 onClose={() => {
                     setDeletePopup(false);
                     setSelectedRecord(null);
@@ -514,7 +515,7 @@ const Families = () => {
             }
             confirmText={reviewAction === 'approve' ? 'Approve' : 'Reject'}
             cancelText="Cancel"
-            loading={loading}
+            loading={popUpLoading}
             onConfirm={async () => {
                 // Validate rejection note
                 if (reviewAction === 'reject' && reviewNote.trim() === "") {
@@ -524,8 +525,8 @@ const Families = () => {
             }}
             confirmButtonClass={
                 reviewAction === 'approve'
-                    ? `${loading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
-                    : `${loading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
+                    ? `${popUpLoading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
+                    : `${popUpLoading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
             }
         />
         </div>

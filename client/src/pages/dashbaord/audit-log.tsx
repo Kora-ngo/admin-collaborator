@@ -17,9 +17,10 @@ import { useAuditLog } from "../../features/audit/hooks/useAuditLog";
 import AuditLogView from "../../features/audit/components/audit-log-view";
 import ActionIcon from "../../components/ui/action-icon";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import ConnectionError from "../../features/common/network/connectionError";
 
 const AuditLogs = () => {
-    const { data, getData, pagination, loading } = useAuditLogStore();
+    const { data, getData, pagination, loading, popUpLoading, connection } = useAuditLogStore();
     const {
         searchTerm,
         handleSearch,
@@ -129,6 +130,12 @@ const auditLogColumns: (TableColumn | null)[] = [
         )
     },
 ];
+
+if(!connection){
+    return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page || 1)} />
+}
+
+
                     return (
                         <div className="grid grid-cols-1 gap-4 mt-2">
                             <div className="flex flex-col items-start justify-start rounded-sm bg-white gap-4">

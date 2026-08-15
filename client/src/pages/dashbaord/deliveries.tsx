@@ -18,14 +18,14 @@ import { useAuthStore } from "../../features/auth/store/authStore";
 import { useDelivery } from "../../features/delivery/hooks/useDelivery";
 import DeliveryView from "../../features/delivery/components/delivery-view";
 import { useToastStore } from "../../store/toastStore";
-import { Button } from "../../components/ui/button";
 import ExportPopup from "../../components/widgets/export-modal";
 import { exportDeliveriesToExcel } from "../../utils/exportUtil";
+import ConnectionError from "../../features/common/network/connectionError";
 
 type ModalMode = 'view' | null;
 
 const Deliveries = () => {
-    const { data, getData, pagination, loading } = useDeliveryStore();
+    const { data, getData, pagination, loading, connection, popUpLoading } = useDeliveryStore();
     const { membership } = useAuthStore();
     const {
         searchTerm,
@@ -262,6 +262,12 @@ const Deliveries = () => {
         }
     ];
 
+
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page || 1)} />
+    }
+
+
     return (
         <div className="grid grid-cols-1 gap-4 mt-2">
             <div className="flex flex-col items-start justify-start rounded-sm bg-white gap-4">
@@ -465,6 +471,7 @@ const Deliveries = () => {
                     setSelectedRecord(null);
                 }}
                 title="Delete this Delivery ?"
+                loading={popUpLoading}
                 description={
                     (
                         <div className="flex bg-amber-50 rounded p-4 space-x-4 mt-4">
@@ -535,16 +542,11 @@ const Deliveries = () => {
                 }
                 confirmText={reviewAction === 'approve' ? 'Approve' : 'Reject'}
                 cancelText="Cancel"
-                loading={loading}
+                loading={popUpLoading}
                 onConfirm={async () => {
                     if (reviewAction === 'reject' && reviewNote.trim() === "") return;
                     await handleConfirmReview();
                 }}
-                confirmButtonClass={
-                    reviewAction === 'approve'
-                        ? `${loading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
-                        : `${loading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
-                }
             />
         </div>
     );

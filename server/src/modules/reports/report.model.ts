@@ -4,21 +4,21 @@ import type { ReportAttributes, ReportCreationAttributes } from "./types/report.
 
 class Report extends Model<ReportAttributes, ReportCreationAttributes>
     implements ReportAttributes {
-    public id!: number;
-    public uid!: bigint;
-    public project_id!: number;
-    public organization_id!: number;
-    public type!: 'DATA_PACKAGE' | 'BENEFICIARIES' | 'ASSISTANCE' | 'ANALYTICS' | 'DONOR_REPORT';
-    public format!: 'ZIP' | 'XLSX' | 'PDF';
-    public reporting_period_from?: string;
-    public reporting_period_to?: string;
-    public generated_by!: number;
-    public generated_at?: Date;
-    public status!: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
-    public file_type!: string;
-    public file_path?: string;
-    public file_size?: number;
-    public created_at!: Date;
+    declare id: number;
+    declare uid: bigint;
+    declare project_id: number;
+    declare organization_id: number;
+    declare type: 'DATA_PACKAGE' | 'BENEFICIARIES' | 'ASSISTANCE' | 'ANALYTICS' | 'DONOR_REPORT';
+    declare format: 'ZIP' | 'XLSX' | 'PDF';
+    declare reporting_period_from?: string;
+    declare reporting_period_to?: string;
+    declare generated_by: number;
+    declare generated_at?: Date;
+    declare status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+    declare file_type: string;
+    declare file_path?: string;
+    declare file_size?: number;
+    declare created_at: Date;
 }
 
 const ReportModel = Report.init({

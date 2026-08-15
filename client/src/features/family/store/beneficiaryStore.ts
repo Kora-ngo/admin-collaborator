@@ -8,6 +8,7 @@ import type { ToastMessage } from "../../../types/toastMessage";
 interface BeneficiaryState {
     data: Beneficiary[];
     loading: boolean;
+    popUpLoading: boolean,
     connection: boolean;
     pagination: Pagination | null;
     getData: (page?: number, searchTerm?: string) => Promise<any>;
@@ -20,6 +21,7 @@ interface BeneficiaryState {
 export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({ 
     data: [],
     loading: false,
+    popUpLoading: false,
     connection: true,
     pagination: null,
 
@@ -75,11 +77,14 @@ export const useBeneficiaryStore = create<BeneficiaryState>((set) => ({
     },
 
     reviewBeneficiary: async (id, action, note) => {
+        set({popUpLoading: true});
         try {
             return await beneficiaryApi.review(id, action, note);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
+        }finally{
+            set({popUpLoading: false})
         }
     },
 

@@ -29,7 +29,7 @@ const ProjectViewGeneral = ({ data }: ProjectViewGeneralProps) => {
   [data?.regions]
 );
 
-const { countryName, regionName } = useLocationLabels(
+const { countryName } = useLocationLabels(
   data?.country,
   regionCodes
 );
@@ -56,7 +56,7 @@ const { countryName, regionName } = useLocationLabels(
     {
         label: "Region(s) Covered",
         value: data.regions?.length
-          ? regionName
+          ?  data?.regions?.map((r: any) => r.region).join(", ")
           : "...",
       },
 

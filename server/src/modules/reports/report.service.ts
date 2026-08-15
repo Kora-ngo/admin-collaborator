@@ -137,6 +137,7 @@ export const ReportService = {
             const anyEnabled = Object.values(opts).some(Boolean);
             if (!anyEnabled) return { error: 'at_least_one_package_option_required' };
         }
+        
 
         // 2. Create the report record up front (status PENDING), so the
         //    table view can show "generating..." immediately.
@@ -157,37 +158,34 @@ export const ReportService = {
         // 3. Kick off generation. For now this runs inline/synchronously;
         //    this is the seam where a queue/worker would take over later
         //    (same "event-ready unit" pattern used in enumerator sync).
-        try {
+try {
             await ReportRepository.update(report, { status: 'PROCESSING' });
 
             const generated = await ReportService.buildReportFile(payload, project.dataValues);
 
-            // ============================================================
-            // TEMP — B2 upload disabled for local testing.
-            // Writes the generated file to disk so it can be opened and
-            // checked directly. Swap this block back for the commented
-            // uploadReportFile call once the documents look correct.
-            // ============================================================
-            const tempDir = path.join(process.cwd(), 'tmp-reports');
-            await fs.mkdir(tempDir, { recursive: true });
-            const tempFilePath = path.join(tempDir, generated.fileName);
-            await fs.writeFile(tempFilePath, generated.buffer);
-            console.log(`[report] Saved locally for inspection: ${tempFilePath}`);
+            const fileTypeValue = 'components' in generated
+                ? (generated as any).components.join(', ')
+                : generated.fileName;
 
-            const uploadResult = { filePath: tempFilePath, fileSize: generated.buffer.length };
+            // Organisation name needed for the B2 path structure —
+            // fetched once here rather than threading org name through
+            // every builder's signature.
+            const organisation = await OrganisationModel.findByPk(organisationId);
+            const organisationName = organisation?.dataValues?.name || 'unknown_org';
 
-            // const uploadResult = await uploadReportFile(
-            //     generated.buffer,
-            //     generated.fileName,
-            //     organisationId,
-            //     project.dataValues.id
-            // );
+            const uploadResult = await uploadReportFile(
+                generated.buffer,
+                generated.fileName,
+                organisationName,
+                project.dataValues.name
+            );
 
             await ReportRepository.update(report, {
                 status: 'COMPLETED',
                 generated_at: new Date(),
                 file_path: uploadResult.filePath,
                 file_size: uploadResult.fileSize,
+                file_type: fileTypeValue,
             });
 
             return { error: null, data: (await ReportRepository.findByPk(report!.dataValues!.id))?.toJSON() };
@@ -257,4 +255,5 @@ export const ReportService = {
                 throw new Error(`buildReportFile: unknown report type "${payload.type}"`);
         }
     },
+    
 };

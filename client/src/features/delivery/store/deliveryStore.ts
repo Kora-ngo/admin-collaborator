@@ -7,6 +7,8 @@ import type { Pagination } from "../../../types/pagination";
 interface DeliveryState {
     data: Delivery[];
     loading: boolean;
+    popUpLoading: boolean,
+    connection: boolean;
     pagination: Pagination | null;
     getData: (page?: number, searchTerm?: string) => Promise<any>;
     fetchOneData: (id: number) => Promise<Delivery>;
@@ -18,11 +20,13 @@ interface DeliveryState {
 export const useDeliveryStore = create<DeliveryState>((set) => ({
     data: [],
     loading: false,
+    popUpLoading: false,
+    connection: true,
     pagination: null,
 
     getData: async (page = 1, searchTerm = "") => {
         try {
-            set({ loading: true, data: [] });
+            set({ loading: true, data: [], connection: true });
 
             const result = await deliveryApi.list(page, searchTerm);
 
@@ -34,6 +38,7 @@ export const useDeliveryStore = create<DeliveryState>((set) => ({
             return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
+            set({connection: false})
             return errorToast;
         } finally {
             set({ loading: false });
@@ -51,7 +56,7 @@ export const useDeliveryStore = create<DeliveryState>((set) => ({
 
     filterData: async (page = 1, filters) => {
         try {
-            set({ loading: true, data: [] });
+            set({ loading: true, data: [], connection: true });
 
             const result = await deliveryApi.filter(page, filters);
 
@@ -63,6 +68,7 @@ export const useDeliveryStore = create<DeliveryState>((set) => ({
             return result;
         } catch (error: any) {
             const errorToast = handleApiError(error);
+            set({connection: false})
             return errorToast;
         } finally {
             set({ loading: false });
@@ -71,19 +77,25 @@ export const useDeliveryStore = create<DeliveryState>((set) => ({
 
     reviewDelivery: async (id, action, note) => {
         try {
+            set({popUpLoading: true});
             return await deliveryApi.review(id, action, note);
         } catch (error: any) {
             const errorToast = handleApiError(error);
             return errorToast;
+        }finally{
+            set({popUpLoading: false});
         }
     },
 
     deleteData: async (id, status) => {
         try {
+            set({popUpLoading: true});
             return await deliveryApi.updateStatus(id, status);
         } catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
+        }finally{
+            set({popUpLoading: false});
         }
     },
 }));

@@ -1,6 +1,6 @@
 import { type Request, type Response } from 'express';
 import { ReportService } from './report.service.js';
-import { getReportDownloadUrl } from './utils/report-storage.util.js';
+import { getReportFileStream } from './utils/report-storage.util.js';
 
 const ReportController = {
 
@@ -46,22 +46,33 @@ const ReportController = {
     },
 
     download: async (req: Request, res: Response) => {
-            try {
-                const result = await ReportService.fetchOne(req.params.id!);
-                if (result.notFound) return res.status(404).json({ type: 'error', message: 'record_not_found' });
+        try {
+            const result = await ReportService.fetchOne(req.params.id!);
+            if (result.notFound) return res.status(404).json({ type: 'error', message: 'record_not_found' });
 
-                const report = result.data;
-                if (!report!.file_path) {
-                    return res.status(400).json({ type: 'error', message: 'file_not_ready' });
-                }
-
-                const url = await getReportDownloadUrl(report!.file_path);
-                res.status(200).json({ type: 'success', data: { url } });
-            } catch (error) {
-                console.error('Report: Download error:', error);
-                res.status(500).json({ type: 'error', message: 'server_error' });
+            const report = result.data;
+            if (!report!.file_path || report!.status !== 'COMPLETED') {
+                return res.status(400).json({ type: 'error', message: 'file_not_ready' });
             }
-        },
+
+            const { body, contentType, contentLength } = await getReportFileStream(report!.file_path);
+
+            // Content-Disposition: attachment is what tells the browser to
+            // trigger a native "Save As" dialog instead of opening the
+            // file inline (which browsers otherwise do for PDFs).
+            const downloadFileName = report!.file_path.split('/').pop() || 'report';
+            res.setHeader('Content-Disposition', `attachment; filename="${downloadFileName}"`);
+            res.setHeader('Content-Type', contentType);
+            if (contentLength) res.setHeader('Content-Length', String(contentLength));
+
+            // body is a Node Readable stream (Web ReadableStream under some
+            // SDK versions) — pipe it straight through to the response.
+            (body as NodeJS.ReadableStream).pipe(res);
+        } catch (error) {
+            console.error('Report: Download error:', error);
+            res.status(500).json({ type: 'error', message: 'server_error' });
+        }
+    },
 
     remove: async (req: Request, res: Response) => {
         try {

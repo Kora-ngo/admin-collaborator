@@ -341,7 +341,7 @@ const Analytics = () => {
     ];
 
 
-
+    console.log("Data --> ", data);
 
     return (
         <div className="space-y-6 pb-12">

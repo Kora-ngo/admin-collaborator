@@ -26,6 +26,8 @@ const BeneficiaryView = ({ id, isOpen }: BeneficiaryViewProps) => {
             try {
                 setLoading(true);
                 const fetchedData = await fetchOneData(id);
+
+
                 setData(fetchedData);
             } catch (err) {
                 console.error("Failed to fetch beneficiary:", err);
