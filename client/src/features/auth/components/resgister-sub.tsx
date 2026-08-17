@@ -1,5 +1,5 @@
-import { Input } from "../../../components/widgets/input";
-import { Label } from "../../../components/widgets/label";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 
 const ResgisterSub = () => {
     return ( 

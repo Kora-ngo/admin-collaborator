@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDeliveryStore } from "../store/deliveryStore";
-import Loading from "../../../components/widgets/loading";
-import type { Delivery } from "../../../types/delivery";
+import Loading from "../../../components/ui/loading";
+import type { Delivery } from "../delivery";
 import DeliveryViewGeneral from "./delivery-view-general";
 import DeliveryViewItems from "./delivery-view-items";
 

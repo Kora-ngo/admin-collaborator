@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useState } from "react"
-import type { Project, ProjectAssistance, ProjectMember } from "../../../types/project"
-import type { Membership } from "../../../types/membership";
-import type { Assistance } from "../../../types/assistance";
+import type { Project, ProjectAssistance, ProjectMember } from "../project"
+import type { Assistance } from "../../assistance/assistance";
 import { validateProject } from "../utils/validate";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useToastStore } from "../../../store/toastStore";
 import { useProjectStore } from "../store/projectStore";
+import type { Membership } from "../../users/membership";
 
 export type ProjectFormData = Partial<Project> & {
     selectedMembers: ProjectMember[];
     selectedAssistances: ProjectAssistance[];
+    country?: string; 
+    coveredRegions: { code: string; region: string }[];
+    target_families?: number;
 };
 
 export const useProject = () => {
@@ -28,6 +31,9 @@ export const useProject = () => {
         end_date: "",
         selectedMembers: [],
         selectedAssistances: [],
+        country: "",
+        coveredRegions: [], 
+        target_families: undefined,
     });
 
     const [editMetadata, setEditMetadata] = useState<{
@@ -42,6 +48,7 @@ export const useProject = () => {
         end_date: false,
         selectedMembers: false,
         selectedCollaborator: false,
+        target_families: false, 
     });
 
     // Search state
@@ -109,7 +116,9 @@ export const useProject = () => {
                 ...prev,
                 [name]: value || undefined
             }));
-        } else {
+        }else if (name === 'target_families') {                                    // ← add this branch
+        setProjectForm(prev => ({ ...prev, target_families: value ? Number(value) : undefined }));
+    }else {
             setProjectForm(prev => ({
                 ...prev,
                 [name]: value || undefined
@@ -157,8 +166,19 @@ export const useProject = () => {
             end_date: undefined,
             selectedMembers: [],
             selectedAssistances: [],
+            country: "", 
+            coveredRegions: [],
         });
         setEditMetadata(null);
+    };
+
+
+    const updateSelectedRegions = (country: string, regions: { iso2: string; name: string }[]) => {
+        setProjectForm(prev => ({
+            ...prev,
+            country,
+            coveredRegions: regions.map(r => ({ code: r.iso2, region: r.name.toLowerCase() })),
+        }));
     };
 
     const refreshCurrentPage = (page: number) => {
@@ -185,8 +205,13 @@ export const useProject = () => {
                 status: projectForm.status,
                 selectedMembers: projectForm.selectedMembers,
                 selectedAssistances: projectForm.selectedAssistances,
+                country: projectForm.country,
+                covered_regions: projectForm.coveredRegions,
+                target_families: projectForm.target_families,
                 filesToDelete: filesToDelete || []
             };
+
+            console.log("Sumit Data --> ", submitData);
 
 
             if (id) {
@@ -236,6 +261,12 @@ export const useProject = () => {
 
     const handleView = async (id: number): Promise<any> => {
         const response = await fetchOneData(id) as any;
+
+        console.log("Response --> ",response)
+
+        if(response.type == "no_network"){
+            return showToast(response);
+        }
         
         // Set edit metadata
         if (response.editMetadata) {
@@ -251,6 +282,9 @@ export const useProject = () => {
             end_date: response.end_date,
             selectedMembers: response.members,
             selectedAssistances: response.assistances,
+            country: response.country, 
+            coveredRegions: (response.regions || []).map((r: any) => ({ code: r.region, region: r.region })),
+            target_families: response.target_families,
         });
         
         return response;
@@ -306,6 +340,7 @@ export const useProject = () => {
         // handleCheckCanDelete,
 
         updateSelectedMembers,
-        updateSelectedAssitance
+        updateSelectedAssitance,
+        updateSelectedRegions
     }
 }

@@ -1,33 +1,31 @@
 import { create } from "zustand";
-import type { AssistanceType } from "../../../types/assistance";
-import axiosInstance from "../../../utils/axiosInstance";
+import type { AssistanceType } from "../assistance";
+import { assistanceTypeApi } from "../assistanceApi";
 import { handleApiError } from "../../../utils/handleApiError";
+
 
 interface AssistanceTypeState {
     data: AssistanceType[],
     loading: boolean,
+    connection: boolean,
     creatData: (data: AssistanceType[]) => Promise<any>,
     fetchData: () => Promise<any>,
     deletData: (id: number) => Promise<any>
 }
 
-const endpoint = "/assistance-type";
-
-
 export const useAssistanceTypeStore = create<AssistanceTypeState>((set) => ({
     data: [],
     loading: false,
+    connection: true,
 
     fetchData: async () => {
         try{
-            set({loading: true, data: []});
-
-            const {data} = await axiosInstance.get(endpoint);
-
-            set({data: data.data});
-
+            set({loading: true, data: [], connection: true});
+            const data = await assistanceTypeApi.fetch();
+            set({data});
         }catch(error: any){
             const errorToast = handleApiError(error);
+            set({ connection: false});
             return errorToast;
         }finally{
             set({loading: false})
@@ -37,11 +35,7 @@ export const useAssistanceTypeStore = create<AssistanceTypeState>((set) => ({
     creatData: async (data) => {
         try{
             set({loading: true});
-
-            const response = await axiosInstance.post(endpoint, data);
-            return response.data;
-
-            
+            return await assistanceTypeApi.create(data);
         }catch(error: any){
             const errorToast = handleApiError(error);
             return errorToast;
@@ -53,14 +47,12 @@ export const useAssistanceTypeStore = create<AssistanceTypeState>((set) => ({
     deletData: async (id) => {
         try{
             set({loading: true});
-
-            const response = await axiosInstance.delete(`${endpoint}/delete/${id}`);
-               return response.data;            
-            }catch(error: any){
-                const errorToast = handleApiError(error);
-                return errorToast;
-            }finally{
-                set({loading: false})
-            }
+            return await assistanceTypeApi.delete(id);
+        }catch(error: any){
+            const errorToast = handleApiError(error);
+            return errorToast;
+        }finally{
+            set({loading: false})
+        }
     }
 }))

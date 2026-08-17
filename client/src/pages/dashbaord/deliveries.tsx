@@ -1,31 +1,32 @@
 import { useEffect, useState } from "react";
 import { ActionButton } from "../../components/widgets/action-button";
-import ActionIcon from "../../components/widgets/action-icon";
+import ActionIcon from "../../components/ui/action-icon";
 import { FilterToggleButton } from "../../components/widgets/filter-button";
 import SearchInput from "../../components/widgets/search-input";
-import StatusBadge from "../../components/widgets/status-badge";
+import StatusBadge from "../../components/ui/status-badge";
 import type { TableColumn } from "../../components/widgets/table";
 import Table from "../../components/widgets/table";
-import Modal from "../../components/widgets/modal";
+import Modal from "../../components/ui/modal";
 import { formatDate } from "../../utils/formatDate";
-import EmptyState from "../../components/widgets/empty";
-import Loading from "../../components/widgets/loading";
+import EmptyState from "../../components/ui/empty";
+import Loading from "../../components/ui/loading";
 import Popup from "../../components/widgets/popup";
-import { SelectInput } from "../../components/widgets/select-input";
-import { Textarea } from "../../components/widgets/textarea";
+import { SelectInput } from "../../components/ui/select-input";
+import { Textarea } from "../../components/ui/textarea";
 import { useDeliveryStore } from "../../features/delivery/store/deliveryStore";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import { useDelivery } from "../../features/delivery/hooks/useDelivery";
 import DeliveryView from "../../features/delivery/components/delivery-view";
 import { useToastStore } from "../../store/toastStore";
-import { Button } from "../../components/widgets/button";
 import ExportPopup from "../../components/widgets/export-modal";
 import { exportDeliveriesToExcel } from "../../utils/exportUtil";
+import ConnectionError from "../../features/common/network/connectionError";
+import DeliveryEmptyState from "../../features/delivery/components/delivery-empty-state";
 
 type ModalMode = 'view' | null;
 
 const Deliveries = () => {
-    const { data, getData, pagination, loading } = useDeliveryStore();
+    const { data, getData, pagination, loading, connection, popUpLoading } = useDeliveryStore();
     const { membership } = useAuthStore();
     const {
         searchTerm,
@@ -160,9 +161,12 @@ const Deliveries = () => {
             key: "beneficiary",
             label: "Beneficiary",
             visibleOn: "always",
-            render: (row) => row.beneficiary
-                ? `${row.beneficiary.family_code} - ${row.beneficiary.head_name}`
-                : "-"
+            render: (row) => (
+                <div>
+                    <p className="font-semibold text-gray-900">{row.beneficiary.family_code} - {row.beneficiary.head_name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{row.project?.name || "-"}</p>
+                </div>
+            ),
         },
         {
             key: "items_count",
@@ -230,11 +234,13 @@ const Deliveries = () => {
                         {isCollaborator && row.review_status === 'pending' && (
                             <>
                                 <ActionIcon
+                                    tooltip="Approve"
                                     name="check"
                                     onClick={() => openReviewPopup(row, 'approve')}
                                     className="text-green-600 hover:text-green-700"
                                 />
                                 <ActionIcon
+                                    tooltip="Reject"
                                     name="close_red"
                                     onClick={() => openReviewPopup(row, 'reject')}
                                     className="text-red-600 hover:text-red-700"
@@ -257,6 +263,12 @@ const Deliveries = () => {
         }
     ];
 
+
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page || 1)} />
+    }
+
+
     return (
         <div className="grid grid-cols-1 gap-4 mt-2">
             <div className="flex flex-col items-start justify-start rounded-sm bg-white gap-4">
@@ -278,7 +290,7 @@ const Deliveries = () => {
                         <ActionButton className="h-10" onClick={() => refreshCurrentPage(pagination?.page || 1)} />
 
                         {/* Export Button - Admin Only */}
-                        {isAdmin && data.length != 0 && (
+                        {/* {isAdmin && data.length != 0 && (
                             <Button
                                 variant="ghost"
                                 onClick={() => setExportModal(true)}
@@ -289,7 +301,7 @@ const Deliveries = () => {
                                 </svg>
                                 Export Excel
                             </Button>
-                        )}
+                        )} */}
                     </div>
                 </div>
 
@@ -330,14 +342,7 @@ const Deliveries = () => {
                     </div>
                 ) : (
                     <>
-                        {data.length === 0 ? (
-                            <div className="w-full bg-gray-50 rounded-md">
-                                <EmptyState
-                                    title="No Record Found"
-                                    description="Deliveries are created by enumerators through the mobile app and reviewed here."
-                                />
-                            </div>
-                        ) : (
+                        {data.length === 0 ? ( <DeliveryEmptyState overall={pagination?.overall || 0} />) : (
                             <>
                                 <Table
                                     columns={deliveryColumns}
@@ -460,6 +465,7 @@ const Deliveries = () => {
                     setSelectedRecord(null);
                 }}
                 title="Delete this Delivery ?"
+                loading={popUpLoading}
                 description={
                     (
                         <div className="flex bg-amber-50 rounded p-4 space-x-4 mt-4">
@@ -530,16 +536,16 @@ const Deliveries = () => {
                 }
                 confirmText={reviewAction === 'approve' ? 'Approve' : 'Reject'}
                 cancelText="Cancel"
-                loading={loading}
+                loading={popUpLoading}
                 onConfirm={async () => {
                     if (reviewAction === 'reject' && reviewNote.trim() === "") return;
                     await handleConfirmReview();
                 }}
                 confirmButtonClass={
-                    reviewAction === 'approve'
-                        ? `${loading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
-                        : `${loading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
-                }
+                reviewAction === 'approve'
+                    ? `${popUpLoading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
+                    : `${popUpLoading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
+            }
             />
         </div>
     );

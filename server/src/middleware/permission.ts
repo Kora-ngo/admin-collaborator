@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import { OrganisationModel } from '../models/index.js';
+import OrganisationModel from '../modules/organisation/organisation.model.js';
+
 
 type Role = 'admin' | 'collaborator' | 'enumerator';
 

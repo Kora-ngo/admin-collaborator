@@ -1,4 +1,7 @@
 import multer from "multer";
+import os from "os";
+import path from "path";
+import crypto from "crypto";
 
 const storage = multer.memoryStorage();
 
@@ -30,6 +33,29 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
         cb(new Error('Invalid file type. Only images and documents are allowed.'));
     }
 };
+
+
+const storageDisk = multer.diskStorage({
+    destination: (_req, _file, cb) => {
+        cb(null, os.tmpdir()); // OS temp dir — no hardcoded app path
+    },
+    filename: (_req, file, cb) => {
+        // dynamic, collision-proof name — not tied to any specific backupId
+        const uniqueName = `restore_${crypto.randomUUID()}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
+    },
+});
+
+export const uploadKora = multer({
+    storage: storageDisk,
+    fileFilter: (_req, file, cb) => {
+        if (!file.originalname.endsWith(".kora")) {
+            return cb(new Error("Only .kora files are accepted"));
+        }
+        cb(null, true);
+    },
+    limits: { fileSize: 500 * 1024 * 1024 }, // adjust as needed
+});
 
 export const upload = multer({
     storage: storage,

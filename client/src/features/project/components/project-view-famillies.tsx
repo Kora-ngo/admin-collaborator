@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import EmptyState from "../../../components/widgets/empty";
-import type { Beneficiary } from "../../../types/beneficiary";
+import EmptyState from "../../../components/ui/empty";
+import type { Beneficiary } from "../../family/beneficiary";
 import { useAuthStore } from "../../auth/store/authStore";
-import Accordion from "../../../components/widgets/accordion";
+import Accordion from "../../../components/ui/accordion";
 import { calculateAge } from "../../../utils/calculateAge";
 
 interface ProjectViewFamilyProps {

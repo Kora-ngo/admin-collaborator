@@ -1,9 +1,10 @@
-import { Button } from "../../../components/widgets/button";
+import { Button } from "../../../components/ui/button";
 import CountrySelect from "../../../components/widgets/country-select";
-import { Input } from "../../../components/widgets/input";
-import { Label } from "../../../components/widgets/label";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 import PhoneInput from "../../../components/widgets/phone-input";
 import { useAuthStore } from "../store/authStore";
+import RegionSelect from "../../../components/widgets/region-select";
 // import { Textarea } from "../../../components/widgets/textarea";
 // import { useAdminResgister } from "../hooks/useAdminResgister";
 
@@ -44,6 +45,7 @@ const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrg
                             value={orgForm.name}
                             onChange={handleOrgChange}
                         />
+                        {orgErrors.name && <p className="text-destructive text-sm font-bold">This field is required</p>}
                     </div>
 
                     <div className="grid gap-2">
@@ -58,6 +60,7 @@ const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrg
                             value={orgForm.email}
                             onChange={handleOrgChange}
                         />
+                        {orgErrors.email && <p className="text-destructive text-sm font-bold">This field is required</p>}
                     </div>
 
                     <div className="grid gap-2">
@@ -76,7 +79,7 @@ const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrg
                     
 
                     <div className="grid gap-2">
-                        <Label htmlFor="country" required={false}>Country</Label>
+                        <Label htmlFor="country">Country</Label>
                         <CountrySelect
                             value={orgForm.country}
                             hasError={!!orgErrors.country}
@@ -86,19 +89,22 @@ const RegsiterOrg: React.FC<RegisterOrgProps> = ({ orgForm, orgErrors, handleOrg
                             } as React.ChangeEvent<HTMLInputElement>)
                             }
                         />
+                        {orgErrors.country && <p className="text-destructive text-sm font-bold">This field is required</p>}
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="region" required={false}>Region</Label>
-                        <Input
-                            id="region"
-                            maxLength={50}
-                            name="region"
-                            type="text"
-                            placeholder="Organisation's region /headquarter region"
+                        <Label htmlFor="region">Region</Label>
+                        <RegionSelect
+                            country={orgForm.country}
                             value={orgForm.region}
-                            onChange={handleOrgChange}
+                            hasError={!!orgErrors.region}
+                            onChange={(regionCode) =>
+                                handleOrgChange({
+                                    target: { name: "region", value: regionCode },
+                                } as React.ChangeEvent<HTMLInputElement>)
+                            }
                         />
+                        {orgErrors.region && <p className="text-destructive text-sm font-bold">This field is required</p>}
                     </div>
 {/* 
                     <div className="grid gap-2 md:col-span-2">

@@ -4,26 +4,28 @@ import { useMembershipStore } from "../../features/users/store/membershipStore";
 import type { TableColumn } from "../../components/widgets/table";
 import { formatCode } from "../../utils/formatCode";
 import { formatDate } from "../../utils/formatDate";
-import StatusBadge from "../../components/widgets/status-badge";
-import ActionIcon from "../../components/widgets/action-icon";
+import StatusBadge from "../../components/ui/status-badge";
+import ActionIcon from "../../components/ui/action-icon";
 import SearchInput from "../../components/widgets/search-input";
 import { FilterToggleButton } from "../../components/widgets/filter-button";
 import { ActionButton } from "../../components/widgets/action-button";
-import { Button } from "../../components/widgets/button";
-import { SelectInput } from "../../components/widgets/select-input";
-import Loading from "../../components/widgets/loading";
-import EmptyState from "../../components/widgets/empty";
+import { Button } from "../../components/ui/button";
+import { SelectInput } from "../../components/ui/select-input";
+import Loading from "../../components/ui/loading";
+import EmptyState from "../../components/ui/empty";
 import Table from "../../components/widgets/table";
-import Modal from "../../components/widgets/modal";
+import Modal from "../../components/ui/modal";
 import MembershipForm from "../../features/users/components/membership-form";
 import MembershipView from "../../features/users/components/membership-view";
 import Popup from "../../components/widgets/popup";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import ConnectionError from "../../features/common/network/connectionError";
+import MembershipEmptyState from "../../features/users/components/membership-empty-state";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const User = () => {
-    const {data, getData, pagination, loading} = useMembershipStore();
+    const {data, getData, pagination, loading, connection, popUpLoading} = useMembershipStore();
     const userData = useAuthStore((state) => state.user);
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {role} = useAuthStore();
@@ -166,6 +168,7 @@ const User = () => {
                     role === "admin" ?
                     (
                         <ActionIcon name={row.status === "blocked" ? "unlock" : "lock"}
+                            tooltip={row.status === "blocked" ? "Enable this member" : "Disable this member"}
                             onClick={() => {
                                 setSelectedRecord({
                                     id: row.id,
@@ -207,6 +210,12 @@ const User = () => {
           )
     } },
     ];
+
+
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page!)} />
+    }
+
 
     
 
@@ -297,11 +306,7 @@ const User = () => {
                     </div>
                 ) : (
                     <>
-                        {data.length === 0 ? (
-                        <div className="w-full bg-gray-50 rounded-md">
-                            <EmptyState title="No Record Found" />
-                        </div>
-                        ) : (
+                        {data.length === 0 ? (<MembershipEmptyState overall={pagination?.overall || 0} />) : (
                         <>
                             <Table columns={membershipColumns} data={data} className="" />
                             {/* Pagination same as original */}

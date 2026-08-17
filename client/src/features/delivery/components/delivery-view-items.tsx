@@ -1,6 +1,5 @@
-
-import type { DeliveryItem } from "../../../types/delivery";
-import EmptyState from "../../../components/widgets/empty";
+import type { DeliveryItem } from "../delivery";
+import EmptyState from "../../../components/ui/empty";
 
 interface DeliveryViewItemsProps {
     items: DeliveryItem[];
@@ -16,63 +15,43 @@ const DeliveryViewItems = ({ items }: DeliveryViewItemsProps) => {
         );
     }
 
-    const totalItems = items.length;
-
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                    Delivery Items ({totalItems})
-                </h3>
-            </div>
+        <div className="space-y-3">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                Delivery Items ({items.length})
+            </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {items.map((item, index) => (
+            <div className="border border-gray-100 rounded-xl divide-y divide-gray-100 overflow-hidden">
+                {items.map((item) => (
                     <div
                         key={item.id}
-                        className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                        className="flex items-center gap-4 px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
                     >
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <p className="font-semibold text-gray-900">
-                                    {index + 1}. {item.assistance?.name || "-"}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                    {item.assistance?.assistanceType?.name || "-"}
-                                </p>
-                            </div>
-                            <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
-                                {item.quantity} {item.assistance?.assistanceType?.unit || ""}
-                            </span>
+                        <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-primary">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                            </svg>
                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-3 gap-2 text-sm">
-                            <div>
-                                <p className="text-gray-500">Assistance</p>
-                                <p className="font-medium text-gray-900">
-                                    {item.assistance?.name || "-"}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-gray-500">Type</p>
-                                <p className="font-medium text-gray-900">
-                                    {item.assistance?.assistanceType?.name || "-"}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-gray-500">Unit</p>
-                                <p className="font-medium text-gray-900">
-                                    {item.assistance?.assistanceType?.unit || "-"}
-                                </p>
-                            </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate">
+                                {item.assistance?.name || "-"}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                                {item.assistance?.assistanceType?.name || "-"}
+                            </p>
                         </div>
+
+                        <span className="text-sm font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-md flex-shrink-0">
+                            {item.quantity} {item.assistance?.assistanceType?.unit || ""}
+                        </span>
                     </div>
                 ))}
             </div>
 
             {/* Summary */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Summary</h4>
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Summary</h4>
                 <div className="space-y-2">
                     {items.map((item) => (
                         <div key={item.id} className="flex justify-between text-sm">

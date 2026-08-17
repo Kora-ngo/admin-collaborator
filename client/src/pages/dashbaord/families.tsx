@@ -1,31 +1,33 @@
 import { useEffect, useState } from "react";
 import { ActionButton } from "../../components/widgets/action-button";
-import ActionIcon from "../../components/widgets/action-icon";
+import ActionIcon from "../../components/ui/action-icon";
 import { FilterToggleButton } from "../../components/widgets/filter-button";
 import SearchInput from "../../components/widgets/search-input";
-import StatusBadge from "../../components/widgets/status-badge";
+import StatusBadge from "../../components/ui/status-badge";
 import type { TableColumn } from "../../components/widgets/table";
 import Table from "../../components/widgets/table";
-import Modal from "../../components/widgets/modal";
+import Modal from "../../components/ui/modal";
 import { formatDate } from "../../utils/formatDate";
-import EmptyState from "../../components/widgets/empty";
-import Loading from "../../components/widgets/loading";
+import EmptyState from "../../components/ui/empty";
+import Loading from "../../components/ui/loading";
 import Popup from "../../components/widgets/popup";
-import { SelectInput } from "../../components/widgets/select-input";
-import { Textarea } from "../../components/widgets/textarea";
+import { SelectInput } from "../../components/ui/select-input";
+import { Textarea } from "../../components/ui/textarea";
 import { useBeneficiaryStore } from "../../features/family/store/beneficiaryStore";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import { useBeneficiary } from "../../features/family/hooks/useBeneficiary";
 import BeneficiaryView from "../../features/family/components/beneficiary-view";
 import { useToastStore } from "../../store/toastStore";
-import { Button } from "../../components/widgets/button";
+import { Button } from "../../components/ui/button";
 import ExportPopup from "../../components/widgets/export-modal";
 import { exportBeneficiariesToExcel } from "../../utils/exportUtil";
+import ConnectionError from "../../features/common/network/connectionError";
+import BeneficiaryEmptyState from "../../features/family/components/beneficiary-empty-state";
 
 type ModalMode = 'view' | 'review' | null;
 
 const Families = () => {
-    const { data, getData, pagination, loading } = useBeneficiaryStore();
+    const { data, getData, pagination, loading, popUpLoading, connection } = useBeneficiaryStore();
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const { membership } = useAuthStore();
     const {
@@ -149,7 +151,8 @@ const Families = () => {
 
 
     const beneficiaryColumns: (TableColumn | null)[] = [
-        { key: "project",  label: "Project",  visibleOn: "lg", render: (row) => row.project?.name || "-" },
+        { key: "project",  label: "Project",  visibleOn: "lg", 
+            render: (row) => row.project?.name || "-" },
         { key: "family_code", label: "Family Code", visibleOn: "always" },
         // { key: "head_name", label: "Head of Family", visibleOn: "always" },
         { key: "members_count", label: "Members", visibleOn: "sm", render: (row) => `${row.members?.length || 0} members`},
@@ -205,11 +208,13 @@ const Families = () => {
                         {isCollaborator && row.review_status === 'pending' && (
                             <>
                                 <ActionIcon
+                                    tooltip="Approve"
                                     name="check"
                                     onClick={() => openReviewPopup(row, 'approve')}
                                     className="text-green-600 hover:text-green-700"
                                 />
                                 <ActionIcon
+                                    tooltip="Reject"
                                     name="close_red"
                                     onClick={() => openReviewPopup(row, 'reject')}
                                     className="text-red-600 hover:text-red-700"
@@ -231,6 +236,11 @@ const Families = () => {
             }
         }
     ];
+
+
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page || 1)} />
+    }
 
     return (
         <div className="grid grid-cols-1 gap-4 mt-2">
@@ -303,14 +313,7 @@ const Families = () => {
                     </div>
                 ) : (
                     <>
-                        {data.length === 0 ? (
-                            <div className="w-full bg-gray-50 rounded-md">
-                                <EmptyState
-                                    title="No Record Found"
-                                    description="Collaborators and Enumerators are the ones responsible for filling in these records on their dashboard"
-                                />
-                            </div>
-                        ) : (
+                        {data.length === 0 ? (<BeneficiaryEmptyState overall={pagination?.overall || 0} /> ) : (
                             <>
                                 <Table
                                     columns={beneficiaryColumns}
@@ -431,6 +434,7 @@ const Families = () => {
 
             <Popup
                 open={deletePopup}
+                loading={popUpLoading}
                 onClose={() => {
                     setDeletePopup(false);
                     setSelectedRecord(null);
@@ -505,7 +509,7 @@ const Families = () => {
             }
             confirmText={reviewAction === 'approve' ? 'Approve' : 'Reject'}
             cancelText="Cancel"
-            loading={loading}
+            loading={popUpLoading}
             onConfirm={async () => {
                 // Validate rejection note
                 if (reviewAction === 'reject' && reviewNote.trim() === "") {
@@ -515,8 +519,8 @@ const Families = () => {
             }}
             confirmButtonClass={
                 reviewAction === 'approve'
-                    ? `${loading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
-                    : `${loading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
+                    ? `${popUpLoading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
+                    : `${popUpLoading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
             }
         />
         </div>

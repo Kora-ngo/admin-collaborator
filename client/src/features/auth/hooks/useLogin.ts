@@ -3,7 +3,7 @@ import { validateLogin } from "../utils/validateUser";
 import { useAuthStore } from "../store/authStore";
 import { useToastStore } from "../../../store/toastStore";
 import type { ToastMessage } from "../../../types/toastMessage";
-import { sessionManager } from "../../../helpers/session/sessionManager";
+import { sessionManager } from "../../../lib/session/sessionManager";
 
 export const useLogin = () => {
 
@@ -43,7 +43,7 @@ export const useLogin = () => {
             }
 
             const toastMessage: ToastMessage = await login(userData.email, userData.password);
-            if(toastMessage.type === "warning" || toastMessage.type === "error")
+            if(toastMessage.type != "success")
             {
                 showToast(toastMessage);
                 return;

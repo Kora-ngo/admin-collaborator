@@ -1,6 +1,6 @@
 // import { Link } from "react-router-dom";
 import LoginForm from "../../features/auth/components/login-form";
-import { useTranslation } from "../../context/translationContext";
+import { useTranslation } from "../../app/provider/translationContext";
 // import 
 
 const Login = () => {
@@ -9,7 +9,7 @@ const Login = () => {
 
     return ( 
             <div className="grid min-h-screen lg:grid-cols-2">
-                <div className="flex bg-gray-950 relative hidden lg:block w-full h-full place-items-center-safe place-content-center-safe ">
+                <div className="flex bg-gray-950 relative lg:block w-full h-full place-items-center-safe place-content-center-safe ">
                     <div className="flex space-x-2 items-center mb-10">
                         <img src="https://res.cloudinary.com/doqholno8/image/upload/v1771016666/white_logo_cbf8ki.png" className="size-12" />
                         <p className="text-4xl font-semibold text-white">Kora</p>

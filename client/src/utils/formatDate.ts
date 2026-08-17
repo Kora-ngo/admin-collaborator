@@ -1,4 +1,4 @@
-export function formatDate(dateString: string, showTime: boolean = true) {
+export function formatDate(dateString: string, showTime: boolean = true, showYear: boolean = true) {
   const date = new Date(dateString);
 
   if (isNaN(date.getTime())) return "Invalid date";
@@ -7,18 +7,19 @@ export function formatDate(dateString: string, showTime: boolean = true) {
   const month = date.toLocaleString("en-US", { month: "short" });
   const year = date.getFullYear();
 
+  const datePart = showYear ? `${day}-${month}-${year}` : `${day}-${month}`;
+
   if (!showTime) {
-    return `${day}-${month}-${year}`;
+    return datePart;
   }
 
   let hours = date.getHours();
   const minutes = date.getMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "PM" : "AM";
 
-  // Convert 24h to 12h format
   hours = hours % 12;
   hours = hours === 0 ? 12 : hours;
   const hoursStr = hours.toString().padStart(2, "0");
 
-  return `${day}-${month}-${year} - ${hoursStr}:${minutes} ${ampm}`;
+  return `${datePart} - ${hoursStr}:${minutes} ${ampm}`;
 }

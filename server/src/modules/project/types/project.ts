@@ -1,0 +1,50 @@
+export interface ProjectAttributes {
+    id: number;
+    organisation_id: number;
+    created_by: number;
+    name: string;
+    description?: string;
+    status: 'true' | 'false' | 'pending' | 'ongoing' | 'done' | 'suspended' | 'overdue';
+    start_date?: Date;
+    end_date?: Date;
+    target_families?: number;
+    country?: string;
+    settings?: string;
+    created_at: Date;
+    updated_at: Date;
+}
+
+export type ProjectCreationAttributes = Omit<ProjectAttributes, 'id' | 'created_at' | 'updated_at'>;
+
+
+
+export interface ProjectMemberAttributes {
+    id: number;
+    project_id: number;
+    membership_id: number;
+    role_in_project: 'collaborator' | 'enumerator';
+    assigned_at: Date;
+}
+
+export type ProjectMemberCreationAttributes = Omit<ProjectMemberAttributes, 'id' | 'assigned_at'>;
+
+
+
+export interface ProjectAssistanceAttributes {
+    id: number;
+    project_id: number;
+    assistance_id: number;
+}
+
+export type ProjectAssistanceCreationAttributes = Omit<ProjectAssistanceAttributes, 'id'>;
+
+
+export interface ProjectRegionAttributes {
+    id: number;
+    project_id: number;
+    code: string;
+    region?: string;
+}
+
+
+export type ProjectRegionCreationAttributes = Omit<ProjectRegionAttributes, 'id'>;

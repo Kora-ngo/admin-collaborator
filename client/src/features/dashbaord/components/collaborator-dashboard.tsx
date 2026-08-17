@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useDashboardStore } from "../store/dashbaordStore";
-import Loading from "../../../components/widgets/loading";
+import Loading from "../../../components/ui/loading";
 import type { TableColumn } from "../../../components/widgets/table";
 import { formatDate } from "../../../utils/formatDate";
 import Table from "../../../components/widgets/table";
+import ConnectionError from "../../common/network/connectionError";
 
 const CollaboratorDashboard = () => {
     const {
@@ -13,6 +14,7 @@ const CollaboratorDashboard = () => {
         enumeratorActivity,
         validationQueue,
         loading,
+        connection,
         getCollaboratorMetrics,
         getEnumeratorActivity,
         getValidationQueue
@@ -116,6 +118,10 @@ const CollaboratorDashboard = () => {
             render: (row) => row.createdBy?.user?.name || "-"
         }
     ];
+
+    if(!connection){
+        return <ConnectionError onRetry={() => getCollaboratorMetrics()} />
+    }
 
     return (
         <div className="space-y-6">

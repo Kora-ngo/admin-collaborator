@@ -3,7 +3,7 @@ import ProjectViewMembers from "./project-view-members";
 import ProjectViewGeneral from "./project-view-general";
 import ProjectViewAssistance from "./project-view-assistance";
 import ProjectViewFamilies from "./project-view-famillies";
-import Loading from "../../../components/widgets/loading";
+import Loading from "../../../components/ui/loading";
 import type { ProjectFormData } from "../hooks/useProject";
 import { useProjectStore } from "../store/projectStore";
 import ProjectViewDeliverires from "./project-view-deliveries";
@@ -24,10 +24,13 @@ const ProjectView = ({ id, isOpen }: ProjectViewProps) => {
   const [generalData, setGeneralData] = useState({
     name: "",
     description: "",
+    target_families: undefined,
+    country: "",
     start_date: "",
     end_date: "",
     status: "",
-    created_at: ""
+    created_at: "",
+    regions: []
   });
 
   useEffect(() => {
@@ -42,10 +45,13 @@ const ProjectView = ({ id, isOpen }: ProjectViewProps) => {
         setGeneralData({
           name: fetchedData.name,
           description: fetchedData!.description!,
+          target_families: fetchedData!.target_families!,
+          country: fetchedData!.country,
           start_date: fetchedData.start_date!.toString(),
           end_date: fetchedData.end_date!.toString(),
           status: fetchedData.status!,
-          created_at: fetchedData.created_at!.toString()
+          created_at: fetchedData.created_at!.toString(),
+          regions: fetchedData!.regions,
         });
       } catch (err) {
         console.error("Failed to fetch assistance:", err);

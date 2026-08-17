@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Button } from "../../../components/widgets/button";
-import { Input } from "../../../components/widgets/input";
-import { Label } from "../../../components/widgets/label";
-import { SelectInput } from "../../../components/widgets/select-input";
-import { Textarea } from "../../../components/widgets/textarea";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { SelectInput } from "../../../components/ui/select-input";
+import { Textarea } from "../../../components/ui/textarea";
 import { useAssis } from "../hooks/useAssis";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
 
@@ -45,6 +45,9 @@ const AssistanceForm = ({onSuccess, isOpen, id}: AssistanceFormProps) => {
 
     return ( 
         <div className="flex flex-col justify-between w-full h-full">
+           <div>
+
+            <p className="text-sm font-semibold text-gray-500 mb-6">Define the specific support or items provided under an assistance type</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="grid gap-2">
                     <Label htmlFor="name">Assistance Name</Label>
@@ -58,6 +61,7 @@ const AssistanceForm = ({onSuccess, isOpen, id}: AssistanceFormProps) => {
                         onChange={handleChange}
                         hasError={errors.name}
                     />
+                    {errors.name && <p className="text-destructive text-sm font-bold">This field is required</p>}
                 </div>
 
                 <div className="grid gap-2">
@@ -81,6 +85,7 @@ const AssistanceForm = ({onSuccess, isOpen, id}: AssistanceFormProps) => {
                             });
                         }}
                     />
+                    {errors.assistance_id && <p className="text-destructive text-sm font-bold">This field is required</p>}
                 </div>
 
                 <div className="w-md">
@@ -93,6 +98,7 @@ const AssistanceForm = ({onSuccess, isOpen, id}: AssistanceFormProps) => {
                       />
                 </div>
             </div>   
+           </div>
 
 
             <div className="border-t-1 border-gray-200">

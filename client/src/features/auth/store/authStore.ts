@@ -1,11 +1,12 @@
 import { create } from "zustand";
-import type { User } from "../../../types/user";
+import type { User } from "../../users/user";
 import { handleApiError } from "../../../utils/handleApiError";
-import axiosInstance from "../../../utils/axiosInstance";
 import type { Subscription } from "../../../types/subscription";
-import type { Organisation } from "../../../types/organisation";
-import type { Membership } from "../../../types/membership";
+import type { Organisation } from "../../settings/organisation";
 import type { ToastMessage } from "../../../types/toastMessage";
+import type { Membership } from "../../users/membership";
+import { authApi } from "../authApi";
+
 interface AuthState {
     user: User | null,
     token: string | null,
@@ -17,16 +18,13 @@ interface AuthState {
     loading: boolean,
     showToastMessage: boolean,
     register: (users: User, organisation: any) => Promise<any>,
-    login: (email: String, password: any) => Promise<any>,
+    login: (email: string, password: any) => Promise<any>,
     resetPassword: (email: string, newPassword: string, confirmPassword: string) => Promise<any>;
     logout: () => Promise<any>,
     getCurrentUser: () => Promise<any>,
     updateProfile: (data: any) => Promise<any>;
     updateOrganisation: (data: any) => Promise<any>;
 }
-
-const endpoint = "/auth";
-
 
 export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
@@ -39,162 +37,134 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     showToastMessage: false,
     subscriptionStatus: "",
 
-        register: async (users, organisation) => {
+    register: async (users, organisation) => {
+        try{
+            set({loading: true});
+            const response: any = await authApi.registerAdmin(users, organisation);
+            const fetchData = response.data;
 
-            try{
-                set({loading: true});
-                const response: any = await axiosInstance.post(`${endpoint}/register-admin`, {
-                    users,
-                    organisation
-                });
-                const fetchData = response.data;
+            if(fetchData.token){
+                localStorage.setItem('token', fetchData.token);
+                set({token: fetchData.token});
+                await get().getCurrentUser();
+            }
 
+            return {
+                type: 'success',
+                message: 'registration_successful',
+                show: true,
+                autoClose: 5000,
+            } as ToastMessage;
 
-                if(fetchData.token){
-                    localStorage.setItem('token', fetchData.token);
-                    set({token: fetchData.token});
-                    await get().getCurrentUser();
+        }catch(err: any){
+            const errorToast = handleApiError(err);
+            return errorToast;
+        }finally{
+            set({loading: false})
+        }
+    },
+
+    login: async (email, password) => {
+        try{
+            set({loading: true});
+
+            const response: any = await authApi.login(email, password);
+            const fetchData = response.data;
+
+            if(fetchData.token){
+                localStorage.setItem('token', fetchData.token);
+                set({token: fetchData.token});
+                const response = await get().getCurrentUser();
+
+                if(response.type === "error")
+                {
+                    return {
+                        type: "warning",
+                        message: response.message,
+                        show: true
+                    };
                 }
 
-                return {
-                    type: 'success',
-                    message: 'registration_successful',
-                    show: true,
-                    autoClose: 5000,
-                    } as ToastMessage;
-
-            }catch(err: any){
-
-
-                const errorToast = handleApiError(err);
-                return errorToast;
-
-            }finally{
-                set({loading: false})
-            }
-        },
-
-        login: async (email, password) => {
-            try{
-                set({loading: true});
-
-                const response: any = await axiosInstance.post(`${endpoint}/login`, {
-                    email,
-                    password
-                });
-
-
-                const fetchData = response.data;
-
-                if(fetchData.token){
-                    localStorage.setItem('token', fetchData.token);
-                    set({token: fetchData.token});
-                    const response = await get().getCurrentUser();
-
-
-                    if(response.type === "error")
-                    {
-                        return {
-                                type: "warning",
-                                message: response.message,
-                                show: true
-                            };
-                    }
-
-                    return response;
-                }
-                
-
-            }catch(err: any){
-
-                const errorToast = handleApiError(err);
-                return errorToast;
-
-            }finally{
-                set({loading: false})
-            }
-        },
-
-        resetPassword: async (email: string, newPassword: string, confirmPassword: string) => {
-                try {
-                    set({ loading: true });
-
-                    const response = await axiosInstance.post('/auth/forgot-password', {
-                        email,
-                        newPassword,
-                        confirmPassword
-                    });
-
-                    return response.data;
-
-                } catch (error: any) {
-                    const errorToast = handleApiError(error);
-                    return errorToast;
-                } finally {
-                    set({ loading: false });
-                }
-            },
-
-        logout: async () => {
-
-            localStorage.removeItem('token');
-            set({ user: null, token: null, loading: false });
-
-            await get().getCurrentUser();
-
-        },
-
-        getCurrentUser: async () => {
-            const token = get().token;
-           if (!token) {
-                set({ 
-                    user: null,
-                    role: "",
-                    organisation: null,
-                    subscription: null, 
-                    membership: null,
-                    subscriptionStatus: ""
-                 });
-                return;
+                return response;
             }
 
-            try {
-                set({loading: true, showToastMessage: false});
-                const {data} = await axiosInstance.get(`${endpoint}/me`);
-                set({
-                    user: data.user,
-                    role: data.role,
-                    organisation: data.organisation,
-                    subscription: data.subscription, 
-                    membership: data.membership,
-                    loading: false,
-                    subscriptionStatus: data.subscription.status === "true" ? "active" : data.subscription.status
-                });
-                return data;
-            }catch(err: any){
-                localStorage.removeItem('token');
+        }catch(err: any){
+            const errorToast = handleApiError(err);
+            return errorToast;
+        }finally{
+            set({loading: false})
+        }
+    },
 
-                set({ 
-                    user: null,
-                    token: null,
-                    role: "",
-                    organisation: null,
-                    subscription: null, 
-                    loading: false,
-                    subscriptionStatus: ""
-                 });
-                const errorToast = handleApiError(err);
-
-
-                return errorToast;
-
-            }
-        },
-
-        updateProfile: async (data: any) => {
+    resetPassword: async (email: string, newPassword: string, confirmPassword: string) => {
         try {
             set({ loading: true });
-            const response = await axiosInstance.put(`${endpoint}/profile`, data);
+            const response = await authApi.resetPassword(email, newPassword, confirmPassword);
+            return response.data;
+        } catch (error: any) {
+            const errorToast = handleApiError(error);
+            return errorToast;
+        } finally {
+            set({ loading: false });
+        }
+    },
+
+    logout: async () => {
+        localStorage.removeItem('token');
+        set({ user: null, token: null, loading: false });
+        await get().getCurrentUser();
+    },
+
+    getCurrentUser: async () => {
+        const token = get().token;
+        if (!token) {
+            set({ 
+                user: null,
+                role: "",
+                organisation: null,
+                subscription: null, 
+                membership: null,
+                subscriptionStatus: ""
+            });
+            return;
+        }
+
+        try {
+            set({loading: true, showToastMessage: false});
+            const response = await authApi.getCurrentUser();
+            const data = response.data;
+            
+            set({
+                user: data.user,
+                role: data.role,
+                organisation: data.organisation,
+                subscription: data.subscription, 
+                membership: data.membership,
+                loading: false,
+                subscriptionStatus: data.subscription.status === "true" ? "active" : data.subscription.status
+            });
+            return data;
+        }catch(err: any){
+            localStorage.removeItem('token');
+
+            set({ 
+                user: null,
+                token: null,
+                role: "",
+                organisation: null,
+                subscription: null, 
+                loading: false,
+                subscriptionStatus: ""
+            });
+            const errorToast = handleApiError(err);
+            return errorToast;
+        }
+    },
+
+    updateProfile: async (data: any) => {
+        try {
+            set({ loading: true });
+            const response = await authApi.updateProfile(data);
             if (response.data.type === "success") {
                 await get().getCurrentUser();
             }
@@ -204,23 +174,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         } finally {
             set({ loading: false });
         }
-        },
+    },
 
-        updateOrganisation: async (data) => {
-            try {
-                set({ loading: true });
-                const response = await axiosInstance.put(`${endpoint}/organisation`, data);
-                if (response.data.type === "success") {
-                    await get().getCurrentUser();
-                }
-                return response.data;
-            } catch (error: any) {
-                return handleApiError(error);
-            } finally {
-                set({ loading: false });
+    updateOrganisation: async (data) => {
+        try {
+            set({ loading: true });
+            const response = await authApi.updateOrganisation(data);
+            if (response.data.type === "success") {
+                await get().getCurrentUser();
             }
+            return response.data;
+        } catch (error: any) {
+            return handleApiError(error);
+        } finally {
+            set({ loading: false });
         }
-
-
-
+    }
 }))

@@ -41,7 +41,7 @@ export const messages: MessageItem[] = [
     // Membership  ---------------------------------------------------->
     { key: "invalid_role", message: "Please select a valid role." },
     { key: "user_already_in_organization", message: "These credentials are already used. Try a different one." },
-    {key: "invalid_or_inactive_membership", message: "Your account has been blocked. Contact your Administrator for more Information"},
+    {key: "invalid_or_inactive_membership", message: "Your account has been blocked. Contact your Administrator or the support team for more Information"},
     {key: "unauthorized_access", message: "You are not authorised to perform this action"},
     {key: "cannot_delete_member_with_data", message: "This member is active in a project, hence can't be deleted"},
     
@@ -57,6 +57,7 @@ export const messages: MessageItem[] = [
     { key: "uid_already_exists", message: "Identifier conflict detected. Please try again." },
     { key: "record_already_exists", message: "This record already exists." },
     { key: "done", message: "Operation completed successfully." },
+    { key: "no_network", message: "Check your connection and try again." },
     { key: "foreign_key_constraint", message: "This item is currently in use and cannot be deleted." },
     { key: "search_query_required", message: "Please enter a search term." },
 
@@ -73,11 +74,42 @@ export const messages: MessageItem[] = [
 
 
     // Media -------------------------->
-    {key: "media_not_found", message: "Image not Found"}
+    {key: "media_not_found", message: "Image not Found"},
 
 
+    // backup --------------------------->
+    {key: "backup_already_running", message: "A backup operating is currently running"},
 
 
+    // Beneficiary Import ----------------------------------------------->
+    {key: "invalid_file_type", message: "Only Excel (.xlsx) and CSV files are accepted." },
+    {key: "empty_file", message: "The uploaded file is empty."},
+    {key: "header_error", message: "The file format is incorrect. Some required columns are missing." },
+    {key: "missing_required_column", message: "A required column is missing from the file." },
+    {key: "missing_family_code", message: "Family code is required."},
+    {key: "missing_head_name", message: "Beneficiary head name is required."},
+    {key: "missing_member_name", message: "Member name is required."},
+    {key: "missing_gender", message: "Member gender is required."},
+    {key: "invalid_gender", message: "Gender must be male, female, or other."},
+    {key: "missing_date_of_birth", message: "Member date of birth is required."},
+    {key: "invalid_date_of_birth", message: "The date of birth format is invalid."},
+    {key: "missing_relationship", message: "Member relationship is required."},
+    {key: "project_not_found", message: "The specified project does not exist in this organisation." },
+    {key: "project_not_assigned",message: "No project was assigned to this beneficiary."},
+    {key: "duplicate_family_code", message: "This family code already exists in the uploaded file."},
+    {key: "inconsistent_family_information",message: "The same family code contains different beneficiary information."},
+    {key: "invalid_region", message: "The specified region does not exist."},
+    {key: "invalid_village", message: "The specified village is invalid."},
+    {key: "beneficiary_already_exists", message: "This beneficiary already exists."},
+    {key: "invalid_import_data", message: "Some imported data could not be processed." },
+    {key: "import_validation_successful", message: "The file is valid and ready to be imported." },
 
+
+    // Report Generation -----------------------------------------------
+    { key: "project_not_found_or_access_denied", message: "This project doesn't exist or you don't have access to it." },
+    { key: "type_and_format_required", message: "Report type and format are required." },
+    { key: "at_least_one_package_option_required", message: "Select at least one item to include in the report." },
+    { key: "generation_failed", message: "Report generation failed. Please try again." },
+    { key: "file_not_ready", message: "This report's file isn't ready yet. Try again in a moment." },
 
 ];

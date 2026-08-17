@@ -1,7 +1,7 @@
-import type { Delivery } from "../../../types/delivery";
+import type { Delivery } from "../delivery";
 import DetailView from "../../../components/widgets/detail-view";
 import { formatDate } from "../../../utils/formatDate";
-import StatusBadge from "../../../components/widgets/status-badge";
+import StatusBadge from "../../../components/ui/status-badge";
 
 interface DeliveryViewGeneralProps {
     data: Delivery;
@@ -17,7 +17,7 @@ const DeliveryViewGeneral = ({ data }: DeliveryViewGeneralProps) => {
 
     const fields = [
         { label: "Delivery Date", value: formatDate(data.delivery_date, false) },
-        { label: "Project", value: data.project?.name || "-" },
+        // { label: "Project", value: data.project?.name || "-" },
         {
             label: "Beneficiary",
             value: data.beneficiary
@@ -53,9 +53,16 @@ const DeliveryViewGeneral = ({ data }: DeliveryViewGeneralProps) => {
 
     return (
         <DetailView
-            title={`Delivery #${data.uid}`}
+            title={`${data.project?.name || "-"}`}
             subtitle={formatDate(data.delivery_date, false)}
             fields={fields}
+            // note={data.notes && (
+                
+            //     <div>
+            //         <p className="text-xs text-gray-400 mt-0.5">Notes</p>
+            //     </div>
+            // )
+            // }
         />
     );
 };

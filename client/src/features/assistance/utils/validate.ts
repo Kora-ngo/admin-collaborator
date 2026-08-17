@@ -1,4 +1,4 @@
-import type { Assistance, AssistanceType } from "../../../types/assistance";
+import type { Assistance, AssistanceType } from "../assistance";
 
 export const validateAssistanceType = (
     types: AssistanceType[]

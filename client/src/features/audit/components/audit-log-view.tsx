@@ -1,5 +1,5 @@
 import { useState } from "react";
-import StatusBadge from "../../../components/widgets/status-badge";
+import StatusBadge from "../../../components/ui/status-badge";
 import DetailView from "../../../components/widgets/detail-view";
 import { formatDate } from "../../../utils/formatDate";
 
@@ -98,21 +98,21 @@ const AuditLogView = ({ log }: AuditLogViewProps) => {
           )
         },
         {
-          label: "Entity Type",
+          label: "Module",
           value: (
             <p className="font-medium text-gray-900 capitalize">
               {log.entity_type}
             </p>
           )
         },
-        ...(log.entity_id ? [{
-          label: "Entity ID",
-          value: (
-            <p className="font-medium text-gray-900">
-              #{log.entity_id}
-            </p>
-          )
-        }] : []),
+        // ...(log.entity_id ? [{
+        //   label: "Entity ID",
+        //   value: (
+        //     <p className="font-medium text-gray-900">
+        //       #{log.entity_id}
+        //     </p>
+        //   )
+        // }] : []),
         ...(log.batch_uid ? [{
           label: "Batch UID",
           value: (

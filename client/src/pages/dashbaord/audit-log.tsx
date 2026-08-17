@@ -4,22 +4,22 @@ import { useEffect, useState } from "react";
 import { ActionButton } from "../../components/widgets/action-button";
 import { FilterToggleButton } from "../../components/widgets/filter-button";
 import SearchInput from "../../components/widgets/search-input";
-import StatusBadge from "../../components/widgets/status-badge";
 import type { TableColumn } from "../../components/widgets/table";
 import Table from "../../components/widgets/table";
-import Modal from "../../components/widgets/modal";
+import Modal from "../../components/ui/modal";
 import { formatDate } from "../../utils/formatDate";
-import EmptyState from "../../components/widgets/empty";
-import Loading from "../../components/widgets/loading";
-import { SelectInput } from "../../components/widgets/select-input";
+import Loading from "../../components/ui/loading";
+import { SelectInput } from "../../components/ui/select-input";
 import { useAuditLogStore } from "../../features/audit/store/auditLogStore";
 import { useAuditLog } from "../../features/audit/hooks/useAuditLog";
 import AuditLogView from "../../features/audit/components/audit-log-view";
-import ActionIcon from "../../components/widgets/action-icon";
+import ActionIcon from "../../components/ui/action-icon";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import ConnectionError from "../../features/common/network/connectionError";
+import AuditLogEmptyState from "../../features/audit/components/audit-log-empty-state";
 
 const AuditLogs = () => {
-    const { data, getData, pagination, loading } = useAuditLogStore();
+    const { data, getData, pagination, loading, connection } = useAuditLogStore();
     const {
         searchTerm,
         handleSearch,
@@ -54,95 +54,87 @@ const AuditLogs = () => {
         getData();
     }, [getData]);
 
-    const getActionColor = (action: string) => {
-        if (action.includes('created') || action.includes('login') || action.includes('Synched')) return 'blue';
-        if (action.includes('approved')) return 'green';
-        if (action.includes('rejected') || action.includes('Deleted')) return 'red';
-        if (action.includes('Blocked')) return 'yellow';
-        if (action.includes('updated') || action.includes('edited') || action.includes('Enabled')) return 'purple';
-        return 'gray';
-    };
+const getActionColor = (action: string) => {
+    // Only destructive/negative actions get color — everything else stays neutral.
+    if (action.includes('rejected') || action.includes('Deleted')) return 'text-red-600';
+    return 'text-gray-700';
+};
 
-    const getRoleBadgeColor = (role: string) => {
-        if (role === 'admin') return 'purple';
-        if (role === 'collaborator') return 'blue';
-        if (role === 'enumerator') return 'green';
-        return 'gray';
-    };
+const initials = (name?: string) => (name?.trim()?.charAt(0)?.toUpperCase() || "V");
 
-    const auditLogColumns: (TableColumn | null)[] = [
- 
-        {
-            key: "actor",
-            label: "Actor",
-            visibleOn: "always",
-            render: (row) => (
-                <div>
-                    <p className="font-medium">{row.actor?.user?.name || "Unknown"}</p>
+const auditLogColumns: (TableColumn | null)[] = [
+    {
+        key: "actor",
+        label: "Actor",
+        visibleOn: "always",
+        render: (row) => (
+            <div className="flex items-center gap-3">
+                <div className="size-9 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-semibold text-sm flex-shrink-0">
+                    {initials(row.actor?.user?.name)}
                 </div>
-            )
-        },
-        {
-            key: "role",
-            label: "Role",
-            visibleOn: "always",
-            render: (row) => (
-                <div>
-                    <StatusBadge
-                        text={row.actor_role}
-                        color={getRoleBadgeColor(row.actor_role)}
-                    />
+                <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                        {row.actor?.user?.name || "Unknown"}
+                    </p>
+                    <p className={`text-xs font-semibold ${row.actor_role == "admin" ? "text-primary" : row.actor_role == "collaborator" ?  "text-blue-300" : row.actor_role == "enumerator" ? "text-yellow-500" : "text-gray-300"} capitalize`}>
+                        {row.actor_role || "visitor"}
+                    </p>
                 </div>
-            )
-        },
-        {
-            key: "action",
-            label: "Action",
-            visibleOn: "always",
-            render: (row) => (
-                <StatusBadge
-                    text={row.action}
-                    color={getActionColor(row.action)}
-                />
-            )
-        },
-        {
-            key: "entity_type",
-            label: "Module",
-            visibleOn: "md",
-            render: (row) => (
-                <span>{row.entity_type == "user" ? "MEMBER" : row.entity_type.toString().toUpperCase()}</span>
-            )
-        },
-        {
-            key: "platform",
-            label: "Platform",
-            visibleOn: "lg",
-            render: (row) => (
-                <StatusBadge
-                    text={row.platform}
-                    color={row.platform === 'web' ? 'blue' : 'green'}
-                />
-            )
-        },
-        {
-            key: "created_at",
-            label: "Created At",
-            visibleOn: "lg",
-            render: (row) => formatDate(row.created_at, true)
-        },
-        {
-            key: "action_col",
-            label: "Details",
-            visibleOn: "always",
-            render: (row) => (
-                    <ActionIcon name="view" onClick={() => {
-                        setSelectedLog(row);
-                        setViewModal(true);
-                    }} />
-                    )
-                    }
-                    ];
+            </div>
+        )
+    },
+    {
+        key: "action",
+        label: "Action",
+        visibleOn: "always",
+        render: (row) => (
+            <span className={`text-sm font-medium ${getActionColor(row.action)}`}>
+                {row.action}
+            </span>
+        )
+    },
+    {
+        key: "entity_type",
+        label: "Module",
+        visibleOn: "md",
+        render: (row) => (
+            <span className="text-sm text-gray-500">
+                {row.entity_type == "user" ? "Member" : row.entity_type.toString().charAt(0).toUpperCase() + row.entity_type.toString().slice(1)}
+            </span>
+        )
+    },
+    {
+        key: "platform",
+        label: "Platform",
+        visibleOn: "lg",
+        render: (row) => (
+            <span className="text-sm text-gray-500 capitalize">{row.platform}</span>
+        )
+    },
+    {
+        key: "created_at",
+        label: "Created At",
+        visibleOn: "lg",
+        render: (row) => <span className="text-sm text-gray-500">{formatDate(row.created_at, true)}</span>
+    },
+    {
+        key: "action_col",
+        label: "Details",
+        visibleOn: "always",
+        render: (row) => (
+            <ActionIcon name="view" onClick={() => {
+                setSelectedLog(row);
+                setViewModal(true);
+            }} />
+        )
+    },
+];
+
+if(!connection){
+    return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page || 1)} />
+}
+
+
                     return (
                         <div className="grid grid-cols-1 gap-4 mt-2">
                             <div className="flex flex-col items-start justify-start rounded-sm bg-white gap-4">
@@ -227,9 +219,9 @@ const AuditLogs = () => {
                                     <>
                                         {data.length === 0 ? (
                                             <div className="w-full bg-gray-50 rounded-md">
-                                                <EmptyState
-                                                    title="No Audit Logs Found"
-                                                    description="No activity has been logged yet."
+                                                <AuditLogEmptyState
+                                                overall={pagination?.overall!}
+                                                isFiltering={filterMode || searchTerm != ""}
                                                 />
                                             </div>
                                         ) : (

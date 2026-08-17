@@ -6,9 +6,11 @@ const NETWORK_TOAST_COOLDOWN_MS = 5000;
 
 export const handleApiError = (err: any): ToastMessage => {
 
+    console.log("Hello World --> ", err);
+
     let toast: ToastMessage = {
-        type: 'error',
-        message: 'An unexpected error occurred.',
+        type: 'no_network',
+        message: 'No Internet connection',
         show: true,
     };
 
@@ -81,7 +83,7 @@ export const handleApiError = (err: any): ToastMessage => {
         const backend = err.response.data;
 
         // Prefer backend-provided type/message if available
-        toast.type = backend.type || 'error';
+        toast.type = backend.type || 'no_network';
         toast.message = backend.message || backend.error || toast.message;
         toast.title = backend.title; // optional
 
@@ -104,11 +106,22 @@ export const handleApiError = (err: any): ToastMessage => {
     }
 
     console.error('[API Error]', {
+        type: err.type,
         status: err.response?.status,
         code: err.code,
         message: toast.message,
         fullError: err,
     });
+
+
+    if(toast.type == "no_network"){
+        return {
+            type: "no_network",
+            title: "No Internet Connection",
+            message: "no_network",
+            show: true
+        }
+    }
 
     return toast;
 };

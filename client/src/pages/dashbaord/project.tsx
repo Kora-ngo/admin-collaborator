@@ -1,31 +1,33 @@
 import { useEffect, useState } from "react";
 import { ActionButton } from "../../components/widgets/action-button";
-import ActionIcon from "../../components/widgets/action-icon";
-import { Button } from "../../components/widgets/button";
+import ActionIcon from "../../components/ui/action-icon";
+import { Button } from "../../components/ui/button";
 import { FilterToggleButton } from "../../components/widgets/filter-button";
 import SearchInput from "../../components/widgets/search-input";
-import StatusBadge from "../../components/widgets/status-badge";
+import StatusBadge from "../../components/ui/status-badge";
 import type { TableColumn } from "../../components/widgets/table";
 import Table from "../../components/widgets/table";
-import Modal from "../../components/widgets/modal";
+import Modal from "../../components/ui/modal";
 import ProjectForm from "../../features/project/components/project-form";
 // import ProjectView from "../../features/project/components/project-view";
 import { useProjectStore } from "../../features/project/store/projectStore";
 import { formatDate } from "../../utils/formatDate";
-import EmptyState from "../../components/widgets/empty";
-import Loading from "../../components/widgets/loading";
+import EmptyState from "../../components/ui/empty";
+import Loading from "../../components/ui/loading";
 import Popup from "../../components/widgets/popup";
 import { useProject } from "../../features/project/hooks/useProject";
-import { SelectInput } from "../../components/widgets/select-input";
+import { SelectInput } from "../../components/ui/select-input";
 import ProjectView from "../../features/project/components/project-view";
 import ProjectActionPopup from "../../features/project/components/ProjectActionPopup";
 import ProjectViewMedia from "../../features/project/components/project-view-media";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import ConnectionError from "../../features/common/network/connectionError";
+import ProjectEmptyState from "../../features/project/components/project-empty-state";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Projects = () => {
-    const { data, getData, pagination, loading } = useProjectStore();
+    const { data, getData, pagination, loading, connection } = useProjectStore();
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {membership} = useAuthStore();
 
@@ -158,49 +160,98 @@ const Projects = () => {
     }, [getData]);
 
     const projectColumns: TableColumn[] = [
-        { 
-            key: "id", 
-            label: "ID", 
-            visibleOn: "lg", 
-            render: (row) => `#PRJ-${row.id}` 
-        },
-        { 
-            key: "name", 
-            label: "Project Title", 
-            visibleOn: "always" 
-        },
-        {
-            key: "assistances",
-            label: "Assistances",
-            visibleOn: "md",
-            render: (row) => `${ row.assistances?.length || 0} Assistances`
-        },
-        {
-            key: "members",
-            label: "Members",
-            visibleOn: "lg",
-            render: (row) => {
-                const enumerators = row.members?.filter((m: any) => 
-                    m.role_in_project === 'enumerator'
-                ).length || 0;
-                const collaborators = row.members?.filter((m: any) => 
-                    m.role_in_project === 'collaborator'
-                ).length || 0;
-                return `${enumerators}Enums, ${collaborators}Colls`;
+    {
+        key: "id",
+        label: "ID",
+        visibleOn: "lg",
+        render: (row) => `#PRJ-${row.id}`
+    },
+    {
+        key: "project",
+        label: "Project",
+        visibleOn: "always",
+        render: (row) => {
+            const assistanceCount = row.assistances?.length || 0;
+            const enumerators = row.members?.filter((m: any) => m.role_in_project === 'enumerator').length || 0;
+            const collaborators = row.members?.filter((m: any) => m.role_in_project === 'collaborator').length || 0;
+            const regionCount = row.regions?.length || 0;
+
+            return (
+                <div>
+                    <p className="font-semibold text-gray-900">{row.name}</p>
+                    <p className="text-ms text-gray-500 mt-0.5">
+                        {assistanceCount} Assistance{assistanceCount !== 1 ? "s" : ""} - {enumerators} Enums, {collaborators} Colls - {regionCount} Region{regionCount !== 1 ? "s" : ""}
+                    </p>
+                </div>
+            );
+        }
+    },
+    {
+        key: "period",
+        label: "Period",
+        visibleOn: "md",
+        render: (row) => {
+            const end = row.end_date ? new Date(row.end_date) : null;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let daysLeft: number | null = null;
+            if (end) {
+                end.setHours(0, 0, 0, 0);
+                daysLeft = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             }
-        },
-        {
-            key: "start_date",
-            label: "Start",
-            visibleOn: "md",
-            render: (row) => formatDate(row.start_date, false)
-        },
-        {
-            key: "end_date",
-            label: "End",
-            visibleOn: "md",
-            render: (row) => formatDate(row.end_date, false)
-        },
+
+            const isDone = row.status === "done";
+
+            return (
+                <div>
+                    <p className="text-gray-700 whitespace-nowrap">
+                        From <b>{formatDate(row.start_date, false, false)}</b> to <b>{formatDate(row.end_date, false, false)}</b>
+                    </p>
+                    {isDone ? (
+                        <p className="text-xs font-semibold text-gray-400 mt-0.5">Completed</p>
+                    ) : daysLeft !== null && (
+                        <p className={`text-xs font-semibold mt-0.5 ${
+                            daysLeft < 0 ? "text-red-600" :
+                            daysLeft <= 7 ? "text-amber-600" :
+                            "text-gray-500"
+                        }`}>
+                            {daysLeft < 0
+                                ? `Overdue by ${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? "s" : ""}`
+                                : daysLeft === 0
+                                ? "Ends today"
+                                : `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`}
+                        </p>
+                    )}
+                </div>
+            );
+        }
+    },
+    {
+        key: "progress",
+        label: "Progress",
+        visibleOn: "always",
+        render: (row) => {
+            if (!row.target_families) {
+                return <span className="text-xs text-gray-400">No target set</span>;
+            }
+
+            const actual = row.beneficiaries?.length || 0;
+            const percent = Math.min(100, Math.round((actual / row.target_families) * 100));
+
+            return (
+                <div className="w-32">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-gray-700">{actual}/{row.target_families}</span>
+                        <span className="text-xs text-gray-400">{percent}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary/70 rounded-full" style={{ width: `${percent}%` }} />
+                    </div>
+                </div>
+            );
+        }
+    },
         {
             key: "status",
             label: "Status",
@@ -307,6 +358,12 @@ const Projects = () => {
         },
     ];
 
+
+
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page!)} />
+    }
+
     return (
         <div className="grid grid-cols-1 gap-4 mt-2">
             <div className="flex flex-col items-start justify-start rounded-sm bg-white gap-4">
@@ -387,9 +444,7 @@ const Projects = () => {
                 ) : (
                     <>
                         {data.length === 0 ? (
-                            <div className="w-full bg-gray-50 rounded-md">
-                                <EmptyState title="No Record Found" />
-                            </div>
+                                 <ProjectEmptyState overall={pagination?.overall || 0} />
                         ) : (
                             <>
                                 <Table
@@ -493,7 +548,7 @@ const Projects = () => {
             </div>
 
             <Modal
-                className="lg:w-[630px]"
+                className={projectModalMode == "view" ? "lg:w-[830px]" : "lg:w-[530px]"}
                 mobileHeight="large" 
                 isOpen={projectModalMode !== null}
                 onClose={closeProjectModal}

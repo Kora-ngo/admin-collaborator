@@ -1,13 +1,17 @@
 // src/features/project/components/project-view-general.tsx
 
 import DetailView from "../../../components/widgets/detail-view";
-import EmptyState from "../../../components/widgets/empty";
-import StatusBadge from "../../../components/widgets/status-badge";
+import EmptyState from "../../../components/ui/empty";
+import StatusBadge from "../../../components/ui/status-badge";
 import { formatDate } from "../../../utils/formatDate";
+import { useLocationLabels } from "../../common/locations/hooks/uselocationLabels";
+import { useMemo } from "react";
 
 interface ProjectViewGeneralProps {
-  data: any; // null if loading or no data
+  data: any;
 }
+
+
 
 const ProjectViewGeneral = ({ data }: ProjectViewGeneralProps) => {
   if (!data) {
@@ -19,6 +23,16 @@ const ProjectViewGeneral = ({ data }: ProjectViewGeneralProps) => {
       </div>
     );
   }
+
+  const regionCodes = useMemo(
+  () => data?.regions?.map((r: any) => r.region) ?? [],
+  [data?.regions]
+);
+
+const { countryName } = useLocationLabels(
+  data?.country,
+  regionCodes
+);
 
 
     const statusColors: any = {
@@ -34,9 +48,18 @@ const ProjectViewGeneral = ({ data }: ProjectViewGeneralProps) => {
   const fields = [
     { label: "Project Name", value: data.name },
     { label: "Description", value: data.description || "-" },
+    { label: "Target Beneficaries", value: data.target_families || "-" },
     { label: "Start Date", value: formatDate(data.start_date!.toString(), false) },
     { label: "End Date", value: formatDate(data.end_date!.toString(), false) },
     { label: "Created On", value: formatDate(data.created_at!.toString(), false) },
+    {label: "Country of Operation", value: countryName},
+    {
+        label: "Region(s) Covered",
+        value: data.regions?.length
+          ?  data?.regions?.map((r: any) => r.region).join(", ")
+          : "...",
+      },
+
     { label: "Status", value: <StatusBadge text={data.status} color={s.color} /> }
   ];
 

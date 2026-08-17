@@ -1,26 +1,32 @@
 import { Router } from "express";
-import authRouter from "./auth.routes.js";
-import assistanceRouter from "./assistance.route.js";
-import assistanceTypeRouter from "./assistance-type.route.js";
-import membershipRouter from "./membership.route.js";
-import projectRoute from './project.route.js';
-import dashbaordRoute from './dashbaord.route.js';
-import enumeratorRoute from './enumerator.route.js';
-import beneficiaryRoute from './beneficiary.route.js'
-import deliveryRoute from './delivery.route.js';
-import autditLogRoute from './audit-log.route.js';
-import exportRoute from './export.route.js';
-import subscriptionRoute from './subscription.routes.js';
-import healthRoute from './health.route.js';
-import feedbackRoute from './feedback.routes.js';
+import authRouter from "../modules/auth/auth.routes.js";
+import assistanceRouter from "../modules/assistance/assistance.route.js";
+import assistanceTypeRouter from "../modules/assistance-type/assistance-type.route.js";
+import membershipRouter from "../modules/membership/membership.route.js";
+import dashbaordRoute from '../modules/dashboard/dashbaord.route.js';
+import enumeratorRoute from '../modules/enumerators/enumerator.route.js';
+import beneficiaryRoute from '../modules/beneficiary/beneficiary.route.js'
+import deliveryRoute from '../modules/delivery/delivery.route.js';
+import autditLogRoute from '../modules/audit-log/audit-log.route.js';
+import exportRoute from "../modules/export/export.route.js";
+import subscriptionRoute from '../modules/subscription/subscription.routes.js';
+import healthRoute from '../modules/health/health.route.js';
+import feedbackRoute from '../modules/feedback/feedback.routes.js';
+import projectRoute from "../modules/project/project.route.js";
+import analyticsRoute from "../modules/analytics/analytics.route.js";
+import reportsRoute from "../modules/reports/report.route.js";
+
 
 // Super -admin
-import superAdminRouter from './superAdmin.route.js';
-import adminOrganisationRouter from './admin/organisation.route.js';
-import adminMembershipRouter  from './admin/membership.route.js';
-import adminProjectRouter from './admin/project.route.js';
-import auditLogRouter  from './admin/auditLog.route.js';
-import subscriptionRouter from './admin/subscription.route.js';
+import superAdminRouter from '../modules/super-admin/superAdmin.route.js';
+import adminOrganisationRouter from '../modules/organisation/admin/organisation.route.js';
+import adminMembershipRouter  from '../modules/membership/admin/membership.route.js';
+import adminProjectRouter from '../modules/project/project.route.js';
+import auditLogRouter  from '../modules/audit-log/admin/audit-log.route.js';
+import subscriptionRouter from '../modules/subscription/admin/subscription.route.js';
+import backupRouter  from "../modules/backup/backup.route.js";
+import dateOperationRouted  from "../modules/data-operations/data-opertion.route.js";
+
 
 
 
@@ -40,6 +46,10 @@ router.use("/audit-logs", autditLogRoute);
 router.use("/export", exportRoute);
 router.use("/subscription", subscriptionRoute);
 router.use("/feedback", feedbackRoute);
+router.use("/analytics", analyticsRoute);
+router.use("/reports", reportsRoute);
+
+
 
 
 // Mobile-based
@@ -55,6 +65,10 @@ router.use('/super-admin/memberships', adminMembershipRouter);
 router.use('/super-admin/projects', adminProjectRouter);
 router.use('/super-admin/audit-logs', auditLogRouter);
 router.use('/super-admin/subscriptions', subscriptionRouter);
+router.use("/backup", backupRouter);
+router.use("/data-operation", dateOperationRouted);
+
+
 
 
 

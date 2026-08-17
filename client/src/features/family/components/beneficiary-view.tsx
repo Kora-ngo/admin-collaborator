@@ -1,8 +1,8 @@
 
 import { useEffect, useState } from "react";
 import { useBeneficiaryStore } from "../store/beneficiaryStore";
-import Loading from "../../../components/widgets/loading";
-import type { Beneficiary } from "../../../types/beneficiary";
+import Loading from "../../../components/ui/loading";
+import type { Beneficiary } from "../beneficiary";
 import BeneficiaryViewGeneral from "./beneficiary-view-general";
 import BeneficiaryViewMembers from "./beneficiary-view-members";
 
@@ -26,6 +26,8 @@ const BeneficiaryView = ({ id, isOpen }: BeneficiaryViewProps) => {
             try {
                 setLoading(true);
                 const fetchedData = await fetchOneData(id);
+
+
                 setData(fetchedData);
             } catch (err) {
                 console.error("Failed to fetch beneficiary:", err);

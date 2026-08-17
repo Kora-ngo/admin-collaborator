@@ -1,73 +1,65 @@
-// components/ui/DetailView.tsx
+// components/widgets/detail-view.tsx
 
 import type { ReactNode } from "react";
 
 interface DetailField {
-  label?: string;
-  value: ReactNode;
+    label?: string;
+    value: ReactNode;
 }
 
 interface DetailViewProps {
-  title?: string;           // optional now (if you don't always need it)
-  subtitle?: string;
-  fields: DetailField[];
-  className?: string;
-  layout?: "single" | "double";  // NEW: control layout
+    title?: string;
+    subtitle?: string;
+    note?: any;
+    fields: DetailField[];
+    className?: string;
+    layout?: "single" | "double"; // "double" = label/value side by side, "single" = label above value
 }
 
 const DetailView = ({
-  // title,
-  // subtitle,
-  fields,
-  className = "",
-  layout = "double",  // default to current behavior
+    title,
+    subtitle,
+    fields,
+    note,
+    className = "",
+    layout = "double",
 }: DetailViewProps) => {
-  const isSingle = layout === "single";
+    const isSingle = layout === "single";
 
-  return (
-    <div className={`max-w-4xl mx-auto border border-gray-200 rounded-md ${className}`}>
+    return (
+        <div className={`bg-white border border-gray-100 rounded-xl overflow-hidden ${className}`}>
+            {(title || subtitle) && (
+                <div className="px-5 py-4 border-b border-gray-100">
+                    {title && <p className="text-base font-semibold text-gray-900">{title}</p>}
+                    {subtitle && <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>}
+                </div>
+            )}
 
-      <div className="overflow-hidden">
-        {/* Header Row - only shown in double layout */}
-        {layout === "double" ? (
-          <div className="grid grid-cols-3 gap-4 py-3 bg-gray-100 px-6 rounded-t-md">
-            <p className="font-semibold text-gray-700">Label</p>
-            <p className="col-span-2 font-semibold text-gray-700">Value</p>
-          </div>
-        )
-      : 
-      (
-        <div className="grid grid-cols-3 gap-4 py-3 bg-gray-100 px-6 rounded-t-md">
-            <p className="col-span-2 font-semibold text-gray-700">Value</p>
-        </div>
-      )
-      
-      }
+            <div className="divide-y divide-gray-50">
+                {fields.map((field, index) => (
+                    <div
+                        key={`${field.label ?? "field"}-${index}`}
+                        className={`px-5 py-3 hover:bg-gray-50/60 transition-colors ${
+                            isSingle ? "" : "flex items-start justify-between gap-6"
+                        }`}
+                    >
+                        <p className={`text-xs font-medium text-gray-600 uppercase tracking-wide flex-shrink-0 ${
+                            isSingle ? "" : "w-1/3 pt-0.5"
+                        }`}>
+                            {field.label}
+                        </p>
 
-        {/* Fields */}
-        <div className="divide-y divide-gray-200">
-          {fields.map((field, index) => (
-            <div
-              key={field.label! + index}
-              className={`px-6 py-3 hover:bg-gray-50 transition-colors ${
-                isSingle ? "grid grid-cols-1 gap-1" : "grid grid-cols-3 gap-4"
-              }`}
-            >
-              {/* Label */}
-              <div className={`${isSingle ? "text-sm font-medium text-gray-500" : "text-sm font-medium text-gray-500"}`}>
-                {field.label!}
-              </div>
-
-              {/* Value */}
-              <div className={`${isSingle ? "text-base font-semibold text-gray-900 mt-1" : "col-span-2 text-sm font-semibold text-gray-900"}`}>
-                {field.value || "-"}
-              </div>
+                        <div className={`text-sm font-semibold text-gray-900 ${
+                            isSingle ? "mt-1" : "flex-1 min-w-0 text-right"
+                        }`}>
+                            {field.value ?? "-"}
+                        </div>
+                    </div>
+                ))}
             </div>
-          ))}
+            { note && note}
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default DetailView;

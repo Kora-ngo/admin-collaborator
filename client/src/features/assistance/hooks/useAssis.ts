@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
-import type { Assistance } from "../../../types/assistance"
+import type { Assistance } from "../assistance"
 import { validateAssistance } from "../utils/validate";
 import { useToastStore } from "../../../store/toastStore";
 import type { ToastMessage } from "../../../types/toastMessage";
 import { useAssistanceStore } from "../store/assistanceStore";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
+import type { AssistanceFilters } from "../assistanceApi";
 
 export const useAssis = () => {
 
@@ -76,7 +77,7 @@ export const useAssis = () => {
 
         const activeFilters: any = {};
         if (filters.status) activeFilters.status = filters.status;
-        if (filters.typeId > 0) activeFilters.typeId = filters.typeId;
+        if (filters.typeId! > 0) activeFilters.typeId = filters.typeId;
         if (filters.datePreset !== "all") activeFilters.datePreset = filters.datePreset;
 
         filterData(1, activeFilters);
@@ -114,7 +115,7 @@ export const useAssis = () => {
   
 
     const refreshCurrentPage = (page: number) => {
-      filterMode ? filterData(page, filters) : getData(page, searchTerm)
+      filterMode ? filterData(page, filters as any) : getData(page, searchTerm)
     };
 
 
@@ -157,7 +158,12 @@ export const useAssis = () => {
 
     const handleView = async (id: number): Promise<any> => {
 
-        const response: Assistance = await fetchOneData(id);
+        const response: any = await fetchOneData(id);
+
+        if (response && 'type' in response) {
+            showToast(response);
+            return null;
+        }
 
         setForm({
             name: response.name,
@@ -176,6 +182,8 @@ export const useAssis = () => {
         }
 
         const result = await toggleData(id, status);
+
+        
         showToast(result);
         await getData();
         return result.type === "success";

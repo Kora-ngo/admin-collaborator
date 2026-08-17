@@ -1,31 +1,33 @@
 import { useEffect, useState } from "react";
 import { ActionButton } from "../../components/widgets/action-button";
-import ActionIcon from "../../components/widgets/action-icon";
-import { Button } from "../../components/widgets/button";
+import ActionIcon from "../../components/ui/action-icon";
+import { Button } from "../../components/ui/button";
 import { FilterToggleButton } from "../../components/widgets/filter-button";
 import SearchInput from "../../components/widgets/search-input";
-import StatusBadge from "../../components/widgets/status-badge";
+import StatusBadge from "../../components/ui/status-badge";
 import type { TableColumn } from "../../components/widgets/table";
 import Table from "../../components/widgets/table";
-import Modal from "../../components/widgets/modal";
+import Modal from "../../components/ui/modal";
 import Type from "../../features/assistance/components/type";
 import AssistanceForm from "../../features/assistance/components/assistance-form";
 import { useAssistanceStore } from "../../features/assistance/store/assistanceStore";
 import { formatDate } from "../../utils/formatDate";
 import { formatCode } from "../../utils/formatCode";
-import EmptyState from "../../components/widgets/empty";
-import Loading from "../../components/widgets/loading";
+import EmptyState from "../../components/ui/empty";
+import Loading from "../../components/ui/loading";
 import AssistanceView from "../../features/assistance/components/assistance-view";
 import Popup from "../../components/widgets/popup";
 import { useAssis } from "../../features/assistance/hooks/useAssis";
-import { SelectInput } from "../../components/widgets/select-input";
+import { SelectInput } from "../../components/ui/select-input";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import ConnectionError from "../../features/common/network/connectionError";
+import AssistanceEmptyState from "../../features/assistance/components/assistance-empty-state";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const Assistance = () => {
 
-    const {data, getData, pagination, loading} = useAssistanceStore();
+    const {data, getData, pagination, loading, connection, popUpLoading} = useAssistanceStore();
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {role} = useAuthStore();
     const {
@@ -189,6 +191,10 @@ const Assistance = () => {
     ];
 
 
+    if(!connection){
+        return <ConnectionError onRetry={() => refreshCurrentPage(pagination?.page!)} />
+    }
+
     return ( 
         <div className="grid grid-cols-1 gap-4 mt-2">
             <div className="flex flex-col items-start justify-start rounded-sm bg-white  gap-4">
@@ -269,13 +275,7 @@ const Assistance = () => {
                     </div>
                     ) : (
                     <>
-                        {data.length === 0 ? (
-                        <div className="w-full bg-gray-50 rounded-md">
-                            <EmptyState title="No Record Found" 
-                            description={role === "collaborator" ? "You don't have the authorisation to access these Records" : ""}
-                            />
-                        </div>
-                        ) : (
+                        {data.length === 0 ? (<AssistanceEmptyState overall={pagination?.overall || 0} />) : (
                         <>
                             <Table
                             columns={assistanceColumns}
@@ -429,10 +429,10 @@ const Assistance = () => {
             />
 
         <Popup
-            loading ={loading}
+            loading ={popUpLoading}
             open={deletePopup}
             onClose={() => setDeletePopUp(false)}
-            title={selectedRecord?.status === "true" ? "Deactivate Record" : "Activate Record"}
+            title={selectedRecord?.status === "true" ? "Deactivate Record" : "Restore Record"}
             description={
                 selectedRecord ? (
                 <>

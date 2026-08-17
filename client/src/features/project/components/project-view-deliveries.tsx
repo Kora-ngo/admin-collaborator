@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import EmptyState from "../../../components/widgets/empty";
-import type { Delivery } from "../../../types/delivery";
+import EmptyState from "../../../components/ui/empty";
+import type { Delivery } from "../../delivery/delivery";
 import { useAuthStore } from "../../auth/store/authStore";
-import Accordion from "../../../components/widgets/accordion";
+import Accordion from "../../../components/ui/accordion";
 
 
 interface ProjectViewDeliveryProps {
