@@ -24,6 +24,11 @@ const organizationInclude = {
 
 export const MembershipRepository = {
 
+    countOverview: async (organisationId: number) => {
+        const total = await MembershipModel.count({ where: { organization_id: organisationId, role: { [Op.ne]: 'admin' } }, });
+        return total;
+    },
+
     findAll: async (where: any) => {
         return MembershipModel.findAll({
             where,

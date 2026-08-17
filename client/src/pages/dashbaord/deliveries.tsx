@@ -21,6 +21,7 @@ import { useToastStore } from "../../store/toastStore";
 import ExportPopup from "../../components/widgets/export-modal";
 import { exportDeliveriesToExcel } from "../../utils/exportUtil";
 import ConnectionError from "../../features/common/network/connectionError";
+import DeliveryEmptyState from "../../features/delivery/components/delivery-empty-state";
 
 type ModalMode = 'view' | null;
 
@@ -341,14 +342,7 @@ const Deliveries = () => {
                     </div>
                 ) : (
                     <>
-                        {data.length === 0 ? (
-                            <div className="w-full bg-gray-50 rounded-md">
-                                <EmptyState
-                                    title="No Record Found"
-                                    description="Deliveries are created by enumerators through the mobile app and reviewed here."
-                                />
-                            </div>
-                        ) : (
+                        {data.length === 0 ? ( <DeliveryEmptyState overall={pagination?.overall || 0} />) : (
                             <>
                                 <Table
                                     columns={deliveryColumns}
@@ -547,6 +541,11 @@ const Deliveries = () => {
                     if (reviewAction === 'reject' && reviewNote.trim() === "") return;
                     await handleConfirmReview();
                 }}
+                confirmButtonClass={
+                reviewAction === 'approve'
+                    ? `${popUpLoading ? "bg-green-400": "bg-green-500 hover:bg-green-400"}`
+                    : `${popUpLoading ? "bg-red-400" : "bg-red-500 hover:bg-red-400"}`
+            }
             />
         </div>
     );

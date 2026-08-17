@@ -54,6 +54,14 @@ const beneficiaryInclude = (extra: string[] = []) => ({
 
 export const DeliveryRepository = {
 
+
+    countOverview: async (organisationId: number) => {
+        const total = await DeliveryModel.count({
+            include: [{ model: ProjectModel, as: 'project', attributes: [], where: { organisation_id: organisationId } }],
+        });
+        return total;
+    },
+
     findAndCountAllList: async (where: any, organisationId: any, limit: number, offset: number) => {
         return DeliveryModel.findAndCountAll({
             where,

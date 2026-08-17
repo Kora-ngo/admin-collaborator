@@ -46,14 +46,13 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
     return ( 
         
       <div className="flex flex-col justify-between w-full h-full">
-            <div>
-                <p className="text-sm text-gray-500 font-medium">Add a team member to your organization and choose the role that matches their responsibilities.</p>
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {!isEdit && (
                     <>
                         {/* Email */}
                         <div className="grid gap-2 md:col-span-2">
+                        <p className="text-sm text-gray-500 font-medium mb-3">Add a team member to your organization and choose the role that matches their responsibilities.</p>
+
                             <Label htmlFor="email">User Email</Label>
                             <Input
                                 id="email"
@@ -178,28 +177,30 @@ const MembershipForm = ({ onSuccess, isOpen, id }: MembershipFormProps) => {
                     />
                     {errors.role && <p className="text-destructive text-sm font-bold">This field is required</p>}
                 </div>
-            </div>
 
-            {(form.role === "collaborator" || form.role === "enumerator") && (
-                <div className="mt-6 rounded-lg border text-primary/20 bg-primary-50/60 px-4 py-2 my-3">
-                    <div className="flex gap-3">
-                        <div className="text-sm text-primary/80 leading-relaxed">
-                            {form.role === "collaborator" && (
-                                <p>
-                                    <span className="font-bold text-primary">Collaborator</span> - 
-                                    Supervises projects and reviews beneficiary and delivery records from the Kora web platform.
-                                </p>
-                            )}
-                            {form.role === "enumerator" && (
-                                <p>
-                                    <span className="font-bold text-primary">Enumerator</span> - 
-                                    Collects beneficiary and delivery information in the field using <a className="font-semibold underline" target="_blank" rel="noopener noreferrer" href="https://appdistribution.firebase.google.com/i/bb32de04fc79f8fd">Kora-Field</a> mobile app.
-                                </p>
-                            )}
+                {(form.role === "collaborator" || form.role === "enumerator") && (
+                    <div className="grid gap-2 md:col-span-2 rounded-lg border text-primary/20 bg-primary-50/60 px-4 py-2 my-3">
+                        <div className="flex gap-3">
+                            <div className="text-sm text-primary/80 leading-relaxed">
+                                {form.role === "collaborator" && (
+                                    <p>
+                                        <span className="font-bold text-primary">Collaborator</span> - 
+                                        Supervises projects and reviews beneficiary and delivery records from the Kora web platform.
+                                    </p>
+                                )}
+                                {form.role === "enumerator" && (
+                                    <p>
+                                        <span className="font-bold text-primary">Enumerator</span> - 
+                                        Collects beneficiary and delivery information in the field using <a className="font-semibold underline" target="_blank" rel="noopener noreferrer" href="https://appdistribution.firebase.google.com/i/bb32de04fc79f8fd">Kora-Field</a> mobile app.
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
+
+
 
             <div className="border-t-1 border-gray-200">
                 <div className="my-4 flex gap-4 justify-end">

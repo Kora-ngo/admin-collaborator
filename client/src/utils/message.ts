@@ -105,6 +105,11 @@ export const messages: MessageItem[] = [
     {key: "import_validation_successful", message: "The file is valid and ready to be imported." },
 
 
-
+    // Report Generation -----------------------------------------------
+    { key: "project_not_found_or_access_denied", message: "This project doesn't exist or you don't have access to it." },
+    { key: "type_and_format_required", message: "Report type and format are required." },
+    { key: "at_least_one_package_option_required", message: "Select at least one item to include in the report." },
+    { key: "generation_failed", message: "Report generation failed. Please try again." },
+    { key: "file_not_ready", message: "This report's file isn't ready yet. Try again in a moment." },
 
 ];

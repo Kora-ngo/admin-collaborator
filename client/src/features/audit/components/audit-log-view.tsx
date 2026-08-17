@@ -98,21 +98,21 @@ const AuditLogView = ({ log }: AuditLogViewProps) => {
           )
         },
         {
-          label: "Entity Type",
+          label: "Module",
           value: (
             <p className="font-medium text-gray-900 capitalize">
               {log.entity_type}
             </p>
           )
         },
-        ...(log.entity_id ? [{
-          label: "Entity ID",
-          value: (
-            <p className="font-medium text-gray-900">
-              #{log.entity_id}
-            </p>
-          )
-        }] : []),
+        // ...(log.entity_id ? [{
+        //   label: "Entity ID",
+        //   value: (
+        //     <p className="font-medium text-gray-900">
+        //       #{log.entity_id}
+        //     </p>
+        //   )
+        // }] : []),
         ...(log.batch_uid ? [{
           label: "Batch UID",
           value: (

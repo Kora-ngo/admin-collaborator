@@ -128,6 +128,8 @@ const AssistanceController = {
 
             const result = await AssistanceService.search(req.user?.organizationId, q, page, limit);
 
+                        console.log("Overall --> ", result.pagination);
+
             res.status(200).json({ type: 'success', data: result.rows, pagination: result.pagination });
         } catch (error) {
             console.error("Assistance: Search error:", error);

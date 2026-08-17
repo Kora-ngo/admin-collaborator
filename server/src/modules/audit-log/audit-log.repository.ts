@@ -14,6 +14,11 @@ const getTodayRange = () => {
 
 export const AuditLogRepository = {
 
+    countOverview: async (organisationId: number) => {
+        const total = await AuditLogModel.count({ where: { organisation_id: organisationId } });
+        return total;
+    },
+
     findAndCountAll: async (where: any, limit: number, offset: number, includeOptions?: any) => {
         return AuditLogModel.findAndCountAll({
             where,

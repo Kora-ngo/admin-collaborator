@@ -20,6 +20,7 @@ import MembershipView from "../../features/users/components/membership-view";
 import Popup from "../../components/widgets/popup";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import ConnectionError from "../../features/common/network/connectionError";
+import MembershipEmptyState from "../../features/users/components/membership-empty-state";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
@@ -305,42 +306,7 @@ const User = () => {
                     </div>
                 ) : (
                     <>
-                        {data.length === 0 ? (
-                        <div className="w-full bg-gray-50 rounded-md">
-                            <EmptyState title="No Record Found" />
-                            {/* {
-                                role == "admin" ?
-                            (
-                                <EmptyState 
-                                    variant={ pagination?.total! > 0 ? "empty": "member"}
-                                    title={ pagination?.total! > 0 ? "No Record Found" : "No assigned member"}
-                                    description=
-                                    {
-                                        pagination?.total! > 0 ?  "" : 
-                                        (<div className="mt-4">
-                                            <p className="font-semibold">This is where everthing starts</p>
-                                            <p className="text-center">Create your members for this organsation that will be assigned as <b>Collabortors</b> and/or <b>Enumerators</b></p>
-                                            <p className="text-center">Collaborators have their own dashboard accessible via <span className="text-primary">kora.onl/space</span></p>
-                                            <p className="text-center">Enumerators are the one operting on the field via the mobile app <span className="text-primary">Kora Field </span></p>
-                                        </div>)
-                                } />
-                            ) : (
-                                 <EmptyState 
-                                    variant={ pagination?.total! > 0 ? "empty": "member"}
-                                    title={ pagination?.total! > 0 ? "No Record Found" : "No assigned member"}
-                                    description=
-                                    {
-                                        pagination?.total! > 0 ?  "" : 
-                                        (<div className="mt-4">
-                                            <p className="font-semibold">This module will be handled by your administrator</p>
-                                            <p className="">Only enumerators choosen for a project in the range of your supervision will be visible here</p>
-                                            <p className="mt-4 font-semibold">No action is required from you</p>
-                                        </div>)
-                                } />
-                            )
-                            } */}
-                        </div>
-                        ) : (
+                        {data.length === 0 ? (<MembershipEmptyState overall={pagination?.overall || 0} />) : (
                         <>
                             <Table columns={membershipColumns} data={data} className="" />
                             {/* Pagination same as original */}

@@ -14,7 +14,7 @@ const BeneficiaryController = {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
 
-            const { rows, count } = await BeneficiaryService.fetchAll(userRole, membershipId, organisationId, page, limit);
+            const { rows, count, overall } = await BeneficiaryService.fetchAll(userRole, membershipId, organisationId, page, limit);
 
             const totalPages = Math.ceil(count / limit);
 
@@ -22,6 +22,7 @@ const BeneficiaryController = {
                 type: 'success',
                 data: rows,
                 pagination: {
+                    overall: overall,
                     total: count,
                     page,
                     limit,
@@ -76,7 +77,7 @@ const BeneficiaryController = {
                 return res.status(400).json({ type: 'error', message: 'search_query_required' });
             }
 
-            const { rows, count } = await BeneficiaryService.search(q, userRole, membershipId, authUser?.organizationId, page, limit);
+            const { rows, count, overall } = await BeneficiaryService.search(q, userRole, membershipId, authUser?.organizationId, page, limit);
 
             const totalPages = Math.ceil(count / limit);
 
@@ -84,6 +85,7 @@ const BeneficiaryController = {
                 type: 'success',
                 data: rows,
                 pagination: {
+                    overall: overall,
                     total: count,
                     page,
                     limit,
@@ -111,7 +113,7 @@ const BeneficiaryController = {
             const projectId = req.query.projectId ? parseInt(req.query.projectId as string) : undefined;
             const datePreset = (req.query.datePreset as string)?.trim();
 
-            const { rows, count } = await BeneficiaryService.filter(
+            const { rows, count, overall } = await BeneficiaryService.filter(
                 userRole, membershipId, authUser?.organizationId,
                 reviewStatus, projectId, datePreset,
                 page, limit
@@ -123,6 +125,7 @@ const BeneficiaryController = {
                 type: 'success',
                 data: rows,
                 pagination: {
+                    overall: overall,
                     total: count,
                     page,
                     limit,

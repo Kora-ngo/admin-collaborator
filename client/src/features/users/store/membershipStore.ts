@@ -51,9 +51,11 @@ export const useMembershipStore = create<MembershipState>((set) => ({
     createData: async (data) => {
         try{
             set({loading: true});
-             await membershipApi.create(data);
+             const result = await membershipApi.create(data);
+             return result;
         }catch(error: any){
             const errorToast = handleApiError(error);
+            
             return errorToast;
         }finally{
             set({loading: false})

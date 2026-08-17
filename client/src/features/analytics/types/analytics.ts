@@ -15,6 +15,7 @@ export interface AppliedFilters {
 }
 
 export interface AnalyticsFilters {
+    overallProject: number,
     applied: AppliedFilters;
     available: AvailableFilters;
 }

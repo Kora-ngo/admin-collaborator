@@ -343,6 +343,10 @@ const Analytics = () => {
 
     console.log("Data --> ", data);
 
+    if(isEmpty){
+        return <AnalyticsEmptyState />
+    }
+
     return (
         <div className="space-y-6 pb-12">
             {/* ── Filters ── */}
@@ -379,11 +383,7 @@ const Analytics = () => {
                 )}
             </div>
 
-            {isEmpty ? (
-                <div className="bg-gray-50 rounded-xl">
-                    <EmptyState title="No analytics data yet for this selection" />
-                </div>
-            ) : (
+
                 <>
                     {/* ── Key indicators ── */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -493,7 +493,6 @@ const Analytics = () => {
                         </div>
                     )}
                 </>
-            )}
         </div>
     );
 };

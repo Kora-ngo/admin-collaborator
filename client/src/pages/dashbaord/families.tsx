@@ -22,6 +22,7 @@ import { Button } from "../../components/ui/button";
 import ExportPopup from "../../components/widgets/export-modal";
 import { exportBeneficiariesToExcel } from "../../utils/exportUtil";
 import ConnectionError from "../../features/common/network/connectionError";
+import BeneficiaryEmptyState from "../../features/family/components/beneficiary-empty-state";
 
 type ModalMode = 'view' | 'review' | null;
 
@@ -312,14 +313,7 @@ const Families = () => {
                     </div>
                 ) : (
                     <>
-                        {data.length === 0 ? (
-                            <div className="w-full bg-gray-50 rounded-md">
-                                <EmptyState
-                                    title="No Record Found"
-                                    description="Collaborators and Enumerators are the ones responsible for filling in these records on their dashboard"
-                                />
-                            </div>
-                        ) : (
+                        {data.length === 0 ? (<BeneficiaryEmptyState overall={pagination?.overall || 0} /> ) : (
                             <>
                                 <Table
                                     columns={beneficiaryColumns}

@@ -154,6 +154,7 @@ export const AnalyticsService = {
         // (see module-level assumption note). Flagging as a follow-up once that's resolved.
 
         const [
+            overallProject,
             activeProjects, 
             attentionNeeded,
             beneficiariesCurrent, 
@@ -169,6 +170,7 @@ export const AnalyticsService = {
             operationalCoverageRows,
             dataQuality,
         ] = await Promise.all([
+            AnalyticsRepository.countOverviewProjects(organisationId),
             AnalyticsRepository.countActiveProjects(scope),
             AnalyticsRepository.countProjectsNeedingAttention(scope),
             AnalyticsRepository.countBeneficiariesInRange(scope, start, end),
@@ -196,6 +198,7 @@ export const AnalyticsService = {
             filters: {
                 applied: { project: projectFilter || 'all', period: period || 'last_30_days', region: regionFilter || 'all' },
                 available: await AnalyticsService.getFilters(organisationId),
+                overallProject: overallProject
             },
 
             kpis: {

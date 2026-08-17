@@ -22,6 +22,7 @@ import ProjectActionPopup from "../../features/project/components/ProjectActionP
 import ProjectViewMedia from "../../features/project/components/project-view-media";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import ConnectionError from "../../features/common/network/connectionError";
+import ProjectEmptyState from "../../features/project/components/project-empty-state";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
@@ -443,21 +444,7 @@ const Projects = () => {
                 ) : (
                     <>
                         {data.length === 0 ? (
-                            <div className="w-full bg-gray-50 rounded-md">
-                                <EmptyState title="No Record Found"/>
-                                {/* <EmptyState 
-                                variant={ pagination?.total! > 0 ? "empty": "project"}
-                                title={ pagination?.total! > 0 ? "No Record Found" : "No assigned project"}
-                                description=
-                                {
-                                    pagination?.total! > 0 ?  "" : 
-                                    (<div className="mt-4">
-                                        <p className="font-semibold">This space can only to fully funcational if:</p>
-                                        <p>You have members conisting of at least one <b>Collaborator</b> and <b>Enumerator</b> in the "Member" space</p>
-                                        <p>You have define your <b>Assitance type</b> in the "Assistance" space needed for delivery </p>
-                                    </div>)
-                                } /> */}
-                            </div>
+                                 <ProjectEmptyState overall={pagination?.overall || 0} />
                         ) : (
                             <>
                                 <Table

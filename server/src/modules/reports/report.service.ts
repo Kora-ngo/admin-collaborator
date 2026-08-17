@@ -78,10 +78,12 @@ export const ReportService = {
         }
 
         const { count, rows } = await ReportRepository.findAndCountAll(where, limit, offset);
+        const overall = await ReportRepository.countOverview(organisationId);
 
         return {
             rows: rows.map((r: any) => r.toJSON()),
             pagination: {
+                overall: overall,
                 total: count, page, limit,
                 totalPages: Math.ceil(count / limit),
                 hasNext: page * limit < count,
@@ -97,10 +99,12 @@ export const ReportService = {
         if (projectId) where.project_id = projectId;
 
         const { count, rows } = await ReportRepository.findAndCountAll(where, limit, offset);
+        const overall = await ReportRepository.countOverview(organisationId);
 
         return {
             rows: rows.map((r: any) => r.toJSON()),
             pagination: {
+                overall: overall,
                 total: count, page, limit,
                 totalPages: Math.ceil(count / limit),
                 hasNext: page * limit < count,

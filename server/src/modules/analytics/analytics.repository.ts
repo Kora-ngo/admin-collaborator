@@ -24,6 +24,12 @@ export const AnalyticsRepository = {
     // Filters
     // ============================================================
 
+    
+    countOverviewProjects: async (organisationId: number) => {
+        const total = await ProjectModel.count({ where: { organisation_id: organisationId } });
+        return total;
+    },
+
     findAvailableProjects: async (organisationId: number) => {
         return ProjectModel.findAll({
             where: { organisation_id: organisationId, status: { [Op.ne]: 'false' } },

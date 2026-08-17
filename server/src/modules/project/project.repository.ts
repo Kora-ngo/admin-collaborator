@@ -97,6 +97,11 @@ const regionsInclude = {
 
 export const ProjectRepository = {
 
+    countOverview: async (organisationId: number) => {
+        const total = await ProjectModel.count({ where: { organisation_id: organisationId } });
+        return total;
+    },
+
     findOneByNameInOrg: async (name: string, organisationId: any) => {
         return ProjectModel.findOne({
             where: { name, organisation_id: organisationId, status: { [Op.ne]: 'false' } },

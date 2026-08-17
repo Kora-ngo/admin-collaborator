@@ -26,10 +26,12 @@ export const AssistanceService = {
 
         const { count, rows } = await AssistanceRepository.findAndCountAll(whereClause, limit, offset);
         const totalPages = Math.ceil(count / limit);
+        const overall = await AssistanceRepository.countOverview(organizationId);
 
         return {
             rows,
             pagination: {
+                overall,
                 total: count,
                 page,
                 limit,
@@ -117,10 +119,12 @@ export const AssistanceService = {
 
         const { count, rows } = await AssistanceRepository.findAndCountAll(where, limit, offset);
         const totalPages = Math.ceil(count / limit);
+        const overall = await AssistanceRepository.countOverview(organizationId);
 
         return {
             rows,
             pagination: {
+                overall,
                 total: count,
                 page,
                 limit,
@@ -174,10 +178,13 @@ export const AssistanceService = {
 
         const { count, rows } = await AssistanceRepository.findAndCountAll(where, limit, offset);
         const totalPages = Math.ceil(count / limit);
+        const overall = await AssistanceRepository.countOverview(organizationId);
+
 
         return {
             rows,
             pagination: {
+                overall: overall,
                 total: count,
                 page,
                 limit,

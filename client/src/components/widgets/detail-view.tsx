@@ -10,6 +10,7 @@ interface DetailField {
 interface DetailViewProps {
     title?: string;
     subtitle?: string;
+    note?: any;
     fields: DetailField[];
     className?: string;
     layout?: "single" | "double"; // "double" = label/value side by side, "single" = label above value
@@ -19,6 +20,7 @@ const DetailView = ({
     title,
     subtitle,
     fields,
+    note,
     className = "",
     layout = "double",
 }: DetailViewProps) => {
@@ -55,6 +57,7 @@ const DetailView = ({
                     </div>
                 ))}
             </div>
+            { note && note}
         </div>
     );
 };

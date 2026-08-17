@@ -26,6 +26,7 @@ export const BeneficiaryService = {
         }
 
         const { count, rows } = await BeneficiaryRepository.findAndCountAll(whereClause, organisationId, limit, offset);
+        const overall = await BeneficiaryRepository.countOverview(organisationId);
 
         const beneficiariesData = rows.map((b: any) => {
             const data: any = b.dataValues || b;
@@ -38,7 +39,7 @@ export const BeneficiaryService = {
             };
         });
 
-        return { rows: beneficiariesData, count };
+        return { rows: beneficiariesData, count, overall: overall };
     },
 
     fetchOne: async (id: string | undefined, userRole: string | undefined, membershipId: any) => {
@@ -80,8 +81,9 @@ export const BeneficiaryService = {
         }
 
         const { count, rows } = await BeneficiaryRepository.findAndCountAll(whereClause, organisationId, limit, offset);
+        const overall = await BeneficiaryRepository.countOverview(organisationId);
 
-        return { rows, count };
+        return { rows, count, overall };
     },
 
     filter: async (
@@ -141,8 +143,9 @@ export const BeneficiaryService = {
         }
 
         const { count, rows } = await BeneficiaryRepository.findAndCountAll(whereClause, organisationId, limit, offset);
+        const overall = await BeneficiaryRepository.countOverview(organisationId);
 
-        return { rows, count };
+        return { rows, count, overall };
     },
 
     reviewBeneficiary: async (

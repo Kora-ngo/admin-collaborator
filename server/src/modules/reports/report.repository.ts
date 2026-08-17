@@ -19,6 +19,11 @@ const projectInclude = {
 
 export const ReportRepository = {
 
+    countOverview: async (organisationId: number) => {
+        const total = await ReportModel.count({ where: { organization_id: organisationId } });
+        return total;
+    },
+
     findAll: async (where: any, limit: number, offset: number) => {
         return ReportModel.findAndCountAll({
             where,

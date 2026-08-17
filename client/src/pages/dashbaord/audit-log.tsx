@@ -4,12 +4,10 @@ import { useEffect, useState } from "react";
 import { ActionButton } from "../../components/widgets/action-button";
 import { FilterToggleButton } from "../../components/widgets/filter-button";
 import SearchInput from "../../components/widgets/search-input";
-import StatusBadge from "../../components/ui/status-badge";
 import type { TableColumn } from "../../components/widgets/table";
 import Table from "../../components/widgets/table";
 import Modal from "../../components/ui/modal";
 import { formatDate } from "../../utils/formatDate";
-import EmptyState from "../../components/ui/empty";
 import Loading from "../../components/ui/loading";
 import { SelectInput } from "../../components/ui/select-input";
 import { useAuditLogStore } from "../../features/audit/store/auditLogStore";
@@ -18,9 +16,10 @@ import AuditLogView from "../../features/audit/components/audit-log-view";
 import ActionIcon from "../../components/ui/action-icon";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import ConnectionError from "../../features/common/network/connectionError";
+import AuditLogEmptyState from "../../features/audit/components/audit-log-empty-state";
 
 const AuditLogs = () => {
-    const { data, getData, pagination, loading, popUpLoading, connection } = useAuditLogStore();
+    const { data, getData, pagination, loading, connection } = useAuditLogStore();
     const {
         searchTerm,
         handleSearch,
@@ -220,9 +219,9 @@ if(!connection){
                                     <>
                                         {data.length === 0 ? (
                                             <div className="w-full bg-gray-50 rounded-md">
-                                                <EmptyState
-                                                    title="No Audit Logs Found"
-                                                    description="No activity has been logged today."
+                                                <AuditLogEmptyState
+                                                overall={pagination?.overall!}
+                                                isFiltering={filterMode || searchTerm != ""}
                                                 />
                                             </div>
                                         ) : (

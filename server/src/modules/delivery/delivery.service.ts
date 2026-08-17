@@ -5,9 +5,9 @@ const emptyPagination = (page: number, limit: number) => ({
     total: 0, page, limit, totalPages: 0, hasNext: false, hasPrev: false,
 });
 
-const buildPagination = (count: number, page: number, limit: number) => {
+const buildPagination = (overall: number, count: number, page: number, limit: number) => {
     const totalPages = Math.ceil(count / limit);
-    return { total: count, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 };
+    return { overall: overall, total: count, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 };
 };
 
 const buildDateFilter = (datePreset: string) => {
@@ -72,8 +72,9 @@ export const DeliveryService = {
         }
 
         const { count, rows } = await DeliveryRepository.findAndCountAllList(whereClause, organizationId, limit, offset);
+        const overall = await DeliveryRepository.countOverview(organizationId);
 
-        return { rows: rows.map(normalizeDelivery), pagination: buildPagination(count, page, limit) };
+        return { rows: rows.map(normalizeDelivery), pagination: buildPagination(overall, count, page, limit) };
     },
 
     fetchOne: async (id: string | undefined, userRole: string | undefined, membershipId: any) => {
@@ -113,8 +114,9 @@ export const DeliveryService = {
         };
 
         const { count, rows } = await DeliveryRepository.findAndCountAllSearch(searchWhere, organizationId, limit, offset);
+        const overall = await DeliveryRepository.countOverview(organizationId);
 
-        return { rows: rows.map((d: any) => d.toJSON()), pagination: buildPagination(count, page, limit) };
+        return { rows: rows.map((d: any) => d.toJSON()), pagination: buildPagination(overall, count, page, limit) };
     },
 
     filter: async (
@@ -143,8 +145,9 @@ export const DeliveryService = {
         }
 
         const { count, rows } = await DeliveryRepository.findAndCountAllFilter(whereClause, organizationId, limit, offset);
+        const overall = await DeliveryRepository.countOverview(organizationId);
 
-        return { rows: rows.map((d: any) => d.toJSON()), pagination: buildPagination(count, page, limit) };
+        return { rows: rows.map((d: any) => d.toJSON()), pagination: buildPagination(overall, count, page, limit) };
     },
 
     reviewDelivery: async (

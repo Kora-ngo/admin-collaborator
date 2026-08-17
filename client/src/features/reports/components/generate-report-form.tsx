@@ -67,6 +67,9 @@ const GenerateReportForm = ({ isOpen, onSuccess }: GenerateReportFormProps) => {
                 {/* Reporting Period */}
                 <div className="grid gap-2">
                     <Label required={false}>Reporting Period</Label>
+                    <p className="text-sm text-gray-500">
+                        Must match with the project period as well so as not
+                    </p>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-1">
                             <Input

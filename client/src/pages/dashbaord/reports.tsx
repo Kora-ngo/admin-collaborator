@@ -22,6 +22,7 @@ import type { BadgeColor } from "../../types/badgeColor";
 import ConnectionError from "../../features/common/network/connectionError";
 import { formatCode } from "../../utils/formatCode";
 import { formatBytes } from "../../features/reports/utils/formatBytes";
+import ReportEmptyState from "../../features/reports/components/report-empty-state";
 
 const statusColors: Record<string, { text: string; color: string }> = {
     PENDING: { text: "Pending", color: "gray" },
@@ -207,9 +208,7 @@ const reportColumns: TableColumn[] = [
                         onRetry={() => getData(pagination?.page || 1)}
                     />
                 ) : data.length === 0 ? (
-                    <div className="w-full bg-gray-50 rounded-md">
-                        <EmptyState title="No Reports Found" />
-                    </div>
+                    <ReportEmptyState overall={pagination?.overall || 0} hasProjects={projects.length > 0} />
                 ) : (
                     <>
                         <Table columns={reportColumns} data={data} className="" />

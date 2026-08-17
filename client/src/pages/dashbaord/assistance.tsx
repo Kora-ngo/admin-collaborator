@@ -21,6 +21,7 @@ import { useAssis } from "../../features/assistance/hooks/useAssis";
 import { SelectInput } from "../../components/ui/select-input";
 import { useAuthStore } from "../../features/auth/store/authStore";
 import ConnectionError from "../../features/common/network/connectionError";
+import AssistanceEmptyState from "../../features/assistance/components/assistance-empty-state";
 
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
@@ -274,13 +275,7 @@ const Assistance = () => {
                     </div>
                     ) : (
                     <>
-                        {data.length === 0 ? (
-                        <div className="w-full bg-gray-50 rounded-md">
-                            <EmptyState title="No Record Found" 
-                            description={role === "collaborator" ? "You don't have the authorisation to access these Records" : ""}
-                            />
-                        </div>
-                        ) : (
+                        {data.length === 0 ? (<AssistanceEmptyState overall={pagination?.overall || 0} />) : (
                         <>
                             <Table
                             columns={assistanceColumns}

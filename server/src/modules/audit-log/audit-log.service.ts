@@ -36,12 +36,14 @@ export const AuditLogService = {
         }
 
         const { count, rows } = await AuditLogRepository.findTodayActivity(whereClause, limit, offset);
+        const overall = await AuditLogRepository.countOverview(organisationId); 
 
         const totalPages = Math.ceil(count / limit);
 
         return {
             rows,
             pagination: {
+                overall: overall,
                 total: count,
                 page,
                 limit,
@@ -82,12 +84,14 @@ export const AuditLogService = {
         }
 
         const { count, rows } = await AuditLogRepository.findAndCountAll(whereClause, limit, offset);
+        const overall = await AuditLogRepository.countOverview(organisationId); 
 
         const totalPages = Math.ceil(count / limit);
 
         return {
             rows,
             pagination: {
+                overall: overall,
                 total: count,
                 page,
                 limit,
@@ -152,12 +156,14 @@ export const AuditLogService = {
         }
 
         const { count, rows } = await AuditLogRepository.findAndCountAll(whereClause, limit, offset);
+        const overall = await AuditLogRepository.countOverview(organisationId); 
 
         const totalPages = Math.ceil(count / limit);
 
         return {
             rows,
             pagination: {
+                overall: overall,
                 total: count,
                 page,
                 limit,

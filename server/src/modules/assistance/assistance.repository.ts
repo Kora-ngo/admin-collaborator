@@ -1,7 +1,7 @@
-import { Op } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 import AssistanceModel from './assistance.model.js';
 import AssistanceTypeModel from '../assistance-type/assistance-type.model.js';
-import type { AssistanceCreationAttributes, AssistanceTypeAttributes, AssistanceTypeCreationAttributes } from './types/assistance.js';
+import type { AssistanceTypeAttributes, AssistanceTypeCreationAttributes } from './types/assistance.js';
 
 const assistanceTypeInclude = {
     model: AssistanceTypeModel,
@@ -16,6 +16,17 @@ const assistanceTypeInclude = {
 // ============================================================
 
 export const AssistanceRepository = {
+
+    countOverview: async (organisationId: number) => {
+        const [total] = await Promise.all([
+            AssistanceModel.count({ where: { organization_id: organisationId } }),
+            AssistanceModel.findAll({
+                where: { organization_id: organisationId },
+                raw: true,
+            }),
+        ]);
+        return total;
+    },
 
     findAll: async (where: any) => {
         return AssistanceModel.findAll({

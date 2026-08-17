@@ -10,9 +10,11 @@ const emptyPagination = (page: number, limit: number) => ({
     total: 0, page, limit, totalPages: 0, hasNext: false, hasPrev: false,
 });
 
-const buildPagination = (count: number, page: number, limit: number) => {
+const buildPagination = (overall: number, count: number, page: number, limit: number) => {
     const totalPages = Math.ceil(count / limit);
-    return { total: count, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 };
+    return { 
+        overall: overall,
+        total: count, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 };
 };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -75,7 +77,8 @@ export const MembershipService = {
         whereClause.status = ['true', 'blocked'];
 
         const { count, rows } = await MembershipRepository.findAndCountAll(whereClause, limit, offset);
-        return { rows, pagination: buildPagination(count, page, limit) };
+        const overall = await MembershipRepository.countOverview(organizationId);
+        return { rows, pagination: buildPagination( overall, count, page, limit) };
     },
 
 
@@ -257,7 +260,8 @@ export const MembershipService = {
         }
 
         const { count, rows } = await MembershipRepository.findAndCountAllByUserName(where, q, limit, offset);
-        return { rows, pagination: buildPagination(count, page, limit) };
+        const overall = await MembershipRepository.countOverview(organizationId);
+        return { rows, pagination: buildPagination(overall, count, page, limit) };
     },
 
 
@@ -322,7 +326,8 @@ export const MembershipService = {
         }
 
         const { count, rows } = await MembershipRepository.findAndCountAll(where, limit, offset);
-        return { rows, pagination: buildPagination(count, page, limit) };
+        const overall = await MembershipRepository.countOverview(organizationId);
+        return {  rows, pagination: buildPagination(overall, count, page, limit) };
     },
 
 

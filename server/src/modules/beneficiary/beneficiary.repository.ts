@@ -56,6 +56,13 @@ const fullBeneficiaryInclude = [
 
 export const BeneficiaryRepository = {
 
+    countOverview: async (organisationId: number) => {
+        const total = await BeneficiaryModel.count({
+            include: [{ model: ProjectModel, as: 'project', attributes: [], where: { organisation_id: organisationId } }],
+        });
+        return total;
+    },
+
     findAndCountAll: async (where: any, organisationId: any, limit: number, offset: number) => {
         return BeneficiaryModel.findAndCountAll({
             where,

@@ -6,9 +6,9 @@ import { bulkUpdateProjectStatuses, updateProjectStatusInDB } from '../../shared
 import { getProjectEditMetadata } from '../../shared/helpers/getProjectEditMetadata.js';
 import { ProjectRepository, ProjectMemberRepository, ProjectAssistanceRepository, ProjectDeletionRepository, ProjectRegionRepository } from './project.repository.js';
 
-const buildPagination = (count: number, page: number, limit: number) => {
+const buildPagination = (overall: number, count: number, page: number, limit: number) => {
     const totalPages = Math.ceil(count / limit);
-    return { total: count, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 };
+    return { overall: overall, total: count, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 };
 };
 
 const processBase64Files = (files: any[]) =>
@@ -144,6 +144,7 @@ export const ProjectService = {
         }
 
         const { count, rows } = await ProjectRepository.findAndCountAllFull(whereClause, collaboratorScope, limit, offset);
+        const overall = await ProjectRepository.countOverview(organisationId);
 
         await bulkUpdateProjectStatuses(rows);
 
@@ -160,7 +161,7 @@ export const ProjectService = {
             };
         });
 
-        return { rows: projectsData, pagination: buildPagination(count, page, limit) };
+        return { rows: projectsData, pagination: buildPagination(overall, count, page, limit) };
     },
 
 
@@ -342,10 +343,11 @@ export const ProjectService = {
         const collaboratorScope = userRole === 'collaborator' ? { membershipId } : undefined;
 
         const { count, rows } = await ProjectRepository.findAndCountAllSummary(where, collaboratorScope, limit, offset);
+        const overall = await ProjectRepository.countOverview(organisationId);
 
         await bulkUpdateProjectStatuses(rows);
 
-        return { rows: rows.map(p => p.toJSON()), pagination: buildPagination(count, page, limit) };
+        return { rows: rows.map(p => p.toJSON()), pagination: buildPagination(overall, count, page, limit) };
     },
 
 
@@ -373,9 +375,10 @@ export const ProjectService = {
         const collaboratorScope = userRole === 'collaborator' ? { membershipId } : undefined;
 
         const { count, rows } = await ProjectRepository.findAndCountAllSummary(where, collaboratorScope, limit, offset);
+        const overall = await ProjectRepository.countOverview(organisationId);
 
         await bulkUpdateProjectStatuses(rows);
 
-        return { rows: rows.map(p => p.toJSON()), pagination: buildPagination(count, page, limit) };
+        return { rows: rows.map(p => p.toJSON()), pagination: buildPagination(overall, count, page, limit) };
     },
 };
