@@ -110,8 +110,8 @@ const DataManagement = () => {
     // Action modal state
     const [modalType, setModalType] = useState<OperationType | null>(null);
     const [modalEntity, setModalEntity] = useState<DataEntity | null>(null);
-    const [modalStep, setModalStep] = useState<ModalStep>("configure");
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [, setModalStep] = useState<ModalStep>("configure");
+    const [, setSelectedFile] = useState<File | null>(null);
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -155,13 +155,6 @@ const DataManagement = () => {
         setSelectedFile(null);
     };
 
-    // Dummy "proceed" — just walks through UI states
-    const handleProceed = () => {
-        setModalStep("confirming");
-        setTimeout(() => {
-            setModalStep("done");
-        }, 1500);
-    };
 
     return (
         <div className="space-y-8 pb-12">

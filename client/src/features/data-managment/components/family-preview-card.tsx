@@ -1,13 +1,6 @@
 import { useState } from "react";
-import StatusBadge from "../../../components/ui/status-badge";
-import type { PreviewFamily, RowStatus } from "../types";
-import type { BadgeColor } from "../../../types/badgeColor";
+import type { PreviewFamily } from "../types";
 
-const statusConfig: Record<RowStatus, { text: string; color: BadgeColor }> = {
-    READY: { text: "Ready", color: "purple" },
-    WARNING: { text: "Warning", color: "orange" },
-    ERROR: { text: "Error", color: "red" },
-};
 
 const FamilyPreviewCard = ({ family }: { family: PreviewFamily }) => {
     const [expanded, setExpanded] = useState(false);

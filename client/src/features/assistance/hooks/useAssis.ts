@@ -6,7 +6,6 @@ import type { ToastMessage } from "../../../types/toastMessage";
 import { useAssistanceStore } from "../store/assistanceStore";
 import { useAuthStore } from "../../auth/store/authStore";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";
-import type { AssistanceFilters } from "../assistanceApi";
 
 export const useAssis = () => {
 

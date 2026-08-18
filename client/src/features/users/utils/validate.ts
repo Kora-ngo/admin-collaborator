@@ -1,6 +1,7 @@
 // src/features/membership/utils/validate.ts
 
-import type { Membership } from "../../../types/membership";
+import type { Membership } from "../membership";
+
 
 export const validateMembership = (
     form: Partial<Membership & { email: string; name: string; phone?: string; password: string }>,

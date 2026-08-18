@@ -1,7 +1,6 @@
 import { QueryInterface, DataTypes } from "sequelize";
 
-export default {
-    up: async (queryInterface: QueryInterface): Promise<void> => {
+export const up = async (queryInterface: QueryInterface): Promise<void> => {
         await queryInterface.createTable("backups", {
             id: {
                 type: DataTypes.INTEGER,
@@ -88,9 +87,8 @@ export default {
         await queryInterface.addIndex("backups", ["status"], {
             name: "backups_status_idx",
         });
-    },
+    };
 
-    down: async (queryInterface: QueryInterface): Promise<void> => {
+export const down = async (queryInterface: QueryInterface): Promise<void> => {
         await queryInterface.dropTable("backups");
-    },
-};
+    };

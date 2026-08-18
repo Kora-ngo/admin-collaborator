@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { Assistance, AssistanceType } from "../assistance"
+import type { AssistanceType } from "../assistance"
 import { validateAssistanceType } from "../utils/validate";
 import type { ToastMessage } from "../../../types/toastMessage";
 import { useAssistanceTypeStore } from "../store/assistanceTypeStore";

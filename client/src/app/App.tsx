@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import '../App.css';
-// import Login from '../pages/auth/login'
 import Home from '../components/layout/home'
 import Dasbaord from '../pages/dashbaord/dashbaord'
 import Projects from '../pages/dashbaord/project'
@@ -18,8 +17,9 @@ import { useSessionGuard } from '../lib/session/useSessionGuard'
 import ForgotPassword from '../pages/auth/forgot-password'
 import DataManagment from '../pages/dashbaord/data-management';
 import Analytics from '../pages/dashbaord/analytics';
-import Maintenance from '../pages/other/maintennace';
+// import Maintenance from '../pages/other/maintennace';
 import Report from '../pages/dashbaord/reports';
+import Login from '../pages/auth/login';
 
 function App() {
   const token = localStorage.getItem('token');
@@ -65,8 +65,8 @@ function App() {
     return (
       <BrowserRouter basename="/space">
         <Routes>
-          {/* <Route path="/" element={<Login />} /> */}
-          <Route path="/" element={<Maintenance />} />
+          <Route path="/" element={<Login />} />
+          {/* <Route path="/" element={<Maintenance />} /> */}
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/invitation" element={<Invitation />} />

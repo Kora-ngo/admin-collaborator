@@ -1,4 +1,3 @@
-import { useState } from "react";
 import StatusBadge from "../../../../components/ui/status-badge";
 import Tooltip from "../../../../components/widgets/tooltip";
 import type { Backup } from "../../backup";

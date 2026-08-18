@@ -12,7 +12,6 @@ import { ActionButton } from "../../components/widgets/action-button";
 import { Button } from "../../components/ui/button";
 import { SelectInput } from "../../components/ui/select-input";
 import Loading from "../../components/ui/loading";
-import EmptyState from "../../components/ui/empty";
 import Table from "../../components/widgets/table";
 import Modal from "../../components/ui/modal";
 import MembershipForm from "../../features/users/components/membership-form";
@@ -25,7 +24,7 @@ import MembershipEmptyState from "../../features/users/components/membership-emp
 type ModalMode = 'add' | 'edit' | 'view' | null;
 
 const User = () => {
-    const {data, getData, pagination, loading, connection, popUpLoading} = useMembershipStore();
+    const {data, getData, pagination, loading, connection} = useMembershipStore();
     const userData = useAuthStore((state) => state.user);
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
     const {role} = useAuthStore();

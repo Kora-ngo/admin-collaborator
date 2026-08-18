@@ -8,7 +8,6 @@ interface BackupDeleteNoticeProps {
 
 const BackupDeleteNotice: React.FC<BackupDeleteNoticeProps> = ({
     isVisible,
-    onConfirm,
     onCancel,
 }) => {
     // Auto-cancel after 5 seconds

@@ -16,7 +16,7 @@ type Tab = "overview" | "members";
 const BeneficiaryView = ({ id, isOpen }: BeneficiaryViewProps) => {
     const { fetchOneData } = useBeneficiaryStore();
     const [activeTab, setActiveTab] = useState<Tab>("overview");
-    const [data, setData] = useState<Beneficiary | null>(null);
+    const [data, setData] = useState<Beneficiary | any>(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {

@@ -20,14 +20,6 @@ const OrganisationView: React.FC<OrganisationViewProps> = ({ onToggle }) => {
         return <div className="text-gray-500">No organisation data available</div>;
     }
 
-    // Generate initials from organization name
-    const initials = organisation.name
-        ?.split(" ")
-        .map((word) => word[0])
-        .filter(Boolean)
-        .join("")
-        .toUpperCase()
-        .slice(0, 2) || "?";
 
     return (
         <div className="space-y-6">

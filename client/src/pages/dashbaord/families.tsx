@@ -8,7 +8,6 @@ import type { TableColumn } from "../../components/widgets/table";
 import Table from "../../components/widgets/table";
 import Modal from "../../components/ui/modal";
 import { formatDate } from "../../utils/formatDate";
-import EmptyState from "../../components/ui/empty";
 import Loading from "../../components/ui/loading";
 import Popup from "../../components/widgets/popup";
 import { SelectInput } from "../../components/ui/select-input";

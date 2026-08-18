@@ -13,13 +13,11 @@ import AssistanceForm from "../../features/assistance/components/assistance-form
 import { useAssistanceStore } from "../../features/assistance/store/assistanceStore";
 import { formatDate } from "../../utils/formatDate";
 import { formatCode } from "../../utils/formatCode";
-import EmptyState from "../../components/ui/empty";
 import Loading from "../../components/ui/loading";
 import AssistanceView from "../../features/assistance/components/assistance-view";
 import Popup from "../../components/widgets/popup";
 import { useAssis } from "../../features/assistance/hooks/useAssis";
 import { SelectInput } from "../../components/ui/select-input";
-import { useAuthStore } from "../../features/auth/store/authStore";
 import ConnectionError from "../../features/common/network/connectionError";
 import AssistanceEmptyState from "../../features/assistance/components/assistance-empty-state";
 
@@ -29,7 +27,6 @@ const Assistance = () => {
 
     const {data, getData, pagination, loading, connection, popUpLoading} = useAssistanceStore();
     const [loadingViewId, setLoadingViewId] = useState<number | null>(null);
-    const {role} = useAuthStore();
     const {
             filters,
             filterMode,
