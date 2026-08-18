@@ -3,7 +3,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "esnext",
-    "types": [],
+    "types": ["node", "pdfkit"],
     "outDir": "./dist",
     "rootDir": "./src",
     "sourceMap": true,
