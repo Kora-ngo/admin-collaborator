@@ -36,7 +36,7 @@ const AuditLogEmptyState = ({ overall, isFiltering }: AuditLogEmptyStateProps) =
                     description={
                         <div className="mt-4 max-w-md mx-auto text-left space-y-3">
                             <p className="text-sm text-gray-500">
-                                Audit logs aren't created manually every record created, updated, or
+                                Every record created, updated, or
                                 delivered anywhere in Kora is logged here automatically as it happens.
                             </p>
                             <RoleItem icon={pulseIcon}>

@@ -21,10 +21,10 @@ router.post('/select-membership', AuthController.selectMembership);
 router.post('/accept-invitation', AuthController.acceptInvitation);
 
 // POST /api/auth/forgot-password
-router.post('/forgot-password', AuthController.forgotPassword);
+router.put('/forgot-password', AuthController.forgotPassword);
 
 // POST /api/auth/reset-password
-router.post('/reset-password', AuthController.resetPassword);
+router.put('/reset-password', AuthController.resetPassword);
 
 // POST /api/auth/refresh-token
 // router.post('/refresh-token', AuthController.refreshToken);

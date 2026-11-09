@@ -20,7 +20,7 @@ export const authApi = {
     },
 
     resetPassword: async (email: string, newPassword: string, confirmPassword: string) => {
-        const response = await axiosInstance.post('/auth/forgot-password', {
+        const response = await axiosInstance.put('/auth/forgot-password', {
             email,
             newPassword,
             confirmPassword

@@ -30,6 +30,7 @@ import MediaLink from "../media-link/media-link.model.js";
 import SyncBatchModel from "../sync-batch/sync-batch.model.js";
 import AuditLogModel from "../audit-log/audit-log.model.js";
 import { OrganisationRepository } from "../auth/auth.repository.js";
+import ProjectRegionModel from "../project-region/project-region.model.js";
 
 const KORA_VERSION = "1.0.0";
 
@@ -257,6 +258,17 @@ const BackupService = {
             : [];
         console.log("BACKUP -- GET PROJECT MEMBERS:", projectMembers.length);
 
+        // ── Project Regions ───────────────────────────────────────────
+        const projectRegions = projectIds.length > 0
+            ? await ProjectRegionModel.findAll(
+                {
+                    where: { project_id: { [Op.in]: projectIds } },
+                    raw: true,  
+                }
+            )
+            : [];
+        console.log("BACKUP -- GET PROJECT REGIONS:", projectRegions.length);
+
         // ── Media ─────────────────────────────────────────────────────
         const media = await Media.findAll({
             where: { organisation_id: organisationId },
@@ -296,6 +308,7 @@ const BackupService = {
             projects,
             project_assistances: projectAssistances,
             project_members: projectMembers,
+            project_regions: projectRegions, 
             memberships,
             beneficiaries,
             beneficiary_members: beneficiaryMembers,
@@ -451,6 +464,7 @@ const BackupService = {
                 projects: collectedData.projects,
                 project_assistances: collectedData.project_assistances,
                 project_members: collectedData.project_members,
+                project_regions: collectedData.project_regions,
             });
             writeJson(tempDir, "members.json", { memberships: collectedData.memberships });
             writeJson(tempDir, "beneficiaries.json", {
@@ -691,6 +705,7 @@ const BackupService = {
                     await ProjectAssistanceModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
                     await ProjectMemberModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
                     await SyncBatchModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
+                    await ProjectRegionModel.destroy({ where: { project_id: { [Op.in]: projectIds } }, transaction: t });
                 }
 
                 // Get media ids for media links cleanup
@@ -718,20 +733,29 @@ const BackupService = {
 
                 // ── Helper for raw SQL insert ────────────────────────────
                 const insertIgnore = async (table: string, rows: any[]) => {
-                    if (!rows?.length) return;
-                    for (const row of rows) {
-                        const cols = Object.keys(row).join(", ");
-                        const vals = Object.values(row).map((v: any) =>
-                            v === null || v === undefined
-                                ? "NULL"
-                                : `'${String(v).replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`
-                        ).join(", ");
-                        await sequelize.query(
-                            `INSERT IGNORE INTO ${table} (${cols}) VALUES (${vals})`,
-                            { transaction: t }
-                        );
+                    if (!rows?.length) {
+                        console.log(`⚠️ ${table}: nothing to restore`);
+                        return;
                     }
-                    console.log(`✅ ${table} restored: ${rows.length}`);
+                    let inserted = 0;
+                    for (const row of rows) {
+                        const cols = Object.keys(row).map(c => `\`${c}\``).join(", ");
+                        const placeholders = Object.keys(row).map(() => "?").join(", ");
+                        const values = Object.values(row).map((v: any) => {
+                            if (v === undefined) return null;
+                            if (v !== null && typeof v === "object") return JSON.stringify(v);
+                            if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
+                                return new Date(v);          // convert ISO → Date for MySQL
+                            }
+                            return v;
+                        });
+                        const [, meta]: any = await sequelize.query(
+                            `INSERT IGNORE INTO ${table} (${cols}) VALUES (${placeholders})`,
+                            { replacements: values, transaction: t }
+                        );
+                        inserted += meta?.affectedRows ?? meta ?? 0;
+                    }
+                    console.log(`✅ ${table}: ${inserted}/${rows.length} inserted`);
                 };
 
                 // ── Restore in order ─────────────────────────────────────
@@ -778,6 +802,7 @@ const BackupService = {
                 await insertIgnore("projects", projectsData?.projects);
                 await insertIgnore("project_assistance", projectsData?.project_assistances);
                 await insertIgnore("project_members", projectsData?.project_members);
+                await insertIgnore("project_regions", projectsData?.project_regions);
 
                 // Beneficiaries
                 await insertIgnore("beneficiaries", benefData?.beneficiaries);
